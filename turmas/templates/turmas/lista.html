@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Turmas - SIMAP{% endblock %}
+
+{% block conteudo %}
+    <h2>Turmas</h2>
+    <ul>
+        {% for turma in turmas %}
+            <li>{{ turma.nome }} - {{ turma.periodo }} - {{ turma.docente }}</li>
+        {% empty %}
+            <li>Nenhuma turma cadastrada ainda.</li>
+        {% endfor %}
+    </ul>
+    
+{% endblock %}

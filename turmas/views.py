@@ -1,3 +1,6 @@
 from django.shortcuts import render
+from .models import Turma
 
-# Create your views here.
+def lista_turmas(request):
+    turmas = Turma.objects.all()
+    return render(request, 'turmas/lista.html', {'turmas': turmas})
