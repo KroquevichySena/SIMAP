@@ -26,4 +26,4 @@ def criar_matricula(request):
             return redirect('lista_turmas')
     else:
         form = MatriculaForm()
-    return render(request, 'turmas/form.html', {'form': form})          
+    return render(request, 'turmas/matricula_form.html', {'form': form})          
