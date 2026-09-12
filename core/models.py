@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from usuarios.models import PERFIL_DOCENTE, PERFIL_DISCENTE
 
 
 # CHOICES (smallint)
@@ -38,7 +37,7 @@ class Turma(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,  # Impede exclusão de docente com turmas vinculadas
         related_name="turmas_ministradas",
-        limit_choices_to={"perfil": PERFIL_DOCENTE, "is_active": True},
+        limit_choices_to={"perfil": 'DOCENTE', "is_active": True},
         verbose_name="Docente responsável",
     )
 
@@ -64,7 +63,7 @@ class Turma(models.Model):
     def clean(self):
         """Garante integridade semântica: o responsável deve ter perfil Docente."""
         super().clean()
-        if self.docente_id and self.docente.perfil != PERFIL_DOCENTE:
+        if self.docente_id and self.docente.perfil != 'DOCENTE':
             raise ValidationError({"docente": "O responsável pela turma deve ter perfil Docente."})
 
 
@@ -79,7 +78,7 @@ class Matricula(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="matriculas",
-        limit_choices_to={"perfil": PERFIL_DISCENTE, "is_active": True},
+        limit_choices_to={"perfil": 'DISCENTE', "is_active": True},
         verbose_name="Discente",
     )
 
@@ -91,7 +90,8 @@ class Matricula(models.Model):
     class Meta:
         verbose_name = "Matrícula"
         verbose_name_plural = "Matrículas"
-        ordering = ["turma", "discente__nome"]
+        # 1ª ALTERAÇÃO: mudou de 'discente__nome' para 'discente__first_name'
+        ordering = ["turma", "discente__first_name"] 
         constraints = [
             # Impede matrícula duplicada do mesmo aluno na mesma turma
             models.UniqueConstraint(
@@ -104,11 +104,12 @@ class Matricula(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.discente.nome} em {self.turma}"
+        # 2ª ALTERAÇÃO: mudou de 'self.discente.nome' para 'self.discente.first_name'
+        return f"{self.discente.first_name} em {self.turma}"
 
     def clean(self):
         super().clean()
-        if self.discente_id and self.discente.perfil != PERFIL_DISCENTE:
+        if self.discente_id and self.discente.perfil != 'DISCENTE':
             raise ValidationError({"discente": "Somente usuários com perfil Discente podem ser matriculados."})
 
 

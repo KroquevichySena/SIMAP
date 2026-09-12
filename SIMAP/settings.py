@@ -44,14 +44,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Apps do SIMAP
-    "usuarios",   # antes de 'core', pois core importa constantes de usuarios
+    "usuarios",  
     "core",
+    "chamada",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # WhiteNoise deve vir IMEDIATAMENTE após o SecurityMiddleware
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -66,7 +65,6 @@ ROOT_URLCONF = "SIMAP.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # CORRIGIDO: aponta para a pasta 'templates' na raiz do projeto
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {

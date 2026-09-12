@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar Atividade{% else %}Nova Atividade{% endif %} - SIMAP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">{% if object %}Editar Atividade{% else %}Nova Atividade{% endif %}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'core:atividade_list' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo_pagina }} - SIMAP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">{{ titulo_pagina }}</h4>
+            </div>
+            
+            <div class="card-body">
+                <form method="POST">
+                    <!-- O CSRF Token é obrigatório em formulários no Django (segurança contra hackers) -->
+                    {% csrf_token %}
+                    
+                    <!-- O form.as_p renderiza cada campo do forms.py dentro de parágrafos <p> -->
+                    {{ form.as_p }}
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success">Gerar Token e Abrir Chamada</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

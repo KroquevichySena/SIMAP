@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar exclusão - SIMAP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Confirmar exclusão</h4>
+            </div>
+            <div class="card-body">
+                <p>Tem certeza que deseja excluir "<strong>{{ object }}</strong>"? Essa ação não pode ser desfeita.</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ view.success_url }}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-danger">Excluir</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

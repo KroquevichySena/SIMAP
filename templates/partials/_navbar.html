@@ -1,0 +1,10 @@
+<nav class="navbar navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">SIMAP Acadêmico</a>
+    <span class="navbar-text text-white">
+        {% if user.is_authenticated %}
+            Logado como: {{ user.first_name }} ({{ user.perfil }})
+        {% endif %}
+    </span>
+  </div>
+</nav>

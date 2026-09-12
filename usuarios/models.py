@@ -9,3 +9,11 @@ class Usuario(AbstractUser):
 
     rgm = models.CharField(max_length=20, blank=True)
     perfil = models.CharField(max_length=10, choices=PERFIL_CHOICES)
+
+    @property
+    def is_docente(self):
+        return self.perfil == 'DOCENTE'
+
+    @property
+    def is_discente(self):
+        return self.perfil == 'DISCENTE'

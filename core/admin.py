@@ -13,7 +13,7 @@ class MatriculaInline(admin.TabularInline):
 class TurmaAdmin(admin.ModelAdmin):
     list_display = ["nome", "periodo", "docente", "ativa", "data_criacao"]
     list_filter = ["ativa", "periodo"]
-    search_fields = ["nome", "periodo", "docente__nome"]
+    search_fields = ["nome", "periodo", "docente__first_name"]
     autocomplete_fields = ["docente"]
     inlines = [MatriculaInline]
 
@@ -22,7 +22,7 @@ class TurmaAdmin(admin.ModelAdmin):
 class MatriculaAdmin(admin.ModelAdmin):
     list_display = ["discente", "turma", "status", "data_matricula"]
     list_filter = ["status", "turma"]
-    search_fields = ["discente__nome", "discente__email"]
+    search_fields = ["discente__first_name", "discente__email"]
     autocomplete_fields = ["discente", "turma"]
 
 
