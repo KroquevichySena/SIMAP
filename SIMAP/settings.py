@@ -124,6 +124,18 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Mensagens -> classes do Bootstrap 5.3
+from django.contrib.messages import constants as messages  # noqa: E402
+
+MESSAGE_TAGS = {
+    messages.DEBUG: "secondary",
+    messages.INFO: "info",
+    messages.SUCCESS: "success",
+    messages.WARNING: "warning",
+    messages.ERROR: "danger",
+}
+
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
 LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = 'dashboard'

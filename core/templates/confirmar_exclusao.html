@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Confirmar Exclusão - SIMAP{% endblock %}
+
+{% block conteudo %}
+    <h2>Confirmar Exclusão</h2>
+
+    <div class="alert alert-danger">
+        Tem certeza de que deseja excluir <strong>{{ object }}</strong>?<br>
+        <small>Esta ação é irreversível e removerá também os registros vinculados.</small>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sim, excluir</button>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+{% endblock %}

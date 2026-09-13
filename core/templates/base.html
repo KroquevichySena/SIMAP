@@ -20,7 +20,13 @@
             <a class="nav-link active" aria-current="page" href="{% url 'lista_turmas' %}">Turmas</a>
             </li>
             <li class="nav-item">
-            <a class="nav-link" href="#">Trilhas</a>
+            {% if user.is_authenticated and user.is_docente %}
+                <a class="nav-link" href="{% url 'listar_trilhas' %}">Trilhas</a>
+            {% elif user.is_authenticated and user.is_discente %}
+                <a class="nav-link" href="{% url 'minhas_trilhas' %}">Trilhas</a>
+            {% else %}
+                <a class="nav-link disabled" href="#">Trilhas</a>
+            {% endif %}
             </li>
             <li class="nav-item">
             <a class="nav-link" href="#">Presença</a>
