@@ -5,6 +5,7 @@ from . import views
 app_name = 'chamada'
 
 urlpatterns = [
-    # A rota será acessada via /chamada/abrir/
+
     path('abrir/', views.abrir_chamada, name='abrir_chamada'),
+    path('confirmar/', views.confirmar_presenca, name='confirmar_presenca'),
 ]

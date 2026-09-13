@@ -3,25 +3,81 @@
 {% block title %}{{ titulo_pagina }} - SIMAP{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
+<div class="row">
+    <!-- COLUNA DA ESQUERDA: Formulário para Abrir a Chamada -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0">
             <div class="card-header bg-dark text-white">
-                <h4 class="mb-0">{{ titulo_pagina }}</h4>
+                <h5 class="mb-0">Abrir Nova Chamada</h5>
             </div>
-            
             <div class="card-body">
                 <form method="POST">
-                    <!-- O CSRF Token é obrigatório em formulários no Django (segurança contra hackers) -->
                     {% csrf_token %}
                     
-                    <!-- O form.as_p renderiza cada campo do forms.py dentro de parágrafos <p> -->
                     {{ form.as_p }}
                     
                     <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-success">Gerar Token e Abrir Chamada</button>
+                        <button type="submit" class="btn btn-success">
+                            Gerar Token e Abrir
+                        </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUNA DA DIREITA: Histórico e Alunos Presentes (Salvo no Banco) -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Histórico e Chamadas Ativas</h5>
+            </div>
+            <div class="card-body">
+                {% if chamadas_recentes %}
+                    <div class="accordion" id="accordionChamadas">
+                        {% for chamada in chamadas_recentes %}
+                            <div class="accordion-item mb-3 border">
+                                <h2 class="accordion-header" id="heading{{ chamada.id }}">
+                                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ chamada.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ chamada.id }}">
+                                        <div class="w-100 d-flex justify-content-between pe-3">
+                                            <span><strong>Token: {{ chamada.token_chamada }}</strong> ({{ chamada.turma.nome }})</span>
+                                            <span class="badge bg-secondary align-self-center">
+                                                {{ chamada.presencas.count }} presente(s)
+                                            </span>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ chamada.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ chamada.id }}" data-bs-parent="#accordionChamadas">
+                                    <div class="card-body bg-light">
+                                        <p class="small text-muted mb-2">
+                                            Criada em: {{ chamada.data_criacao|date:"d/m/Y H:i" }} | 
+                                            Expira em: {{ chamada.data_expiracao|date:"d/m/Y H:i" }}
+                                        </p>
+                                        
+                                        <h6 class="fw-bold mt-3">Alunos que registraram presença:</h6>
+                                        <ul class="list-group">
+                                            {% for presenca in chamada.presencas.all %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>
+                                                        <strong>{{ presenca.discente.first_name|default:presenca.discente.username }}</strong> 
+                                                        (RGM: {{ presenca.discente.rgm|default:"N/A" }})
+                                                    </span>
+                                                    <span class="text-muted small">{{ presenca.data_registro|date:"H:i:s" }}</span>
+                                                </li>
+                                            {% empty %}
+                                                <li class="list-group-item text-muted small text-center py-2">
+                                                    Nenhum aluno registrou presença com este token ainda.
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">Você ainda não abriu nenhuma chamada.</p>
+                {% endif %}
             </div>
         </div>
     </div>

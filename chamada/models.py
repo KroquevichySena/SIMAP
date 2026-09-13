@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
+
 
 class Chamada(models.Model):
     """Modelo usado para gerar
@@ -15,6 +17,11 @@ class Chamada(models.Model):
     token_chamada = models.CharField(max_length=6, unique=True)
     data_criacao = models.DateTimeField("Data de Criação", auto_now_add=True)
     data_expiracao = models.DateTimeField("Data de Expiração")
+    limite_uso = models.PositiveSmallIntegerField(
+        "Limite de uso do token",
+        default=1,
+        help_text="Quantidade máxima de alunos que podem confirmar presença com este token.",
+    )
 
     class Meta:
         verbose_name = "chamada"
@@ -23,6 +30,19 @@ class Chamada(models.Model):
 
     def __str__(self):
         return f"Chamada {self.token_chamada} - Turma: {self.turma.nome}"
+
+    @property
+    def esta_expirada(self):
+        return timezone.now() > self.data_expiracao
+
+    @property
+    def vagas_esgotadas(self):
+        return self.presencas.count() >= self.limite_uso
+
+    @property
+    def esta_valida(self):
+        return not self.esta_expirada and not self.vagas_esgotadas
+
 
 class Registro_de_Presenca(models.Model):
     """ Modelo usado para registrar a 
