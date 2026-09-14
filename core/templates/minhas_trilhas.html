@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Minhas Trilhas - SIMAP{% endblock %}
+
+{% block conteudo %}
+    <h2>Minhas Trilhas de Aprendizagem</h2>
+    <p class="text-muted">
+        Você está matriculado em {{ total_turmas }} turma{{ total_turmas|pluralize }}
+        ativa{{ total_turmas|pluralize }}.
+    </p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% if total_atividades %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong>Progresso geral</strong>
+                <span class="text-muted">
+                    {{ total_concluidas }} de {{ total_atividades }} atividades concluídas
+                </span>
+            </div>
+            <div class="progress" role="progressbar"
+                 aria-valuenow="{{ percentual_geral }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" style="width: {{ percentual_geral }}%">
+                    {{ percentual_geral }}%
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% for trilha in trilhas %}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ trilha.titulo }}</strong><br>
+                <small class="text-muted">
+                    {{ trilha.turma }} &middot;
+                    Prof. {{ trilha.turma.docente.get_full_name|default:trilha.turma.docente.username }}
+                </small>
+            </div>
+            <span class="badge {% if trilha.percentual == 100 %}text-bg-success{% else %}text-bg-primary{% endif %}">
+                {{ trilha.total_concluidas }}/{{ trilha.total_visiveis }} concluída{{ trilha.total_concluidas|pluralize }}
+            </span>
+        </div>
+
+        {% if trilha.total_visiveis %}
+        <div class="progress rounded-0" style="height: 6px;" role="progressbar"
+             aria-label="Progresso na trilha {{ trilha.titulo }}"
+             aria-valuenow="{{ trilha.percentual }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar {% if trilha.percentual == 100 %}bg-success{% endif %}"
+                 style="width: {{ trilha.percentual }}%"></div>
+        </div>
+        {% endif %}
+
+        {% if trilha.descricao %}
+        <div class="card-body border-bottom">
+            <p class="mb-0 text-muted">{{ trilha.descricao|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+
+        <div class="card-body">
+            {% if trilha.atividades_visiveis %}
+            <div class="accordion" id="acc{{ trilha.pk }}">
+                {% for atividade in trilha.atividades_visiveis %}
+                <div class="accordion-item">
+                    <h3 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#col{{ atividade.pk }}">
+                            <span class="badge {% if atividade.concluida %}text-bg-success{% else %}text-bg-secondary{% endif %} me-2">
+                                {% if atividade.concluida %}&check;{% else %}{{ atividade.ordem }}{% endif %}
+                            </span>
+                            <span class="flex-grow-1 text-start">{{ atividade.titulo }}</span>
+                            <span class="badge text-bg-info me-2">{{ atividade.get_tipo_display }}</span>
+                            {% if atividade.prazo %}
+                                {% if atividade.prazo_expirado %}
+                                    <span class="badge text-bg-danger">Prazo encerrado</span>
+                                {% else %}
+                                    <span class="badge text-bg-success">
+                                        Até {{ atividade.prazo|date:"d/m H:i" }}
+                                    </span>
+                                {% endif %}
+                            {% endif %}
+                        </button>
+                    </h3>
+                    <div id="col{{ atividade.pk }}" class="accordion-collapse collapse"
+                         data-bs-parent="#acc{{ trilha.pk }}">
+                        <div class="accordion-body">
+                            {# Autoescape do Django protege contra XSS. NUNCA usar |safe aqui. #}
+                            <div class="mb-3">{{ atividade.enunciado|linebreaks }}</div>
+                            <dl class="row small text-muted mb-0">
+                                <dt class="col-sm-3">Tipo</dt>
+                                <dd class="col-sm-9">{{ atividade.get_tipo_display }}</dd>
+                                <dt class="col-sm-3">Prazo</dt>
+                                <dd class="col-sm-9">
+                                    {% if atividade.prazo %}
+                                        {{ atividade.prazo|date:"d/m/Y H:i" }}
+                                    {% else %}
+                                        Sem prazo definido
+                                    {% endif %}
+                                </dd>
+                            </dl>
+
+                            <form method="post"
+                                  action="{% url 'concluir_atividade' atividade.pk %}"
+                                  class="mt-3">
+                                {% csrf_token %}
+                                {% if atividade.concluida %}
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                        Desfazer conclusão
+                                    </button>
+                                    <small class="text-success ms-2">Concluída</small>
+                                {% else %}
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        Marcar como concluída
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">Nenhuma atividade publicada nesta trilha ainda.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info">
+        Nenhuma trilha disponível. Isso pode ocorrer se você ainda não possui
+        matrícula ativa em nenhuma turma ou se o docente ainda não publicou trilhas.
+    </div>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Trilhas - SIMAP{% endblock %}
+
+{% block conteudo %}
+    <h2>Trilhas de Aprendizagem</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <a href="{% url 'criar_trilha' %}" class="btn btn-primary">Nova Trilha</a>
+    <a href="{% url 'listar_atividades' %}" class="btn btn-secondary">Ver Atividades</a>
+
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Ordem</th>
+                <th>Título</th>
+                <th>Turma</th>
+                <th>Atividades</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for trilha in trilhas %}
+            <tr>
+                <td>{{ trilha.ordem }}</td>
+                <td>{{ trilha.titulo }}</td>
+                <td>{{ trilha.turma }}</td>
+                <td>{{ trilha.qtd_atividades }}</td>
+                <td>
+                    {% if trilha.publicada %}
+                        <span class="badge text-bg-success">Publicada</span>
+                    {% else %}
+                        <span class="badge text-bg-warning">Rascunho</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'criar_atividade' %}?trilha={{ trilha.pk }}"
+                       class="btn btn-sm btn-outline-primary">+ Atividade</a>
+                    <a href="{% url 'editar_trilha' trilha.pk %}"
+                       class="btn btn-sm btn-outline-secondary">Editar</a>
+                    <a href="{% url 'excluir_trilha' trilha.pk %}"
+                       class="btn btn-sm btn-outline-danger">Excluir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">Nenhuma trilha cadastrada ainda.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if is_paginated %}
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                </li>
+            {% endif %}
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Atividades - SIMAP{% endblock %}
+
+{% block conteudo %}
+    <h2>Atividades</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <a href="{% url 'criar_atividade' %}" class="btn btn-primary">Nova Atividade</a>
+    <a href="{% url 'listar_trilhas' %}" class="btn btn-secondary">Ver Trilhas</a>
+
+    <form method="get" class="row g-2 align-items-end mt-3 mb-3">
+        <div class="col-md-8">
+            <label for="filtroTrilha" class="form-label">Filtrar por trilha</label>
+            <select name="trilha" id="filtroTrilha" class="form-select">
+                <option value="">Todas as trilhas</option>
+                {% for t in trilhas_disponiveis %}
+                    <option value="{{ t.pk }}"
+                        {% if trilha_selecionada == t.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ t.turma }} - {{ t.titulo }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-outline-secondary">Filtrar</button>
+        </div>
+    </form>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Ordem</th>
+                <th>Título</th>
+                <th>Trilha / Turma</th>
+                <th>Tipo</th>
+                <th>Prazo</th>
+                <th>Concluíram</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for atividade in atividades %}
+            <tr>
+                <td>{{ atividade.ordem }}</td>
+                <td>
+                    {{ atividade.titulo }}
+                    {% if not atividade.publicada %}
+                        <span class="badge text-bg-warning">Rascunho</span>
+                    {% endif %}
+                </td>
+                <td><small>{{ atividade.trilha.titulo }}<br>{{ atividade.trilha.turma }}</small></td>
+                <td><span class="badge text-bg-info">{{ atividade.get_tipo_display }}</span></td>
+                <td>
+                    {% if atividade.prazo %}
+                        <span {% if atividade.prazo_expirado %}class="text-danger"{% endif %}>
+                            {{ atividade.prazo|date:"d/m/Y H:i" }}
+                        </span>
+                    {% else %}
+                        <span class="text-muted">Sem prazo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge text-bg-light">{{ atividade.qtd_concluidas }} aluno{{ atividade.qtd_concluidas|pluralize }}</span>
+                </td>
+                <td>
+                    <a href="{% url 'editar_atividade' atividade.pk %}"
+                       class="btn btn-sm btn-outline-secondary">Editar</a>
+                    <a href="{% url 'excluir_atividade' atividade.pk %}"
+                       class="btn btn-sm btn-outline-danger">Excluir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">Nenhuma atividade cadastrada ainda.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

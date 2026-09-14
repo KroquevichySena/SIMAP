@@ -38,15 +38,15 @@ CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 # APLICAÇÕES
 # ==============================================================================
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "usuarios",  
-    "core",
-    "chamada",
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'core',
+    'usuarios',
+    'turmas',
 ]
 
 MIDDLEWARE = [
@@ -64,14 +64,14 @@ ROOT_URLCONF = "SIMAP.urls"
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
@@ -205,59 +205,18 @@ MESSAGE_TAGS = {
     messages.ERROR: "danger",
 }
 
-# ==============================================================================
-# SEGURANÇA
-# ==============================================================================
-X_FRAME_OPTIONS = "DENY"                 # Anti-clickjacking
-SECURE_CONTENT_TYPE_NOSNIFF = True       # Anti-MIME sniffing
-SECURE_REFERRER_POLICY = "same-origin"
+# Mensagens -> classes do Bootstrap 5.3
+from django.contrib.messages import constants as messages  # noqa: E402
 
-if not DEBUG:
-    SECURE_SSL_REDIRECT = env("SECURE_SSL_REDIRECT")
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = False  # False: necessário para envio via JS/AJAX
-    SECURE_HSTS_SECONDS = 31536000        # 1 ano
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    # O Render entrega HTTPS via proxy reverso; sem isto o Django não detecta
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-# ==============================================================================
-# LOGGING
-# Requisito da Ficha: falhas de API registradas em log sem interromper o sistema.
-# ==============================================================================
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "[{asctime}] {levelname} {name}: {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": env("DJANGO_LOG_LEVEL", default="INFO"),
-            "propagate": False,
-        },
-        # Logger dedicado às integrações externas (Gemini/Mailgun)
-        "simap.integracoes": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": False,
-        },
-    },
+MESSAGE_TAGS = {
+    messages.DEBUG: "secondary",
+    messages.INFO: "info",
+    messages.SUCCESS: "success",
+    messages.WARNING: "warning",
+    messages.ERROR: "danger",
 }
+
+AUTH_USER_MODEL = 'usuarios.Usuario'
+
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = 'dashboard'

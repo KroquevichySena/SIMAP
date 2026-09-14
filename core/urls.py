@@ -2,23 +2,28 @@ from django.urls import path
 
 from . import views
 
-app_name = "core"
+# IMPORTANTE: sem app_name, para manter o padrão de 'turmas.urls'
 
 urlpatterns = [
-    path("", views.DashboardRedirectView.as_view(), name="dashboard"),
+    path("", views.DashboardView.as_view(), name="dashboard"),
 
-    # --- Área do Docente: Trilhas ---
-    path("docente/trilhas/", views.TrilhaListView.as_view(), name="trilha_list"),
-    path("docente/trilhas/nova/", views.TrilhaCreateView.as_view(), name="trilha_create"),
-    path("docente/trilhas/<int:pk>/editar/", views.TrilhaUpdateView.as_view(), name="trilha_update"),
-    path("docente/trilhas/<int:pk>/excluir/", views.TrilhaDeleteView.as_view(), name="trilha_delete"),
+    # --- Trilhas (docente) ---
+    path("trilhas/", views.TrilhaListView.as_view(), name="listar_trilhas"),
+    path("trilhas/nova/", views.TrilhaCreateView.as_view(), name="criar_trilha"),
+    path("trilhas/<int:pk>/editar/", views.TrilhaUpdateView.as_view(), name="editar_trilha"),
+    path("trilhas/<int:pk>/excluir/", views.TrilhaDeleteView.as_view(), name="excluir_trilha"),
 
-    # --- Área do Docente: Atividades ---
-    path("docente/atividades/", views.AtividadeListView.as_view(), name="atividade_list"),
-    path("docente/atividades/nova/", views.AtividadeCreateView.as_view(), name="atividade_create"),
-    path("docente/atividades/<int:pk>/editar/", views.AtividadeUpdateView.as_view(), name="atividade_update"),
-    path("docente/atividades/<int:pk>/excluir/", views.AtividadeDeleteView.as_view(), name="atividade_delete"),
+    # --- Atividades (docente) ---
+    path("atividades/", views.AtividadeListView.as_view(), name="listar_atividades"),
+    path("atividades/nova/", views.AtividadeCreateView.as_view(), name="criar_atividade"),
+    path("atividades/<int:pk>/editar/", views.AtividadeUpdateView.as_view(), name="editar_atividade"),
+    path("atividades/<int:pk>/excluir/", views.AtividadeDeleteView.as_view(), name="excluir_atividade"),
 
-    # --- Área do Discente ---
+    # --- Discente ---
     path("minhas-trilhas/", views.MinhasTrilhasListView.as_view(), name="minhas_trilhas"),
+    path(
+        "atividades/<int:pk>/concluir/",
+        views.ConcluirAtividadeView.as_view(),
+        name="concluir_atividade",
+    ),
 ]
