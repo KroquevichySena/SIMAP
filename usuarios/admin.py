@@ -1,31 +1,21 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.forms import AdminPasswordChangeForm
+from django.contrib.auth.admin import UserAdmin
 
-from.models import Usuario
+from .models import Usuario
+
 
 @admin.register(Usuario)
-class UsuarioAdmin(BaseUserAdmin):
-    """Admin adaptado para a realidade do model atual (herdeiro do AbstractUser)."""
+class UsuarioAdmin(UserAdmin):
+    """Admin do Usuario customizado — estende os fieldsets padrão do Django
+    com os campos próprios do SIMAP (perfil, rgm), em vez de redeclarar tudo."""
 
-    change_password_form = AdminPasswordChangeForm
-    ordering = ["first_name"]
-    list_display = ["first_name", "email", "perfil", "is_active", "date_joined"]
-    list_filter = ["perfil", "is_active", "is_staff"]
-    search_fields = ["first_name", "email", "rgm"]
+    list_display = ("username", "first_name", "last_name", "email", "perfil", "is_active", "is_staff")
+    list_filter = ("perfil", "is_staff", "is_superuser", "is_active")
+    search_fields = ("username", "first_name", "last_name", "email", "rgm")
 
-    fieldsets = (
-        (None, {"fields": ("username", "password")}), # Username retornado pois o AbstractUser exige
-        ("Dados pessoais", {"fields": ("first_name", "last_name", "email", "rgm")}),
-        ("Perfil e permissões", {
-            "fields": ("perfil", "is_active", "is_staff", "is_superuser", "groups", "user_permissions")
-        }),
-        ("Datas", {"fields": ("last_login", "date_joined")}),
+    fieldsets = UserAdmin.fieldsets + (
+        ("SIMAP", {"fields": ("perfil", "rgm")}),
     )
-
-    add_fieldsets = (
-        (None, {
-            "classes": ("wide",),
-            "fields": ("username", "email", "first_name", "perfil", "password1", "password2"),
-        }),
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ("SIMAP", {"fields": ("perfil", "rgm")}),
     )

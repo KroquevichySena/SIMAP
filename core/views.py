@@ -8,17 +8,18 @@ Padrão de segurança adotado:
 """
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Prefetch, Q
-from django.shortcuts import redirect
+from django.db.models import Count, Prefetch
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
+from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView, View
+
+from turmas.models import Matricula
 
 from .forms import AtividadeForm, TrilhaAprendizagemForm
 from .mixins import DiscenteRequiredMixin, DocenteRequiredMixin
 from .models import (
-    MATRICULA_ATIVA,
     Atividade,
-    Matricula,
+    ConclusaoAtividade,
     TrilhaAprendizagem,
 )
 
@@ -103,7 +104,6 @@ class TrilhaDeleteView(DocenteRequiredMixin, DeleteView):
         return super().form_valid(form)
 
 
-
 # ÁREA DO DOCENTE — CRUD de Atividades
 
 class AtividadeListView(DocenteRequiredMixin, ListView):
@@ -116,6 +116,7 @@ class AtividadeListView(DocenteRequiredMixin, ListView):
         qs = (
             Atividade.objects.filter(trilha__turma__docente=self.request.user)
             .select_related("trilha", "trilha__turma")
+            .annotate(qtd_concluidas=Count("conclusoes", distinct=True))
             .order_by("trilha__turma__nome", "trilha__ordem", "ordem", "id")
         )
         # Filtro opcional por trilha (validado dentro do escopo do docente)
@@ -192,7 +193,6 @@ class AtividadeDeleteView(DocenteRequiredMixin, DeleteView):
         return super().form_valid(form)
 
 
-
 # ÁREA DO DISCENTE — visualização das trilhas das turmas em que está matriculado
 
 class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
@@ -210,7 +210,7 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
 
         # Subconjunto de turmas em que o aluno está efetivamente matriculado
         turmas_do_aluno = Matricula.objects.filter(
-            discente=usuario, status=MATRICULA_ATIVA, turma__ativa=True
+            discente=usuario, status='ATIVA', turma__ativa=True
         ).values_list("turma_id", flat=True)
 
         # Prefetch traz somente atividades publicadas, já ordenadas
@@ -233,7 +233,69 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx["total_turmas"] = (
             Matricula.objects.filter(
-                discente=self.request.user, status=MATRICULA_ATIVA, turma__ativa=True
+                discente=self.request.user, status='ATIVA', turma__ativa=True
             ).count()
         )
+
+        # PROGRESSO: uma única consulta para todas as conclusões do aluno,
+        # depois cruzada em memória com as atividades já carregadas (sem N+1).
+        concluidas = set(
+            ConclusaoAtividade.objects.filter(
+                discente=self.request.user
+            ).values_list("atividade_id", flat=True)
+        )
+
+        total_geral = 0
+        concluidas_geral = 0
+        for trilha in ctx["trilhas"]:
+            visiveis = trilha.atividades_visiveis
+            for atividade in visiveis:
+                atividade.concluida = atividade.pk in concluidas
+
+            trilha.total_visiveis = len(visiveis)
+            trilha.total_concluidas = sum(1 for a in visiveis if a.concluida)
+            trilha.percentual = (
+                round(100 * trilha.total_concluidas / trilha.total_visiveis)
+                if trilha.total_visiveis
+                else 0
+            )
+            total_geral += trilha.total_visiveis
+            concluidas_geral += trilha.total_concluidas
+
+        ctx["total_atividades"] = total_geral
+        ctx["total_concluidas"] = concluidas_geral
+        ctx["percentual_geral"] = (
+            round(100 * concluidas_geral / total_geral) if total_geral else 0
+        )
         return ctx
+
+
+class ConcluirAtividadeView(DiscenteRequiredMixin, View):
+    """
+    Marca / desmarca uma atividade como concluída pelo discente logado.
+    Aceita apenas POST (ação com efeito colateral exige CSRF + método seguro).
+    """
+
+    def post(self, request, pk, *args, **kwargs):
+        # ANTI-IDOR: a atividade precisa estar publicada, em trilha publicada,
+        # de uma turma ativa onde o aluno tenha matrícula ativa.
+        atividade = get_object_or_404(
+            Atividade.objects.filter(
+                publicada=True,
+                trilha__publicada=True,
+                trilha__turma__ativa=True,
+                trilha__turma__matricula__discente=request.user,
+                trilha__turma__matricula__status='ATIVA',
+            ),
+            pk=pk,
+        )
+
+        conclusao, criada = ConclusaoAtividade.objects.get_or_create(
+            atividade=atividade, discente=request.user
+        )
+        if criada:
+            messages.success(request, f"Atividade “{atividade.titulo}” concluída.")
+        else:
+            conclusao.delete()
+            messages.info(request, f"Conclusão de “{atividade.titulo}” desfeita.")
+        return redirect("core:minhas_trilhas")

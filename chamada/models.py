@@ -8,7 +8,7 @@ class Chamada(models.Model):
       chamadas dentro do Simap"""
 
     turma = models.ForeignKey(
-        "core.Turma",
+        "turmas.Turma",
         on_delete=models.CASCADE,
         related_name="chamadas",
         verbose_name="Turma",

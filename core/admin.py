@@ -1,29 +1,6 @@
 from django.contrib import admin
 
-from .models import Atividade, Matricula, TrilhaAprendizagem, Turma
-
-
-class MatriculaInline(admin.TabularInline):
-    model = Matricula
-    extra = 1
-    autocomplete_fields = ["discente"]
-
-
-@admin.register(Turma)
-class TurmaAdmin(admin.ModelAdmin):
-    list_display = ["nome", "periodo", "docente", "ativa", "data_criacao"]
-    list_filter = ["ativa", "periodo"]
-    search_fields = ["nome", "periodo", "docente__first_name"]
-    autocomplete_fields = ["docente"]
-    inlines = [MatriculaInline]
-
-
-@admin.register(Matricula)
-class MatriculaAdmin(admin.ModelAdmin):
-    list_display = ["discente", "turma", "status", "data_matricula"]
-    list_filter = ["status", "turma"]
-    search_fields = ["discente__first_name", "discente__email"]
-    autocomplete_fields = ["discente", "turma"]
+from .models import Atividade, ConclusaoAtividade, TrilhaAprendizagem
 
 
 class AtividadeInline(admin.TabularInline):
@@ -35,7 +12,7 @@ class AtividadeInline(admin.TabularInline):
 class TrilhaAdmin(admin.ModelAdmin):
     list_display = ["titulo", "turma", "ordem", "publicada", "total_atividades"]
     list_filter = ["publicada", "turma"]
-    search_fields = ["titulo"]
+    search_fields = ["titulo", "turma__nome"]
     inlines = [AtividadeInline]
 
 
@@ -43,4 +20,11 @@ class TrilhaAdmin(admin.ModelAdmin):
 class AtividadeAdmin(admin.ModelAdmin):
     list_display = ["titulo", "trilha", "tipo", "ordem", "prazo", "publicada"]
     list_filter = ["tipo", "publicada", "trilha__turma"]
-    search_fields = ["titulo"]
+    search_fields = ["titulo", "trilha__titulo"]
+
+
+@admin.register(ConclusaoAtividade)
+class ConclusaoAtividadeAdmin(admin.ModelAdmin):
+    list_display = ("discente", "atividade", "data_conclusao")
+    list_filter = ("atividade__trilha__turma",)
+    search_fields = ("discente__username", "atividade__titulo")

@@ -1,28 +1,16 @@
 """
 Entidades do núcleo acadêmico do SIMAP:
-Turma, Matrícula, Trilha de Aprendizagem e Atividade.
+Trilha de Aprendizagem, Atividade e Conclusão de Atividade.
+
+Turma e Matrícula vivem no app `turmas`.
 """
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
 
-
-# CHOICES (smallint)
-
-MATRICULA_ATIVA = 1
-MATRICULA_TRANCADA = 2
-MATRICULA_CANCELADA = 3
-
-STATUS_MATRICULA_CHOICES = (
-    (MATRICULA_ATIVA, "Ativa"),
-    (MATRICULA_TRANCADA, "Trancada"),
-    (MATRICULA_CANCELADA, "Cancelada"),
-)
-
-TIPO_TEORICA = 1
-TIPO_PRATICA = 2  # Reservado para versões futuras (exige sandbox)
+TIPO_TEORICA = 'TEORICA'
+TIPO_PRATICA = 'PRATICA'  # Reservado para versões futuras (exige sandbox)
 
 TIPO_ATIVIDADE_CHOICES = (
     (TIPO_TEORICA, "Teórica"),
@@ -30,94 +18,11 @@ TIPO_ATIVIDADE_CHOICES = (
 )
 
 
-class Turma(models.Model):
-    """Turma criada e gerenciada por um Docente."""
-
-    docente = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,  # Impede exclusão de docente com turmas vinculadas
-        related_name="turmas_ministradas",
-        limit_choices_to={"perfil": 'DOCENTE', "is_active": True},
-        verbose_name="Docente responsável",
-    )
-
-    nome = models.CharField("Nome da turma", max_length=100)
-    periodo = models.CharField("Período", max_length=20, help_text="Ex.: 2026/1")
-    ativa = models.BooleanField("Turma ativa", default=True, db_index=True)
-    data_criacao = models.DateTimeField("Criada em", auto_now_add=True)
-
-    class Meta:
-        verbose_name = "Turma"
-        verbose_name_plural = "Turmas"
-        ordering = ["-periodo", "nome"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["docente", "nome", "periodo"],
-                name="uq_turma_docente_nome_periodo",
-            ),
-        ]
-
-    def __str__(self):
-        return f"{self.nome} - {self.periodo}"
-
-    def clean(self):
-        """Garante integridade semântica: o responsável deve ter perfil Docente."""
-        super().clean()
-        if self.docente_id and self.docente.perfil != 'DOCENTE':
-            raise ValidationError({"docente": "O responsável pela turma deve ter perfil Docente."})
-
-
-class Matricula(models.Model):
-    """Vínculo entre um Discente e uma Turma."""
-
-    turma = models.ForeignKey(
-        Turma, on_delete=models.CASCADE, related_name="matriculas", verbose_name="Turma"
-    )
-
-    discente = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="matriculas",
-        limit_choices_to={"perfil": 'DISCENTE', "is_active": True},
-        verbose_name="Discente",
-    )
-
-    status = models.SmallIntegerField(
-        "Situação", choices=STATUS_MATRICULA_CHOICES, default=MATRICULA_ATIVA, db_index=True
-    )
-    data_matricula = models.DateField("Data da matrícula", default=timezone.localdate)
-
-    class Meta:
-        verbose_name = "Matrícula"
-        verbose_name_plural = "Matrículas"
-        # 1ª ALTERAÇÃO: mudou de 'discente__nome' para 'discente__first_name'
-        ordering = ["turma", "discente__first_name"] 
-        constraints = [
-            # Impede matrícula duplicada do mesmo aluno na mesma turma
-            models.UniqueConstraint(
-                fields=["turma", "discente"], name="uq_matricula_turma_discente"
-            ),
-        ]
-        indexes = [
-            # Otimiza a consulta principal do discente (turmas ativas dele)
-            models.Index(fields=["discente", "status"], name="idx_matricula_discente_status"),
-        ]
-
-    def __str__(self):
-        # 2ª ALTERAÇÃO: mudou de 'self.discente.nome' para 'self.discente.first_name'
-        return f"{self.discente.first_name} em {self.turma}"
-
-    def clean(self):
-        super().clean()
-        if self.discente_id and self.discente.perfil != 'DISCENTE':
-            raise ValidationError({"discente": "Somente usuários com perfil Discente podem ser matriculados."})
-
-
 class TrilhaAprendizagem(models.Model):
     """Agrupamento ordenado de atividades dentro de uma turma."""
 
     turma = models.ForeignKey(
-        Turma, on_delete=models.CASCADE, related_name="trilhas", verbose_name="Turma"
+        "turmas.Turma", on_delete=models.CASCADE, related_name="trilhas", verbose_name="Turma"
     )
 
     titulo = models.CharField("Título da trilha", max_length=150)
@@ -167,8 +72,8 @@ class Atividade(models.Model):
 
     titulo = models.CharField("Título", max_length=150)
     enunciado = models.TextField("Enunciado")
-    tipo = models.SmallIntegerField(
-        "Tipo", choices=TIPO_ATIVIDADE_CHOICES, default=TIPO_TEORICA
+    tipo = models.CharField(
+        "Tipo", max_length=10, choices=TIPO_ATIVIDADE_CHOICES, default=TIPO_TEORICA
     )
     ordem = models.SmallIntegerField("Ordem de exibição", default=1)
     prazo = models.DateTimeField(
@@ -200,3 +105,41 @@ class Atividade(models.Model):
     @property
     def prazo_expirado(self) -> bool:
         return bool(self.prazo and self.prazo < timezone.now())
+
+
+class ConclusaoAtividade(models.Model):
+    """
+    Registro de progresso do discente: uma linha por atividade concluída.
+    """
+
+    atividade = models.ForeignKey(
+        Atividade,
+        on_delete=models.CASCADE,
+        related_name="conclusoes",
+        verbose_name="Atividade",
+    )
+    discente = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="atividades_concluidas",
+        limit_choices_to={"perfil": 'DISCENTE', "is_active": True},
+        verbose_name="Discente",
+    )
+    data_conclusao = models.DateTimeField("Concluída em", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Conclusão de atividade"
+        verbose_name_plural = "Conclusões de atividades"
+        ordering = ["-data_conclusao"]
+        constraints = [
+            # Impede contagem duplicada de progresso para a mesma atividade
+            models.UniqueConstraint(
+                fields=["atividade", "discente"], name="uq_conclusao_atividade_discente"
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["discente", "atividade"], name="idx_conclusao_disc_ativ"),
+        ]
+
+    def __str__(self):
+        return f"{self.discente} - {self.atividade}"

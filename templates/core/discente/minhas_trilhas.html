@@ -4,7 +4,17 @@
 
 {% block content %}
 <h2 class="mb-1">Minhas Trilhas de Aprendizagem</h2>
-<p class="text-muted mb-4">Você está matriculado em {{ total_turmas }} turma(s) ativa(s).</p>
+<p class="text-muted mb-2">Você está matriculado em {{ total_turmas }} turma(s) ativa(s).</p>
+
+<div class="mb-4">
+    <div class="d-flex justify-content-between small text-muted mb-1">
+        <span>Progresso geral</span>
+        <span>{{ total_concluidas }}/{{ total_atividades }} atividades ({{ percentual_geral }}%)</span>
+    </div>
+    <div class="progress" role="progressbar" style="height: 8px;">
+        <div class="progress-bar bg-success" style="width: {{ percentual_geral }}%"></div>
+    </div>
+</div>
 
 {% for trilha in trilhas %}
 <div class="card mb-3 shadow-sm">
@@ -16,13 +26,28 @@
         {% if trilha.descricao %}
             <p>{{ trilha.descricao }}</p>
         {% endif %}
+
+        <div class="progress mb-3" role="progressbar" style="height: 6px;">
+            <div class="progress-bar" style="width: {{ trilha.percentual }}%"></div>
+        </div>
+
         <ul class="list-group">
             {% for atividade in trilha.atividades_visiveis %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ atividade.titulo }}
-                    {% if atividade.prazo %}
-                        <span class="badge bg-warning text-dark">Prazo: {{ atividade.prazo }}</span>
-                    {% endif %}
+                    <span>
+                        {{ atividade.titulo }}
+                        {% if atividade.prazo %}
+                            <span class="badge bg-warning text-dark ms-1">Prazo: {{ atividade.prazo }}</span>
+                        {% endif %}
+                    </span>
+                    <form method="POST" action="{% url 'core:atividade_concluir' atividade.pk %}">
+                        {% csrf_token %}
+                        {% if atividade.concluida %}
+                            <button type="submit" class="btn btn-sm btn-success">✓ Concluída</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Marcar como concluída</button>
+                        {% endif %}
+                    </form>
                 </li>
             {% empty %}
                 <li class="list-group-item text-muted">Nenhuma atividade publicada ainda.</li>

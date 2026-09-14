@@ -11,9 +11,9 @@ class Usuario(AbstractUser):
     perfil = models.CharField(max_length=10, choices=PERFIL_CHOICES)
 
     @property
-    def is_docente(self):
+    def is_docente(self) -> bool:
         return self.perfil == 'DOCENTE'
 
     @property
-    def is_discente(self):
+    def is_discente(self) -> bool:
         return self.perfil == 'DISCENTE'
