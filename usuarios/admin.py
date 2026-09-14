@@ -1,5 +1,17 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+
 from .models import Usuario
 
-admin.site.register(Usuario, UserAdmin)
+
+@admin.register(Usuario)
+class UsuarioAdmin(UserAdmin):
+    list_display = ("username", "first_name", "last_name", "perfil", "is_staff")
+    list_filter = ("perfil", "is_staff", "is_superuser", "is_active")
+
+    fieldsets = UserAdmin.fieldsets + (
+        ("SIMAP", {"fields": ("perfil", "rgm")}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ("SIMAP", {"fields": ("perfil", "rgm")}),
+    )
