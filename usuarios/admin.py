@@ -6,8 +6,12 @@ from .models import Usuario
 
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
-    list_display = ("username", "first_name", "last_name", "perfil", "is_staff")
+    """Admin do Usuario customizado — estende os fieldsets padrão do Django
+    com os campos próprios do SIMAP (perfil, rgm), em vez de redeclarar tudo."""
+
+    list_display = ("username", "first_name", "last_name", "email", "perfil", "is_active", "is_staff")
     list_filter = ("perfil", "is_staff", "is_superuser", "is_active")
+    search_fields = ("username", "first_name", "last_name", "email", "rgm")
 
     fieldsets = UserAdmin.fieldsets + (
         ("SIMAP", {"fields": ("perfil", "rgm")}),

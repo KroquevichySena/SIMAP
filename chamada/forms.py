@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from .models import Chamada, Registro_de_Presenca
-from core.models import Matricula, Turma
+from turmas.models import Matricula, Turma
 
 Usuario = get_user_model()
 

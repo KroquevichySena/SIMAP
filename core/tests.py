@@ -91,24 +91,24 @@ class ControleDeAcessoTests(BaseSIMAPTestCase):
 
     def test_discente_recebe_403_em_rota_de_docente(self):
         self.client.login(username="aluno.carla", password=SENHA)
-        self.assertEqual(self.client.get(reverse("listar_trilhas")).status_code, 403)
-        self.assertEqual(self.client.get(reverse("criar_trilha")).status_code, 403)
-        self.assertEqual(self.client.get(reverse("listar_atividades")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("core:trilha_list")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("core:trilha_create")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("core:atividade_list")).status_code, 403)
 
     def test_docente_recebe_403_em_rota_de_discente(self):
         self.client.login(username="prof.ana", password=SENHA)
-        self.assertEqual(self.client.get(reverse("minhas_trilhas")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("core:minhas_trilhas")).status_code, 403)
 
     def test_usuario_anonimo_nao_acessa_trilhas(self):
-        self.assertEqual(self.client.get(reverse("listar_trilhas")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("core:trilha_list")).status_code, 403)
 
     def test_dashboard_encaminha_conforme_perfil(self):
         self.client.login(username="prof.ana", password=SENHA)
-        self.assertRedirects(self.client.get(reverse("dashboard")), reverse("listar_trilhas"))
+        self.assertRedirects(self.client.get(reverse("core:dashboard")), reverse("core:trilha_list"))
         self.client.logout()
 
         self.client.login(username="aluno.carla", password=SENHA)
-        self.assertRedirects(self.client.get(reverse("dashboard")), reverse("minhas_trilhas"))
+        self.assertRedirects(self.client.get(reverse("core:dashboard")), reverse("core:minhas_trilhas"))
 
 
 class TrilhaDocenteTests(BaseSIMAPTestCase):
@@ -117,7 +117,7 @@ class TrilhaDocenteTests(BaseSIMAPTestCase):
 
     def test_docente_cria_trilha_vinculada_a_sua_turma(self):
         resposta = self.client.post(
-            reverse("criar_trilha"),
+            reverse("core:trilha_create"),
             {
                 "turma": self.turma.pk,
                 "titulo": "Módulo 2 - Condicionais",
@@ -126,7 +126,7 @@ class TrilhaDocenteTests(BaseSIMAPTestCase):
                 "publicada": "on",
             },
         )
-        self.assertRedirects(resposta, reverse("listar_trilhas"))
+        self.assertRedirects(resposta, reverse("core:trilha_list"))
         self.assertTrue(
             TrilhaAprendizagem.objects.filter(titulo="Módulo 2 - Condicionais").exists()
         )
@@ -134,7 +134,7 @@ class TrilhaDocenteTests(BaseSIMAPTestCase):
     def test_docente_nao_cria_trilha_em_turma_de_outro_docente(self):
         """Anti-tampering: POST forjado com turma alheia deve ser rejeitado."""
         resposta = self.client.post(
-            reverse("criar_trilha"),
+            reverse("core:trilha_create"),
             {
                 "turma": self.turma_alheia.pk,
                 "titulo": "Trilha invasora",
@@ -152,7 +152,7 @@ class TrilhaDocenteTests(BaseSIMAPTestCase):
         TrilhaAprendizagem.objects.create(
             turma=self.turma_alheia, titulo="Trilha do Bruno", ordem=1
         )
-        resposta = self.client.get(reverse("listar_trilhas"))
+        resposta = self.client.get(reverse("core:trilha_list"))
         titulos = [t.titulo for t in resposta.context["trilhas"]]
         self.assertIn("Módulo 1 - Variáveis", titulos)
         self.assertNotIn("Trilha do Bruno", titulos)
@@ -162,7 +162,7 @@ class TrilhaDocenteTests(BaseSIMAPTestCase):
         trilha_alheia = TrilhaAprendizagem.objects.create(
             turma=self.turma_alheia, titulo="Trilha do Bruno", ordem=1
         )
-        resposta = self.client.get(reverse("editar_trilha", args=[trilha_alheia.pk]))
+        resposta = self.client.get(reverse("core:trilha_update", args=[trilha_alheia.pk]))
         self.assertEqual(resposta.status_code, 404)
 
 
@@ -173,7 +173,7 @@ class AtividadeDocenteTests(BaseSIMAPTestCase):
     def test_docente_publica_atividade_com_titulo_enunciado_tipo_e_prazo(self):
         prazo = timezone.now() + timedelta(days=7)
         resposta = self.client.post(
-            reverse("criar_atividade"),
+            reverse("core:atividade_create"),
             {
                 "trilha": self.trilha.pk,
                 "titulo": "Lista de exercícios 1",
@@ -184,7 +184,7 @@ class AtividadeDocenteTests(BaseSIMAPTestCase):
                 "publicada": "on",
             },
         )
-        self.assertRedirects(resposta, reverse("listar_atividades"))
+        self.assertRedirects(resposta, reverse("core:atividade_list"))
         nova = Atividade.objects.get(titulo="Lista de exercícios 1")
         self.assertEqual(nova.trilha, self.trilha)
         self.assertEqual(nova.tipo, "TEORICA")
@@ -192,7 +192,7 @@ class AtividadeDocenteTests(BaseSIMAPTestCase):
 
     def test_prazo_no_passado_e_rejeitado_na_criacao(self):
         resposta = self.client.post(
-            reverse("criar_atividade"),
+            reverse("core:atividade_create"),
             {
                 "trilha": self.trilha.pk,
                 "titulo": "Atividade com prazo vencido",
@@ -213,7 +213,7 @@ class AtividadeDocenteTests(BaseSIMAPTestCase):
             turma=self.turma_alheia, titulo="Trilha do Bruno", ordem=1
         )
         self.client.post(
-            reverse("criar_atividade"),
+            reverse("core:atividade_create"),
             {
                 "trilha": trilha_alheia.pk,
                 "titulo": "Atividade invasora",
@@ -234,7 +234,7 @@ class MinhasTrilhasDiscenteTests(BaseSIMAPTestCase):
         TrilhaAprendizagem.objects.create(
             turma=self.turma_alheia, titulo="Trilha não matriculada", publicada=True
         )
-        resposta = self.client.get(reverse("minhas_trilhas"))
+        resposta = self.client.get(reverse("core:minhas_trilhas"))
         titulos = [t.titulo for t in resposta.context["trilhas"]]
         self.assertIn("Módulo 1 - Variáveis", titulos)
         self.assertNotIn("Trilha não matriculada", titulos)
@@ -243,7 +243,7 @@ class MinhasTrilhasDiscenteTests(BaseSIMAPTestCase):
         TrilhaAprendizagem.objects.create(
             turma=self.turma, titulo="Rascunho do docente", publicada=False
         )
-        resposta = self.client.get(reverse("minhas_trilhas"))
+        resposta = self.client.get(reverse("core:minhas_trilhas"))
         titulos = [t.titulo for t in resposta.context["trilhas"]]
         self.assertNotIn("Rascunho do docente", titulos)
 
@@ -251,7 +251,7 @@ class MinhasTrilhasDiscenteTests(BaseSIMAPTestCase):
         Atividade.objects.create(
             trilha=self.trilha, titulo="Atividade rascunho", enunciado="...", publicada=False
         )
-        resposta = self.client.get(reverse("minhas_trilhas"))
+        resposta = self.client.get(reverse("core:minhas_trilhas"))
         trilha = resposta.context["trilhas"][0]
         titulos = [a.titulo for a in trilha.atividades_visiveis]
         self.assertNotIn("Atividade rascunho", titulos)
@@ -263,7 +263,7 @@ class MinhasTrilhasDiscenteTests(BaseSIMAPTestCase):
         Atividade.objects.create(
             trilha=self.trilha, titulo="Segunda", enunciado="...", ordem=2, publicada=True
         )
-        resposta = self.client.get(reverse("minhas_trilhas"))
+        resposta = self.client.get(reverse("core:minhas_trilhas"))
         trilha = resposta.context["trilhas"][0]
         ordens = [a.ordem for a in trilha.atividades_visiveis]
         self.assertEqual(ordens, sorted(ordens))
@@ -275,12 +275,12 @@ class MinhasTrilhasDiscenteTests(BaseSIMAPTestCase):
     def test_discente_sem_matricula_ativa_nao_ve_trilhas(self):
         self.client.logout()
         self.client.login(username="aluno.diego", password=SENHA)
-        resposta = self.client.get(reverse("minhas_trilhas"))
+        resposta = self.client.get(reverse("core:minhas_trilhas"))
         self.assertEqual(len(resposta.context["trilhas"]), 0)
 
     def test_matricula_inativa_nao_da_acesso_as_trilhas(self):
         Matricula.objects.filter(discente=self.discente).update(status="INATIVA")
-        resposta = self.client.get(reverse("minhas_trilhas"))
+        resposta = self.client.get(reverse("core:minhas_trilhas"))
         self.assertEqual(len(resposta.context["trilhas"]), 0)
 
 
@@ -289,11 +289,11 @@ class ProgressoAtividadeTests(BaseSIMAPTestCase):
 
     def setUp(self):
         self.client.login(username="aluno.carla", password=SENHA)
-        self.url = reverse("concluir_atividade", args=[self.atividade.pk])
+        self.url = reverse("core:atividade_concluir", args=[self.atividade.pk])
 
     def test_discente_marca_atividade_como_concluida(self):
         resposta = self.client.post(self.url)
-        self.assertRedirects(resposta, reverse("minhas_trilhas"))
+        self.assertRedirects(resposta, reverse("core:minhas_trilhas"))
         self.assertTrue(
             ConclusaoAtividade.objects.filter(
                 atividade=self.atividade, discente=self.discente
@@ -324,7 +324,7 @@ class ProgressoAtividadeTests(BaseSIMAPTestCase):
         )
         self.client.post(self.url)
 
-        resposta = self.client.get(reverse("minhas_trilhas"))
+        resposta = self.client.get(reverse("core:minhas_trilhas"))
         trilha = resposta.context["trilhas"][0]
         self.assertEqual(trilha.total_visiveis, 2)
         self.assertEqual(trilha.total_concluidas, 1)
@@ -355,5 +355,5 @@ class ProgressoAtividadeTests(BaseSIMAPTestCase):
 
         self.client.logout()
         self.client.login(username="aluno.diego", password=SENHA)
-        resposta = self.client.get(reverse("minhas_trilhas"))
+        resposta = self.client.get(reverse("core:minhas_trilhas"))
         self.assertEqual(resposta.context["total_concluidas"], 0)
