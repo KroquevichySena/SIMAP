@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Minhas Trilhas - SIMAP{% endblock %}
+
+{% block content %}
+<h2 class="mb-1">Minhas Trilhas de Aprendizagem</h2>
+<p class="text-muted mb-4">Você está matriculado em {{ total_turmas }} turma(s) ativa(s).</p>
+
+{% for trilha in trilhas %}
+<div class="card mb-3 shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>{{ trilha.titulo }}</strong>
+        <span class="text-muted">{{ trilha.turma }}</span>
+    </div>
+    <div class="card-body">
+        {% if trilha.descricao %}
+            <p>{{ trilha.descricao }}</p>
+        {% endif %}
+        <ul class="list-group">
+            {% for atividade in trilha.atividades_visiveis %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ atividade.titulo }}
+                    {% if atividade.prazo %}
+                        <span class="badge bg-warning text-dark">Prazo: {{ atividade.prazo }}</span>
+                    {% endif %}
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted">Nenhuma atividade publicada ainda.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% empty %}
+<p class="text-muted">Nenhuma trilha disponível no momento.</p>
+{% endfor %}
+{% endblock %}

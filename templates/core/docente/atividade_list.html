@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Atividades - SIMAP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Atividades</h2>
+    <a href="{% url 'core:atividade_create' %}{% if trilha_selecionada %}?trilha={{ trilha_selecionada }}{% endif %}" class="btn btn-success">+ Nova Atividade</a>
+</div>
+
+<form method="GET" class="row g-2 mb-3">
+    <div class="col-auto">
+        <select name="trilha" class="form-select" onchange="this.form.submit()">
+            <option value="">Todas as trilhas</option>
+            {% for trilha in trilhas_disponiveis %}
+                <option value="{{ trilha.id }}" {% if trilha_selecionada == trilha.id|stringformat:"s" %}selected{% endif %}>
+                    {{ trilha.turma }} - {{ trilha.titulo }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Trilha</th>
+                <th>Tipo</th>
+                <th>Ordem</th>
+                <th>Prazo</th>
+                <th>Publicada</th>
+                <th class="text-end">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for atividade in atividades %}
+            <tr>
+                <td>{{ atividade.titulo }}</td>
+                <td>{{ atividade.trilha.titulo }}</td>
+                <td>{{ atividade.get_tipo_display }}</td>
+                <td>{{ atividade.ordem }}</td>
+                <td>{{ atividade.prazo|default:"—" }}</td>
+                <td>
+                    {% if atividade.publicada %}
+                        <span class="badge bg-success">Sim</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Não</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <a href="{% url 'core:atividade_update' atividade.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                    <a href="{% url 'core:atividade_delete' atividade.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-muted">Nenhuma atividade cadastrada ainda.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
