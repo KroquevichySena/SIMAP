@@ -44,6 +44,17 @@ Para garantir que não teremos conflitos de versão e mantermos o alinhamento co
    ```
    *Acesse `http://127.0.0.1:8000/` no navegador para confirmar que está rodando.*
 
+## 🤖 Como Configurar a IA (Google Gemini)
+
+Para que as funcionalidades de inteligência artificial do projeto funcionem perfeitamente na sua máquina local, é obrigatório configurar a chave de acesso da API:
+
+1. Acesse o [Google AI Studio](https://aistudio.google.com/) e gere a sua API Key gratuita.
+2. Na raiz do projeto, localize o arquivo chamado `.env.example`.   
+3. Faça uma cópia deste arquivo e renomeie a cópia para `.env` (apenas `.env`, sem nome antes do ponto).
+4. Abra o novo arquivo `.env` e adicione a sua chave colando o código gerado, ficando neste formato:
+   ```env
+   GEMINI_API_KEY=sua_chave_gerada_aqui
+
 ---
 
 ## 🛠️ O que foi feito no Setup Inicial
@@ -63,27 +74,70 @@ A infraestrutura básica do projeto foi configurada com sucesso, englobando:
 Abaixo está a estrutura de diretórios atualizada do sistema:
 
 ```text
-SIMAP/
-├── core/                  # App principal (Regras de negócio, views e models)
-│   ├── migrations/        # Histórico de alterações do banco de dados
-│   ├── __init__.py
-│   ├── admin.py           # Configurações do painel administrativo
-│   ├── apps.py            # Configuração do próprio app
-│   ├── models.py          # Tabelas do banco de dados (Docente, Discente, Turma, etc.)
-│   ├── tests.py           # Testes unitários (cobertura mínima de 50%)
-│   └── views.py           # Funções que controlam o que aparece na tela
-├── SIMAP/                 # Configurações globais do projeto
-│   ├── __pycache__/
-│   ├── __init__.py
-│   ├── asgi.py            # Entry-point para servidores assíncronos
-│   ├── settings.py        # Configurações centrais (Apps, banco, fuso horário)
-│   ├── urls.py            # Roteamento global de URLs
-│   └── wsgi.py            # Entry-point para servidores WSGI (Gunicorn)
-├── venv/                  # Ambiente virtual (Ignorado no Git)
-├── .gitignore             # Regras de exclusão do repositório
-├── db.sqlite3             # Banco de dados local de desenvolvimento (Ignorado)
-├── LICENSE                # Arquivo de licença 
-├── manage.py              # Gerenciador de comandos do Django
-├── README.md              # Este arquivo de documentação
-└── requirements.txt       # Lista oficial de dependências e bibliotecas
+📁 SIMAP/
+├── ✋ chamada/               # App de validação de presença
+│   ├── 📂 migrations/        
+│   ├── 🐍 __init__.py        
+│   ├── 🛠️ admin.py           
+│   ├── ⚙️ apps.py            
+│   ├── 📝 forms.py           
+│   ├── 📊 models.py          
+│   ├── 🧪 tests.py           
+│   ├── 🔗 urls.py            
+│   └── 👁️ views.py           
+│
+├── 🧠 core/                  # App principal com lógicas centrais e mixins
+│   ├── 📂 management/        
+│   ├── 📂 migrations/        
+│   ├── 🐍 __init__.py        
+│   ├── 🛠️ admin.py           
+│   ├── ⚙️ apps.py            
+│   ├── 📝 forms.py           
+│   ├── 🧩 mixins.py          
+│   ├── 📊 models.py          
+│   ├── 🧪 tests.py           
+│   ├── 🔗 urls.py            
+│   └── 👁️ views.py           
+│
+├── ⚙️ SIMAP/                 # Configurações globais do projeto
+│   ├── 🐍 __init__.py        
+│   ├── 🚀 asgi.py            
+│   ├── 🛠️ settings.py        
+│   ├── 🔗 urls.py            
+│   └── 🚀 wsgi.py            
+│
+├── 🎨 templates/             # Diretório global de interfaces HTML
+│   ├── 📂 chamada/           
+│   ├── 📂 core/              
+│   ├── 📂 partials/          
+│   ├── 📂 teste/             
+│   └── 🌐 base.html          
+│
+├── 🏫 turmas/                # App de gestão de turmas com templates isolados
+│   ├── 📂 migrations/        
+│   ├── 📂 templates/         
+│   ├── 🐍 __init__.py        
+│   ├── 🛠️ admin.py           
+│   ├── ⚙️ apps.py            
+│   ├── 📝 forms.py           
+│   ├── 📊 models.py          
+│   ├── 🧪 tests.py           
+│   ├── 🔗 urls.py            
+│   └── 👁️ views.py           
+│
+├── 👥 usuarios/              # App de gestão de perfis
+│   ├── 📂 migrations/        
+│   ├── 🐍 __init__.py        
+│   ├── 🛠️ admin.py           
+│   ├── ⚙️ apps.py            
+│   ├── 📊 models.py          
+│   ├── 🧪 tests.py           
+│   └── 👁️ views.py           
+│
+├── 🔒 .env.example           # Exemplo de configuração de ambiente
+├── 🚫 .gitignore             # Arquivo de exclusão do Git
+├── ⚖️ LICENSE                # Licença do projeto
+├── 🎮 manage.py              # Gestor principal do Django
+├── 📖 README.md              # Documentação central
+└── 📦 requirements.txt       # Dependências do projeto
 ```
