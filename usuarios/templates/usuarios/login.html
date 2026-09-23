@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Entrar - SIMAP{% endblock %}
+
+{% block content %}
+    <h2>Entrar no SIMAP</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Entrar</button>
+    </form>
+{% endblock %}

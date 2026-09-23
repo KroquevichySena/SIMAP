@@ -97,7 +97,7 @@ DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 # ==============================================================================
 AUTH_USER_MODEL = "usuarios.Usuario"
 
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = "core:dashboard"
 LOGOUT_REDIRECT_URL = "login"
 
