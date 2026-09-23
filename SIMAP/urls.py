@@ -6,6 +6,9 @@ urlpatterns = [
 
     path('chamada/', include('chamada.urls')),
     path('turmas/', include('turmas.urls')),
+    path('entregas/', include('entregas.urls')),
 
     path('', include('core.urls')),
+
+
 ]

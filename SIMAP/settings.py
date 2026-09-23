@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "turmas",
     "core",
     "chamada",
+    "entregas",
 ]
 
 MIDDLEWARE = [

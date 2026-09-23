@@ -33,22 +33,40 @@
 
         <ul class="list-group">
             {% for atividade in trilha.atividades_visiveis %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>
-                        {{ atividade.titulo }}
-                        {% if atividade.prazo %}
-                            <span class="badge bg-warning text-dark ms-1">Prazo: {{ atividade.prazo }}</span>
-                        {% endif %}
-                    </span>
-                    <form method="POST" action="{% url 'core:atividade_concluir' atividade.pk %}">
-                        {% csrf_token %}
-                        {% if atividade.concluida %}
-                            <button type="submit" class="btn btn-sm btn-success">✓ Concluída</button>
-                        {% else %}
-                            <button type="submit" class="btn btn-sm btn-outline-secondary">Marcar como concluída</button>
-                        {% endif %}
-                    </form>
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>
+                            {{ atividade.titulo }}
+                            {% if atividade.prazo %}
+                                <span class="badge bg-warning text-dark ms-1">Prazo: {{ atividade.prazo }}</span>
+                            {% endif %}
+                        </span>
+                        <form method="POST" action="{% url 'core:atividade_concluir' atividade.pk %}">
+                            {% csrf_token %}
+                            {% if atividade.concluida %}
+                                <button type="submit" class="btn btn-sm btn-success">✓ Concluída</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Marcar como concluída</button>
+                            {% endif %}
+                        </form>
+                    </div>
+
+                    {% if atividade.submissao %}
+                        <div class="mt-2 small">
+                            <span class="badge bg-info text-dark">Resposta enviada</span>
+                            {% if atividade.submissao.avaliacao_oficial %}
+                                <span class="badge bg-success">Nota: {{ atividade.submissao.avaliacao_oficial.nota }}</span>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <form method="POST" action="{% url 'entregas:submeter' atividade.pk %}" class="mt-2">
+                            {% csrf_token %}
+                            <textarea name="resposta_texto" class="form-control form-control-sm mb-2" rows="3" placeholder="Escreva sua resposta ou código aqui..." required></textarea>
+                            <button type="submit" class="btn btn-sm btn-primary">Submeter</button>
+                        </form>
+                    {% endif %}
                 </li>
+
             {% empty %}
                 <li class="list-group-item text-muted">Nenhuma atividade publicada ainda.</li>
             {% endfor %}
