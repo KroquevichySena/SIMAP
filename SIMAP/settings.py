@@ -176,20 +176,15 @@ GEMINI_API_URL = env(
 
 MAILGUN_API_KEY = env("MAILGUN_API_KEY", default="")
 MAILGUN_DOMAIN = env("MAILGUN_DOMAIN", default="")
+MAILGUN_API_URL = env("MAILGUN_API_URL", default="https://api.mailgun.net")
 
 # ==============================================================================
 # E-MAIL
 # ==============================================================================
-if DEBUG:
-    # Em desenvolvimento, e-mails aparecem no terminal (não envia de verdade)
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = env("EMAIL_HOST", default="smtp.mailgun.org")
-    EMAIL_PORT = env.int("EMAIL_PORT", default=587)
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
-    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
 
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="nao-responda@simap.local")
 
