@@ -12,6 +12,7 @@ class MailgunEmailBackend(BaseEmailBackend):
     """Envia e-mails do Django pela API HTTP do Mailgun."""
 
     def send_messages(self, email_messages):
+        print(f"TENTANDO ENVIAR {len(email_messages)} EMAIL(S)")
         if not email_messages:
             return 0
 

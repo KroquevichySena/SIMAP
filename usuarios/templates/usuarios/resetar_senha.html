@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova senha - SIMAP{% endblock %}
+
+{% block content %}
+    {% if validlink %}
+        <h2>Defina sua nova senha</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Redefinir senha</button>
+        </form>
+    {% else %}
+        <h2>Link inválido</h2>
+        <p>Este link de redefinição de senha é inválido, possivelmente porque já foi utilizado. Solicite uma nova recuperação.</p>
+        <a href="{% url 'password_reset' %}" class="btn btn-secondary">Solicitar novo link</a>
+    {% endif %}
+{% endblock %}
