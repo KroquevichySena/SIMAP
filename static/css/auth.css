@@ -1,0 +1,24 @@
+:root{
+
+    --bs-primary: #0759fa;
+}
+
+body {
+  background-color: #f4f6fb;
+}
+
+.brand-underline {
+  width: 48px;
+  height: 3px;
+  background-color: var(--bs-primary);
+  border-radius: 2px;
+}
+
+.auth-card {
+  border-radius: 16px;
+}
+
+.auth-card .form-control:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(47, 111, 237, 0.15);
+}

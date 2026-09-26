@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-
-from .models import Usuario
+from .models import AceiteTermos, Usuario
 
 
 @admin.register(Usuario)
@@ -19,3 +18,19 @@ class UsuarioAdmin(UserAdmin):
     add_fieldsets = UserAdmin.add_fieldsets + (
         ("SIMAP", {"fields": ("perfil", "rgm")}),
     )
+
+
+@admin.register(AceiteTermos)
+class AceiteTermosAdmin(admin.ModelAdmin):
+    list_display = ("usuario", "versao", "aceito_em", "ip_address")
+    list_filter = ("versao",)
+    search_fields = ("usuario__username", "usuario__email")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -130,6 +130,11 @@ SESSION_COOKIE_AGE = 60 * 60 * 8
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True  # Renova a sessão a cada interação
 
+# Versão vigente dos Termos de Uso e Política de Privacidade.
+# Fonte única: alimenta o texto exibido em usuarios/termos_de_uso.html e a
+# checagem de reaceite em usuarios/forms.py (LoginComTermosForm).
+TERMOS_DE_USO_VERSAO = "1.1"
+
 # ==============================================================================
 # INTERNACIONALIZAÇÃO
 # ==============================================================================

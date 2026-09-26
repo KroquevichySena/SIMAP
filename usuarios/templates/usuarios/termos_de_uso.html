@@ -1,0 +1,444 @@
+{% extends base_layout %}
+
+{% block title %}Termos de Uso - SIMAP{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-4 shadow-sm p-4 p-md-5" style="max-width: 760px; width: 100%;">
+
+    <h1 class="fw-bold mb-1">Termos de Uso e Política de Privacidade</h1>
+    <p class="text-muted small mb-4">SIMAP — Sistema de Monitoramento da Aprendizagem em Programação · versão 1.1</p>
+
+    <nav class="mb-5">
+        <ul class="list-unstyled small mb-0">
+            <li><a href="#clausula-1">1. Das Partes e Definições</a></li>
+            <li><a href="#clausula-2">2. Do Objeto, da Natureza do Serviço e do Aceite</a></li>
+            <li><a href="#clausula-3">3. Descrição Funcional dos Serviços</a></li>
+            <li><a href="#clausula-4">4. Do Tratamento de Dados Pessoais</a></li>
+            <li><a href="#clausula-5">5. Da Segurança da Informação</a></li>
+            <li><a href="#clausula-6">6. Da Propriedade Intelectual</a></li>
+            <li><a href="#clausula-7">7. Da Conduta do Usuário</a></li>
+            <li><a href="#clausula-8">8. Da Limitação de Responsabilidade</a></li>
+            <li><a href="#clausula-9">9. Das Alterações, da Vigência e da Rescisão</a></li>
+            <li><a href="#clausula-10">10. Da Legislação Aplicável, do Foro e de Disposições Gerais</a></li>
+            <li><a href="#clausula-11">11. Do Código-Fonte Aberto e do Alcance destes Termos</a></li>
+            <li><a href="#clausula-12">12. Do Termo de Aceite (Declaração de Consentimento)</a></li>
+        </ul>
+    </nav>
+
+    <h2 id="clausula-1" class="h4 fw-bold mt-5 pt-2 border-top">1. Das Partes e Definições</h2>
+
+    <p>O presente instrumento (doravante "Termos") disciplina o acesso e a utilização do SIMAP —
+        Sistema de Monitoramento da Aprendizagem em Programação (doravante "Plataforma"), sistema web
+        voltado ao acompanhamento pedagógico de disciplinas introdutórias de programação.</p>
+
+    <p><strong>1.1. Do Controlador.</strong> Para os efeitos da Lei nº 13.709, de 14 de agosto de 2018
+        (Lei Geral de Proteção de Dados Pessoais — "LGPD"), a Plataforma é idealizada, desenvolvida e
+        mantida pela <strong>Equipe SIMAP</strong>, no âmbito de Trabalho de Conclusão de Curso do
+        Bacharelado em Engenharia de Software da Universidade de Mogi das Cruzes ("UMC"). Sempre que
+        estes Termos se referirem ao "Controlador", a referência deve ser entendida como feita à Equipe
+        SIMAP, na qualidade de responsável pelas decisões referentes ao tratamento de dados pessoais na
+        Plataforma. A composição nominal da Equipe SIMAP consta da nota de rodapé ao final deste
+        documento.</p>
+
+    <p>Quando a Plataforma vier a ser efetivamente empregada em turmas vinculadas à UMC, a instituição
+        atuará como corresponsável operacional no que se refere aos dados de matrícula e desempenho
+        acadêmico gerados nesse contexto, sem prejuízo da responsabilidade do Controlador como
+        mantenedor técnico do sistema.</p>
+
+    <p>Nesta fase do projeto, a Equipe SIMAP atua na qualidade de pessoas físicas, não havendo pessoa
+        jurídica constituída para a exploração da Plataforma. Sobrevindo eventual constituição de pessoa
+        jurídica, a qualificação do Controlador será atualizada nos termos da Cláusula 9.1.</p>
+
+    <p><strong>1.2. Do Encarregado pelo Tratamento de Dados Pessoais.</strong> Nos termos do art. 41 da
+        LGPD, até que seja formalmente designado encarregado específico, as solicitações relativas a
+        esta Política e ao exercício dos direitos previstos na Cláusula 4.7 devem ser dirigidas à Equipe
+        SIMAP pelos seguintes canais institucionais: <strong>11231102733@alunos.umc.br</strong> (Kaiky),
+        <strong>11231102525@alunos.umc.br</strong> (Carlos) e
+        <strong>11231103599@alunos.umc.br</strong> (Vinicius).</p>
+
+    <h3 class="h6 fw-semibold mt-4">1.3. Definições</h3>
+    <ol type="a">
+        <li><strong>Docente:</strong> usuário com perfil DOCENTE, responsável pela criação de turmas,
+            trilhas de aprendizagem e atividades, pela geração de tokens de presença e pela validação
+            das análises de IA antes de sua disponibilização ao Discente;</li>
+        <li><strong>Discente:</strong> usuário com perfil DISCENTE, matriculado em uma ou mais turmas,
+            ao qual compete o registro de presença, a submissão de atividades e o acompanhamento de seu
+            próprio desempenho;</li>
+        <li><strong>Turma:</strong> agrupamento de Discentes sob responsabilidade de um Docente,
+            identificado por nome e período letivo;</li>
+        <li><strong>Trilha de Aprendizagem:</strong> sequência ordenada de Atividades publicadas pelo
+            Docente no âmbito de uma Turma;</li>
+        <li><strong>Atividade:</strong> tarefa teórica publicada pelo Docente, contendo enunciado e,
+            quando aplicável, prazo de entrega;</li>
+        <li><strong>Submissão:</strong> resposta em texto enviada pelo Discente em resposta a uma
+            Atividade;</li>
+        <li><strong>Análise Assistida por IA:</strong> parecer textual gerado por serviço de
+            inteligência artificial de terceiro a partir do conteúdo de uma Submissão, de caráter
+            estritamente consultivo;</li>
+        <li><strong>Avaliação Oficial:</strong> nota e feedback atribuídos, com exclusividade, pelo
+            Docente a uma Submissão;</li>
+        <li><strong>Token de Presença:</strong> código alfanumérico temporário, gerado pelo Docente, com
+            prazo de validade e limite de uso definidos, destinado à confirmação de presença pelo
+            Discente.</li>
+    </ol>
+
+    <h2 id="clausula-2" class="h4 fw-bold mt-5 pt-2 border-top">2. Do Objeto, da Natureza do Serviço e do Aceite</h2>
+
+    <p><strong>2.1.</strong> O SIMAP reúne, em uma única aplicação, a gestão de turmas e matrículas, a
+        organização de conteúdo em trilhas de aprendizado, o registro de presença por token temporário,
+        a submissão de atividades com análise automatizada de caráter consultivo, a comunicação entre
+        Docente e Discente e painéis de acompanhamento de desempenho próprios de cada perfil de
+        usuário.</p>
+
+    <p><strong>2.2.</strong> O acesso à Plataforma não é público: pressupõe vínculo com uma Turma
+        cadastrada por um Docente, seja na condição de Docente responsável, seja na de Discente
+        matriculado.</p>
+
+    <p><strong>2.3.</strong> O uso efetivo da Plataforma, assim como a criação de conta de acesso,
+        pressupõe a leitura e a aceitação integral destes Termos, cuja declaração formal, incluindo o
+        consentimento específico de que trata a Cláusula 4.3.1, está reproduzida na Cláusula 12 (Termo
+        de Aceite). O usuário que não concordar com qualquer disposição aqui prevista deve abster-se de
+        utilizar a Plataforma e comunicar o fato ao Docente responsável por sua Turma ou ao canal
+        indicado na Cláusula 1.2.</p>
+
+    <p><strong>2.4.</strong> O cadastro pressupõe capacidade civil, nos termos dos arts. 3º e 4º do
+        Código Civil (Lei nº 10.406/2002). Caso a instituição de ensino admita o cadastro de usuário
+        menor de 18 anos, este deverá ocorrer sob assistência ou representação do responsável legal, sem
+        prejuízo do tratamento de dados nos termos do art. 14 da LGPD.</p>
+
+    <h2 id="clausula-3" class="h4 fw-bold mt-5 pt-2 border-top">3. Descrição Funcional dos Serviços</h2>
+
+    <h3 class="h6 fw-semibold mt-4">3.1. Autenticação e perfis de acesso</h3>
+    <p>O acesso é individual e nominal, mediante credenciais próprias, com controle segmentado por
+        perfil: funcionalidades exclusivas de um perfil permanecem bloqueadas ao outro no nível de
+        aplicação. As senhas são armazenadas exclusivamente sob a forma de hash com salt (PBKDF2), em
+        nenhuma hipótese em texto plano, e as ações relevantes praticadas pelos usuários são registradas
+        em log de auditoria.</p>
+
+    <h3 class="h6 fw-semibold mt-4">3.2. Gestão de turmas e matrículas</h3>
+    <p>Ao Docente compete criar e administrar Turmas e nelas matricular Discentes, com status ativo ou
+        inativo. Ao Discente é facultado o acesso somente às Trilhas e Atividades das Turmas em que
+        estiver efetivamente matriculado.</p>
+
+    <h3 class="h6 fw-semibold mt-4">3.3. Trilhas de aprendizado e atividades</h3>
+    <p>O conteúdo pedagógico organiza-se em Trilhas de Aprendizagem, compostas por Atividades teóricas
+        com enunciado, ordem de exibição e prazo opcional de entrega. Não integra esta primeira versão
+        do sistema a execução ou a correção automática de código submetido: atividades do tipo "prática"
+        permanecem reservadas a versões futuras, condicionadas à disponibilização de ambiente de
+        execução isolado (sandbox).</p>
+
+    <h3 class="h6 fw-semibold mt-4">3.4. Registro de presença por token temporário</h3>
+    <p>Para cada aula, o Docente gera um Token de Presença com prazo de validade e limite de uso
+        previamente definidos. O Discente confirma sua presença informando o token dentro do período de
+        validade, sendo recusadas as tentativas realizadas com token expirado ou já esgotado. A cada
+        Turma e a cada aula corresponde um único registro de presença por Discente.</p>
+
+    <h3 class="h6 fw-semibold mt-4">3.5. Submissão de atividades e Análise Assistida por Inteligência Artificial</h3>
+    <p>Recebida a Submissão do Discente, esta pode ser processada por serviço externo de inteligência
+        artificial (Google Gemini), que retorna parecer com resumo e pontos de atenção sobre o conteúdo
+        enviado. <strong>Esse parecer tem natureza estritamente consultiva e formativa: não equivale a
+        nota, não substitui a avaliação do Docente, e somente é disponibilizado ao Discente após
+        validação expressa do Docente responsável pela Turma.</strong> A nota e o feedback pedagógico
+        definitivos são, em qualquer caso, atribuídos por decisão humana do Docente, mediante a
+        Avaliação Oficial. A eventual indisponibilidade do serviço de inteligência artificial é
+        registrada em log, sem prejuízo do regular registro da Submissão.</p>
+
+    <h3 class="h6 fw-semibold mt-4">3.6. Comunicação e notificações</h3>
+    <p>O Docente pode publicar avisos e comentários vinculados às atividades da Turma. Notificações de
+        caráter transacional, tais como a disponibilização de novo feedback ou o alerta ao Docente sobre
+        Discentes em situação de atenção, podem ser enviadas por correio eletrônico por meio do serviço
+        externo Mailgun, sempre com finalidade estritamente pedagógica e operacional, nunca
+        publicitária.</p>
+
+    <h3 class="h6 fw-semibold mt-4">3.7. Painéis de desempenho</h3>
+    <p>O Docente dispõe de indicadores agregados da Turma quanto a frequência, entregas e progressão,
+        com destaque para os Discentes em situação de atenção conforme limite configurável. Ao Discente
+        é facultado exclusivamente o painel individual restrito a seus próprios dados, sem acesso a
+        informações de desempenho de terceiros.</p>
+
+    <h3 class="h6 fw-semibold mt-4">3.8. Limites desta primeira versão</h3>
+    <p>Não integram esta versão do SIMAP a execução ou a correção automática de código submetido, o
+        aplicativo móvel nativo, a integração com sistemas acadêmicos institucionais, tampouco o suporte
+        a múltiplas linguagens de programação além do texto livre da Submissão. A ausência dessas
+        funcionalidades corresponde a escopo deliberadamente delimitado pelo Controlador, não
+        configurando vício de serviço.</p>
+
+    <h2 id="clausula-4" class="h4 fw-bold mt-5 pt-2 border-top">4. Do Tratamento de Dados Pessoais</h2>
+
+    <p>O Controlador trata dados pessoais dos usuários da Plataforma nos limites e para as finalidades
+        descritos nesta Cláusula, em conformidade com a LGPD e, no que couber, com a Lei nº 12.965/2014
+        (Marco Civil da Internet).</p>
+
+    <h3 class="h6 fw-semibold mt-4">4.1. Dados pessoais tratados</h3>
+    <p>São tratadas, exclusivamente, as seguintes categorias de dados, coletadas diretamente do titular
+        ou geradas pelo uso da Plataforma:</p>
+    <ol type="a">
+        <li>dados de identificação e conta: nome, nome de usuário, e-mail, senha (armazenada como hash),
+            Registro Geral de Matrícula (RGM) e perfil de acesso;</li>
+        <li>dados de vínculo acadêmico: turma, período letivo e status de matrícula;</li>
+        <li>dados de progresso pedagógico: atividades e trilhas concluídas e respectivas datas;</li>
+        <li>dados de frequência: registros de presença associados a token e horário de confirmação;</li>
+        <li>dados de submissão e avaliação: o texto enviado pelo Discente em cada atividade, o parecer
+            da Análise Assistida por IA e a nota e o feedback atribuídos pelo Docente;</li>
+        <li>dados de uso e segurança: registros de auditoria de ações relevantes e metadados técnicos de
+            acesso indispensáveis à segurança da sessão.</li>
+    </ol>
+
+    <p><strong>4.1.1.</strong> Não são tratados, em qualquer hipótese, dados pessoais sensíveis na
+        acepção do art. 5º, II, da LGPD (origem racial ou étnica, convicção religiosa, opinião política,
+        dado referente a saúde ou a vida sexual, dado genético ou biométrico). Recomenda-se ao usuário
+        que não insira dados dessa natureza em campos de texto livre da Plataforma, a exemplo do corpo
+        de uma Submissão.</p>
+
+    <h3 class="h6 fw-semibold mt-4">4.2. Finalidades</h3>
+    <p>Os dados referidos na Cláusula 4.1 são tratados unicamente para: (i) viabilizar o acesso
+        autenticado e segmentado por perfil; (ii) administrar turmas, matrículas e trilhas de
+        aprendizado; (iii) registrar e comprovar a presença em aula; (iv) processar submissões, gerar
+        análises consultivas de apoio pedagógico e registrar avaliações; (v) viabilizar a comunicação
+        entre Docente e Discente; (vi) produzir indicadores agregados que permitam ao Docente
+        identificar precocemente dificuldades de aprendizagem; e (vii) preservar registros de auditoria
+        e de segurança da Plataforma.</p>
+
+    <h3 class="h6 fw-semibold mt-4">4.3. Bases legais</h3>
+    <p>O tratamento necessário ao funcionamento pedagógico da Plataforma — autenticação, gestão de
+        turmas e matrículas, registro de frequência, comunicação entre Docente e Discente e manutenção
+        de registros de auditoria — funda-se na execução de procedimento preliminar e na execução do
+        serviço solicitado pelo titular (art. 7º, V, da LGPD) e no legítimo interesse do Controlador em
+        viabilizar o acompanhamento pedagógico a que a Plataforma se destina (art. 7º, IX, da LGPD),
+        observados os princípios da necessidade, da finalidade e da não discriminação.</p>
+
+    <p><strong>4.3.1.</strong> O envio do conteúdo da Submissão ao serviço de inteligência artificial
+        referido na Cláusula 3.5, por envolver transferência internacional de dados (Cláusula 4.5),
+        depende de consentimento específico, destacado e informado do titular, nos termos dos arts. 7º,
+        I, e 33, VIII, da LGPD. Esse consentimento é colhido de forma expressa e individualizada na
+        Cláusula 12 (Termo de Aceite), podendo ser revogado a qualquer tempo mediante solicitação ao
+        canal indicado na Cláusula 1.2, sem prejuízo da licitude do tratamento realizado anteriormente à
+        revogação.</p>
+
+    <h3 class="h6 fw-semibold mt-4">4.4. Compartilhamento com terceiros</h3>
+    <p>Para viabilizar funcionalidades específicas, o Controlador compartilha dados pessoais, na estrita
+        medida necessária, com os seguintes operadores:</p>
+    <ol type="a">
+        <li><strong>Google Gemini API (Google LLC):</strong> recebe o texto da Submissão para a geração
+            do parecer consultivo referido na Cláusula 3.5, sem acesso a dados de identificação direta
+            do Discente além do estritamente necessário à análise textual da atividade;</li>
+        <li><strong>Mailgun (serviço de e-mail transacional):</strong> recebe o endereço de e-mail do
+            usuário e o conteúdo estritamente necessário ao envio das notificações referidas na Cláusula
+            3.6.</li>
+    </ol>
+    <p>O Controlador não vende, não aluga e não compartilha dados pessoais com terceiros para fins de
+        publicidade, prospecção comercial ou qualquer finalidade estranha às previstas nestes Termos.</p>
+
+    <h3 class="h6 fw-semibold mt-4">4.5. Transferência internacional de dados</h3>
+    <p>Os operadores referidos na Cláusula 4.4 processam dados em infraestrutura situada, ao menos em
+        parte, fora do território nacional. Quanto ao envio de conteúdo ao Google Gemini, a
+        transferência encontra fundamento no consentimento específico do titular, colhido na Cláusula
+        12. Quanto ao envio de dados ao Mailgun, restrito a notificações operacionais sem conteúdo
+        sensível, a transferência funda-se no legítimo interesse do Controlador (art. 7º, IX, c/c art.
+        33, VIII, da LGPD). O Controlador compromete-se a adotar, conforme a Plataforma evolua para uso
+        em maior escala, os instrumentos contratuais adicionais previstos no art. 33 da LGPD perante os
+        referidos operadores.</p>
+
+    <h3 class="h6 fw-semibold mt-4">4.6. Retenção e eliminação</h3>
+    <p>Os dados de desempenho, frequência e submissão são conservados enquanto perdurar o vínculo do
+        usuário com a respectiva Turma. Extinto esse vínculo — encerramento do período letivo ou
+        inativação da matrícula —, os dados poderão ser retidos pelo prazo adicional estritamente
+        necessário ao cumprimento de obrigação legal ou regulatória de guarda de registro acadêmico,
+        findo o qual serão eliminados ou anonimizados, ressalvado pedido de exclusão antecipada na forma
+        da Cláusula 4.7.</p>
+
+    <h3 class="h6 fw-semibold mt-4">4.7. Direitos do titular</h3>
+    <p>Nos termos do art. 18 da LGPD, o titular pode, mediante solicitação ao canal indicado na Cláusula
+        1.2, exercer gratuitamente e a qualquer tempo os direitos de:</p>
+    <ol type="a">
+        <li>confirmação da existência de tratamento e acesso aos dados;</li>
+        <li>correção de dados incompletos, inexatos ou desatualizados;</li>
+        <li>anonimização, bloqueio ou eliminação de dados desnecessários, excessivos ou tratados em
+            desconformidade com a LGPD;</li>
+        <li>portabilidade dos dados a outro fornecedor de serviço, mediante requisição expressa;</li>
+        <li>eliminação dos dados tratados com base em consentimento, ressalvadas as hipóteses legais de
+            guarda obrigatória;</li>
+        <li>informação sobre as entidades com as quais o Controlador realizou uso compartilhado de
+            dados;</li>
+        <li>revogação do consentimento outorgado na Cláusula 12, sem efeito retroativo sobre o
+            tratamento já realizado;</li>
+        <li>revisão de decisões tomadas unicamente com base em tratamento automatizado que afetem seus
+            interesses, direito que, no âmbito do SIMAP, não encontra aplicação prática quanto à nota
+            final, sempre atribuída por decisão humana do Docente.</li>
+    </ol>
+    <p>O acesso aos dados de desempenho permanece restrito ao próprio titular e ao Docente responsável
+        pela respectiva Turma, em observância ao princípio da minimização (art. 6º, III, da LGPD).</p>
+
+    <h2 id="clausula-5" class="h4 fw-bold mt-5 pt-2 border-top">5. Da Segurança da Informação</h2>
+
+    <p>Em atenção ao art. 46 da LGPD, o Controlador adota as seguintes medidas técnicas e
+        administrativas:</p>
+    <ol type="a">
+        <li>comunicação exclusivamente por HTTPS em ambiente de produção, com redirecionamento forçado e
+            cabeçalhos de segurança (HSTS e proteção contra MIME sniffing e clickjacking);</li>
+        <li>armazenamento de senhas por função de hash com salt (PBKDF2);</li>
+        <li>proteção contra falsificação de solicitação entre sites (CSRF) por meio de token em
+            formulários;</li>
+        <li>prevenção de injeção de SQL por meio de consultas parametrizadas do ORM, vedada a construção
+            de comandos por concatenação direta de entrada do usuário;</li>
+        <li>mitigação de execução de scripts entre sites (XSS) por meio de escape automático do conteúdo
+            inserido por usuários, inclusive o texto livre das Submissões;</li>
+        <li>controle de acesso por perfil de usuário, com bloqueio de funcionalidades exclusivas do
+            Docente a usuários com perfil Discente;</li>
+        <li>registro de ações relevantes em log de auditoria;</li>
+        <li>manutenção de chaves de API e demais credenciais fora do controle de versão do
+            código-fonte.</li>
+    </ol>
+    <p>O Controlador emprega os melhores esforços técnicos e organizacionais ao seu alcance para a
+        proteção dos dados pessoais tratados, ressalvado que nenhum sistema de informação está imune a
+        falhas ou incidentes de segurança. Constatado incidente que possa acarretar risco ou dano
+        relevante aos titulares, o Controlador comunicará o fato à Autoridade Nacional de Proteção de
+        Dados (ANPD) e aos titulares afetados, nos termos do art. 48 da LGPD.</p>
+
+    <h2 id="clausula-6" class="h4 fw-bold mt-5 pt-2 border-top">6. Da Propriedade Intelectual</h2>
+
+    <p><strong>6.1.</strong> O conteúdo pedagógico publicado por um Docente — trilhas, enunciados de
+        atividades e avisos — permanece de titularidade do respectivo Docente e/ou da instituição de
+        ensino a que estiver vinculado, sendo licenciado ao Controlador unicamente para fins de exibição
+        aos Discentes matriculados na Turma correspondente.</p>
+
+    <p><strong>6.2.</strong> O texto submetido pelo Discente em uma Submissão permanece de sua
+        titularidade autoral. Ao submetê-lo, o Discente outorga ao Controlador licença não exclusiva,
+        limitada e gratuita para processar esse conteúdo, inclusive por meio do serviço de inteligência
+        artificial referido na Cláusula 3.5, estritamente para as finalidades pedagógicas destes Termos,
+        vedados o uso comercial e a divulgação pública do conteúdo sem autorização.</p>
+
+    <p><strong>6.3.</strong> A denominação "SIMAP" e os elementos de identidade visual próprios da
+        Plataforma são de titularidade do Controlador, sendo vedadas sua reprodução ou exploração
+        comercial sem autorização expressa. O código-fonte da Plataforma, distintamente, é distribuído
+        sob licença de software livre, nos termos e limites tratados na Cláusula 11.</p>
+
+    <h2 id="clausula-7" class="h4 fw-bold mt-5 pt-2 border-top">7. Da Conduta do Usuário</h2>
+
+    <p>Ao utilizar o SIMAP, o usuário obriga-se a:</p>
+    <ol type="a">
+        <li>manter sob sigilo suas credenciais de acesso, respondendo por toda atividade realizada em
+            sua conta;</li>
+        <li>não utilizar Token de Presença de outro usuário, nem confirmar presença em nome de
+            terceiros;</li>
+        <li>não submeter, como Atividade, conteúdo ilícito, ofensivo ou que viole direito autoral de
+            terceiros;</li>
+        <li>não inserir dados pessoais sensíveis, próprios ou de terceiros, em campos de texto livre da
+            Plataforma;</li>
+        <li>não tentar acessar, por qualquer meio, dados de outros usuários ou funcionalidades
+            exclusivas de perfil diverso do seu;</li>
+        <li>não utilizar a Plataforma para finalidade diversa do acompanhamento pedagógico a que se
+            destina.</li>
+    </ol>
+    <p>O descumprimento destas obrigações autoriza o Controlador a suspender ou cancelar o acesso do
+        usuário infrator, sem prejuízo das medidas legais cabíveis.</p>
+
+    <h2 id="clausula-8" class="h4 fw-bold mt-5 pt-2 border-top">8. Da Limitação de Responsabilidade</h2>
+
+    <p><strong>8.1.</strong> A Análise Assistida por IA é produzida por modelo de linguagem operado por
+        terceiro e pode conter imprecisões, omissões ou interpretações equivocadas quanto ao conteúdo
+        submetido. Trata-se de instrumento de apoio, de caráter estritamente consultivo, que não
+        substitui, em nenhuma hipótese, a mediação pedagógica e o julgamento do Docente, único
+        responsável pela nota e pelo feedback oficial atribuídos a cada Submissão.</p>
+
+    <p><strong>8.2.</strong> As integrações com os serviços externos referidos na Cláusula 4.4 têm
+        caráter consultivo ou complementar. Eventual indisponibilidade, falha ou instabilidade desses
+        serviços é registrada em log e não compromete o funcionamento das demais funcionalidades da
+        Plataforma, inclusive o regular registro da Submissão e da presença.</p>
+
+    <p><strong>8.3.</strong> O Controlador não assegura disponibilidade ininterrupta da Plataforma, que
+        poderá ficar temporariamente indisponível para manutenção, atualização ou em razão de motivo de
+        força maior, sem que disso decorra direito a indenização.</p>
+
+    <h2 id="clausula-9" class="h4 fw-bold mt-5 pt-2 border-top">9. Das Alterações, da Vigência e da Rescisão</h2>
+
+    <p><strong>9.1.</strong> Estes Termos podem ser alterados a qualquer tempo, em razão da evolução
+        funcional da Plataforma ou de modificação legislativa superveniente. A versão vigente é sempre
+        disponibilizada ao usuário, com indicação de data e número, por meio de link permanente no
+        rodapé da Plataforma, recomendando-se sua consulta periódica.</p>
+
+    <p><strong>9.2.</strong> O usuário pode requerer, a qualquer momento, o encerramento de sua conta e
+        a eliminação de seus dados pessoais, observadas as ressalvas da Cláusula 4.6 quanto a obrigações
+        legais de guarda de registro acadêmico.</p>
+
+    <p><strong>9.3.</strong> O Docente responsável pode inativar a matrícula de um Discente, hipótese em
+        que este perde acesso às funcionalidades restritas à Turma correspondente, preservados os dados
+        de desempenho já registrados, nos termos da Cláusula 4.6.</p>
+
+    <h2 id="clausula-10" class="h4 fw-bold mt-5 pt-2 border-top">10. Da Legislação Aplicável, do Foro e de Disposições Gerais</h2>
+
+    <p><strong>10.1.</strong> Estes Termos são regidos pela legislação brasileira, em especial pela Lei
+        nº 13.709/2018 (LGPD), pela Lei nº 12.965/2014 (Marco Civil da Internet) e pela Lei nº
+        10.406/2002 (Código Civil), no que forem aplicáveis.</p>
+
+    <p><strong>10.2.</strong> Fica eleito o foro da Comarca de Mogi das Cruzes, Estado de São Paulo,
+        para dirimir quaisquer controvérsias decorrentes destes Termos, com renúncia a qualquer outro,
+        por mais privilegiado que seja.</p>
+
+    <p><strong>10.3.</strong> A eventual nulidade ou ineficácia de qualquer disposição destes Termos,
+        reconhecida por autoridade competente, não prejudica a validade das demais disposições, que
+        permanecem em pleno vigor.</p>
+
+    <p><strong>10.4.</strong> Dúvidas, solicitações relativas a dados pessoais ou reclamações sobre o
+        funcionamento da Plataforma devem ser dirigidas ao canal indicado na Cláusula 1.2.</p>
+
+    <h2 id="clausula-11" class="h4 fw-bold mt-5 pt-2 border-top">11. Do Código-Fonte Aberto e do Alcance destes Termos</h2>
+
+    <p><strong>11.1.</strong> O código-fonte da Plataforma é disponibilizado publicamente no repositório
+        mantido pelo Controlador, sob Licença MIT, a qual autoriza qualquer pessoa a usar, copiar,
+        modificar, mesclar, publicar, distribuir, sublicenciar e/ou vender cópias do software, desde que
+        mantidos, em todas as cópias ou partes substanciais dele, o aviso de direitos autorais e a nota
+        de licença constantes do respectivo arquivo. Essa permissão restringe-se ao código-fonte e não
+        se estende à denominação "SIMAP" nem aos elementos de identidade visual referidos na Cláusula
+        6.3, que permanecem reservados nos termos ali dispostos.</p>
+
+    <p><strong>11.2.</strong> A Licença MIT isenta os titulares dos direitos autorais do software de
+        qualquer garantia e de responsabilidade por danos decorrentes de seu uso, na forma de sua
+        cláusula "AS IS" ("no estado em que se encontra"). Essa isenção aplica-se a qualquer pessoa,
+        física ou jurídica, que venha a executar cópia própria do código-fonte, independentemente de
+        vínculo com o Controlador.</p>
+
+    <p><strong>11.3. Do alcance destes Termos.</strong> Estes Termos de Uso e esta Política de
+        Privacidade regem, exclusivamente, o acesso e o uso da instância da Plataforma efetivamente
+        operada pelo Controlador. Terceiro que, valendo-se da Licença MIT referida na Cláusula 11.1,
+        instale, hospede ou disponibilize cópia, fork ou versão derivada do código-fonte do SIMAP
+        assume, para todos os fins de direito, a condição de controlador autônomo e exclusivo dos dados
+        pessoais tratados em sua própria instalação, não se comunicando essa responsabilidade ao
+        Controlador definido na Cláusula 1.1, que não exerce ingerência, supervisão ou responsabilidade
+        alguma sobre instalações independentes do código aberto.</p>
+
+    <h2 id="clausula-12" class="h4 fw-bold mt-5 pt-2 border-top">12. Do Termo de Aceite (Declaração de Consentimento)</h2>
+
+    <p>Em cumprimento ao dever de obtenção de consentimento específico e destacado para a transferência
+        internacional de dados descrita na Cláusula 4.5, a declaração de aceite apresentada ao usuário
+        no ato de cadastro ou de primeiro acesso à Plataforma — mediante caixa de marcação própria,
+        distinta do restante do formulário — tem o seguinte teor:</p>
+
+    <blockquote class="border-start border-3 ps-3 py-1 text-muted fst-italic">
+        "Li e compreendi os Termos de Uso e a Política de Privacidade do SIMAP e, ao prosseguir, declaro,
+        para todos os fins de direito: (a) estar ciente das finalidades de tratamento de meus dados
+        pessoais descritas na Cláusula 4; (b) consentir, de forma livre, informada e inequívoca, com o
+        envio do conteúdo de minhas submissões ao serviço de inteligência artificial referido na
+        Cláusula 3.5, inclusive quanto à transferência internacional de dados que essa operação implica;
+        e (c) estar ciente de que posso exercer, a qualquer tempo e sem ônus, os direitos previstos na
+        Cláusula 4.7, inclusive a revogação deste consentimento."
+    </blockquote>
+
+    <hr class="my-4">
+
+    <p class="text-muted small mb-1">
+        Equipe SIMAP: Kaiky Sena Kroquevichy, Carlos Eduardo Lourenço Pereira e Vinicius Freitas
+        Santana, sob orientação do Prof. Alessandro Aparecido da Silva Horas, no âmbito do Trabalho de
+        Conclusão de Curso do Bacharelado em Engenharia de Software da Universidade de Mogi das Cruzes
+        (UMC).
+    </p>
+    <p class="text-muted small">Mogi das Cruzes/SP, 26 de setembro de 2026.</p>
+
+    {% if request.user.is_authenticated %}
+        <a href="{% url 'core:dashboard' %}" class="btn btn-outline-primary mt-3">← Voltar</a>
+    {% else %}
+        <a href="{% url 'login' %}" class="btn btn-outline-primary mt-3">← Voltar para o login</a>
+    {% endif %}
+
+</div>
+{% endblock %}
