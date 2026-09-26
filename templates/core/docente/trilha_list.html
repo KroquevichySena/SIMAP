@@ -27,13 +27,19 @@
                 <td>{{ trilha.turma }}</td>
                 <td>{{ trilha.ordem }}</td>
                 <td>
+                    <div class="d-flex align-items-center gap-3">
                     <a href="{% url 'core:atividade_list' %}?trilha={{ trilha.id }}">
                         {{ trilha.qtd_atividades }}
                     </a>
+
+                    <a href="{% url 'core:atividade_create' %}?trilha={{ trilha.id }}" class="btn btn-sm btn-outline-success">
+                        + Atividade</a>
+                    </div>
                 </td>
                 <td>
                     {% if trilha.publicada %}
                         <span class="badge bg-success">Sim</span>
+                    
                     {% else %}
                         <span class="badge bg-secondary">Não</span>
                     {% endif %}

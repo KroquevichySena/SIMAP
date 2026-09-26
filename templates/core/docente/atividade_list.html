@@ -50,6 +50,7 @@
                     {% endif %}
                 </td>
                 <td class="text-end">
+                    <a href="{% url 'entregas:corrigir' atividade.pk %}" class="btn btn-sm btn-outline-success">Corrigir</a>
                     <a href="{% url 'core:atividade_update' atividade.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
                     <a href="{% url 'core:atividade_delete' atividade.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                 </td>

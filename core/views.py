@@ -13,7 +13,9 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView, View
 
+from entregas.models import Submissao
 from turmas.models import Matricula
+
 
 from .forms import AtividadeForm, TrilhaAprendizagemForm
 from .mixins import DiscenteRequiredMixin, DocenteRequiredMixin
@@ -34,8 +36,6 @@ class DashboardRedirectView(LoginRequiredMixin, TemplateView):
             return redirect("core:trilha_list")
         return redirect("core:minhas_trilhas")
 
-
-# ÁREA DO DOCENTE — CRUD de Trilhas
 
 class TrilhaListView(DocenteRequiredMixin, ListView):
     """Listagem gerencial das trilhas do docente logado."""
@@ -103,9 +103,6 @@ class TrilhaDeleteView(DocenteRequiredMixin, DeleteView):
         messages.success(self.request, "Trilha excluída com sucesso.")
         return super().form_valid(form)
 
-
-# ÁREA DO DOCENTE — CRUD de Atividades
-
 class AtividadeListView(DocenteRequiredMixin, ListView):
     model = Atividade
     template_name = "core/docente/atividade_list.html"
@@ -119,7 +116,6 @@ class AtividadeListView(DocenteRequiredMixin, ListView):
             .annotate(qtd_concluidas=Count("conclusoes", distinct=True))
             .order_by("trilha__turma__nome", "trilha__ordem", "ordem", "id")
         )
-        # Filtro opcional por trilha (validado dentro do escopo do docente)
         trilha_id = self.request.GET.get("trilha")
         if trilha_id and trilha_id.isdigit():
             qs = qs.filter(trilha_id=int(trilha_id))
@@ -142,7 +138,7 @@ class AtividadeCreateView(DocenteRequiredMixin, CreateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["docente"] = self.request.user  # Restringe o queryset de 'trilha'
+        kwargs["docente"] = self.request.user  
         return kwargs
 
     def get_initial(self):
@@ -196,8 +192,7 @@ class AtividadeDeleteView(DocenteRequiredMixin, DeleteView):
 # ÁREA DO DISCENTE — visualização das trilhas das turmas em que está matriculado
 
 class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
-    """
-    Exibe apenas trilhas publicadas de turmas ativas nas quais o discente
+    """Exibe apenas trilhas publicadas de turmas ativas nas quais o discente
     possui matrícula com status ATIVA (critério de aceitação da Funcionalidade 7).
     """
 
@@ -237,13 +232,18 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
             ).count()
         )
 
-        # PROGRESSO: uma única consulta para todas as conclusões do aluno,
-        # depois cruzada em memória com as atividades já carregadas (sem N+1).
         concluidas = set(
             ConclusaoAtividade.objects.filter(
                 discente=self.request.user
             ).values_list("atividade_id", flat=True)
         )
+        enviadas = {
+            s.atividade_id: s
+            for s in Submissao.objects.filter(aluno=self.request.user).select_related(
+                "avaliacao_oficial"
+            )
+        }
+
 
         total_geral = 0
         concluidas_geral = 0
@@ -251,6 +251,8 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
             visiveis = trilha.atividades_visiveis
             for atividade in visiveis:
                 atividade.concluida = atividade.pk in concluidas
+                atividade.submissao = enviadas.get(atividade.pk)
+
 
             trilha.total_visiveis = len(visiveis)
             trilha.total_concluidas = sum(1 for a in visiveis if a.concluida)
