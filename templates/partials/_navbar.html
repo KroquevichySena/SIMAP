@@ -22,11 +22,19 @@
         </li>
       </ul>
 
-      <span class="navbar-text text-white">
+      <div class="d-flex align-items-center gap-2">
         {% if user.is_authenticated %}
+          <span class="navbar-text text-white">
             Logado como: {{ user.first_name }} ({{ user.perfil }})
+          </span>
+          <form method="post" action="{% url 'logout' %}" class="m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-light">Sair</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-sm btn-outline-light">Entrar</a>
         {% endif %}
-      </span>
+      </div>
     </div>
   </div>
 </nav>
