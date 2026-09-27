@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
@@ -12,6 +13,8 @@ from turmas.models import Matricula
 
 from .ia_services import gerar_analise
 from .models import AvaliacaoOficial, Submissao
+
+logger = logging.getLogger("simap.integracoes")
 
 
 class CorrigirAtividadeView(DocenteRequiredMixin, DetailView):
@@ -112,7 +115,17 @@ class NotificarPendentesView(DocenteRequiredMixin, View):
             for email in destinatarios
         )
         if mensagens:
-            send_mass_mail(mensagens, fail_silently=False)
+            # Se o Mailgun estiver fora do ar, a falha vai para o log e o
+            # docente recebe um aviso, em vez de uma tela de erro 500.
+            try:
+                send_mass_mail(mensagens, fail_silently=False)
+            except Exception:  # noqa: BLE001
+                logger.exception("Falha ao enviar aviso de pendência da atividade %s", atividade.pk)
+                messages.error(
+                    request,
+                    "Não foi possível enviar os e-mails agora. Tente novamente em alguns minutos.",
+                )
+                return redirect("entregas:corrigir", pk=atividade.pk)
         messages.success(request, f"Notificação enviada para {len(destinatarios)} aluno(s).")
         return redirect("entregas:corrigir", pk=atividade.pk)
 

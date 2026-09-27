@@ -178,9 +178,11 @@ MAILGUN_API_URL = env("MAILGUN_API_URL", default="https://api.mailgun.net")
 
 # E-mail. Sem nada no .env, as mensagens só aparecem no terminal; em produção
 # o .env aponta para o backend do Mailgun.
-EMAIL_BACKEND = env(
-    "EMAIL_BACKEND",
-    default="django.core.mail.backends.console.EmailBackend",
+# O "or" cobre o caso de EMAIL_BACKEND= vazio no .env, que o django-environ
+# devolve como texto vazio em vez de usar o padrão, e quebrava o envio.
+EMAIL_BACKEND = (
+    env("EMAIL_BACKEND", default="")
+    or "django.core.mail.backends.console.EmailBackend"
 )
 
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="nao-responda@simap.local")
