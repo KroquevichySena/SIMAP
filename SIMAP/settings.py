@@ -1,22 +1,20 @@
 """
-Django settings para o projeto SIMAP.
-Sistema de Monitoramento da Aprendizagem em Programação.
-Django 5.2 LTS | Python 3.12 | PostgreSQL 16
+Configurações do SIMAP, o Sistema de Monitoramento da Aprendizagem em Programação.
+
+Rodamos com Django 5.2 LTS, Python 3.12 e PostgreSQL 16. Tudo que é segredo
+ou muda de uma máquina para outra (senhas, chaves, endereço do banco) vem do
+arquivo .env, e não daqui.
 """
 
 from pathlib import Path
 
 import environ
 
-# ==============================================================================
-# CAMINHOS BASE
-# ==============================================================================
+# A pasta raiz do projeto, usada como ponto de partida para os outros caminhos.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ==============================================================================
-# VARIÁVEIS DE AMBIENTE (django-environ)
-# Segurança: credenciais ficam no .env, fora do controle de versão.
-# ==============================================================================
+# As credenciais ficam no .env, que não vai para o GitHub. Aqui dizemos ao
+# django-environ o tipo de cada variável e o valor padrão, caso ela não exista.
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, []),
@@ -24,19 +22,18 @@ env = environ.Env(
     SECURE_SSL_REDIRECT=(bool, False),
 )
 
-# Lê o arquivo .env (se existir) da raiz do projeto
+# Carrega o .env da raiz do projeto, se ele existir.
 environ.Env.read_env(BASE_DIR / ".env")
 
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
-# Necessário para o Render/produção (proteção CSRF em domínio externo)
+# Em produção o site roda num domínio do Render, e o Django precisa saber que
+# pode confiar nele para a proteção contra CSRF funcionar.
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 
-# ==============================================================================
-# APLICAÇÕES
-# ==============================================================================
+# Os apps do Django que o projeto usa, e os nossos.
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -44,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "auditoria",  # antes dos outros apps do SIMAP, para já ouvir tudo desde o início
     "usuarios",
     "turmas",
     "core",
@@ -58,6 +56,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # A auditoria vem depois da autenticação porque precisa saber quem é o usuário
+    "auditoria.middleware.AuditoriaMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -81,21 +81,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "SIMAP.wsgi.application"
 
-# ==============================================================================
-# BANCO DE DADOS — PostgreSQL 16
-# Formato do DATABASE_URL: postgres://usuario:senha@host:5432/nome_banco
-# ==============================================================================
+# O banco é o PostgreSQL 16. O endereço vem inteiro do .env, neste formato:
+# postgres://usuario:senha@host:5432/nome_banco
 DATABASES = {
     "default": env.db_url("DATABASE_URL"),
 }
 
-# Reaproveita conexões (reduz latência) e valida se estão vivas
+# Em vez de abrir uma conexão nova a cada requisição, reaproveitamos por até
+# 60 segundos, conferindo antes se ela ainda está funcionando.
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
 DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
-# ==============================================================================
-# AUTENTICAÇÃO E AUTORIZAÇÃO
-# ==============================================================================
+# Login, senhas e sessão.
 AUTH_USER_MODEL = "usuarios.Usuario"
 
 LOGIN_URL = 'login'
@@ -108,7 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        # Mínimo elevado de 8 (padrão) para 10 caracteres
+        # O padrão do Django é 8 caracteres; aqui exigimos 10.
         "OPTIONS": {"min_length": 10},
     },
     {
@@ -119,38 +116,37 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Algoritmo de hash: PBKDF2 (padrão do Django, com salt automático)
+# As senhas nunca são guardadas como texto. O PBKDF2 gera um hash com um salt
+# diferente para cada usuário, então duas senhas iguais ficam diferentes no banco.
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
 ]
 
-# Sessão expira em 8 horas de inatividade
+# Quem fica 8 horas sem usar o sistema precisa entrar de novo.
 SESSION_COOKIE_AGE = 60 * 60 * 8
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_SAVE_EVERY_REQUEST = True  # Renova a sessão a cada interação
+SESSION_SAVE_EVERY_REQUEST = True  # cada clique renova o prazo
 
 # Versão vigente dos Termos de Uso e Política de Privacidade.
 # Fonte única: alimenta o texto exibido em usuarios/termos_de_uso.html e a
 # checagem de reaceite em usuarios/forms.py (LoginComTermosForm).
 TERMOS_DE_USO_VERSAO = "1.1"
 
-# ==============================================================================
-# INTERNACIONALIZAÇÃO
-# ==============================================================================
+# Idioma e fuso horário.
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
-USE_TZ = True  # DateTimeField -> 'timestamptz' no PostgreSQL
+USE_TZ = True  # datas vão para o banco com fuso (timestamptz no PostgreSQL)
 
-# ==============================================================================
-# ARQUIVOS ESTÁTICOS (WhiteNoise)
-# ==============================================================================
+# Arquivos estáticos (CSS, JS, imagens). Em produção quem entrega é o WhiteNoise.
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"   # destino do collectstatic
-STATICFILES_DIRS = [BASE_DIR / "static"] # seus arquivos de desenvolvimento
+STATIC_ROOT = BASE_DIR / "staticfiles"   # para onde o collectstatic copia tudo
+STATICFILES_DIRS = [BASE_DIR / "static"] # onde ficam os arquivos que a gente edita
 
-# Django 5.x usa STORAGES (STATICFILES_STORAGE foi removido na 5.1)
+# No Django 5 essa configuração mudou de nome para STORAGES. Em produção os
+# arquivos são comprimidos e ganham um código no nome, para o navegador não
+# ficar preso a uma versão antiga em cache.
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -164,17 +160,13 @@ STORAGES = {
     },
 }
 
-# ==============================================================================
-# CHAVE PRIMÁRIA PADRÃO
-# Otimização do PFC: 'serial' (4 bytes) em vez de 'bigserial' (8 bytes).
-# Tabelas de crescimento contínuo (ex.: RegistroAuditoria) sobrescrevem
-# localmente com models.BigAutoField(primary_key=True).
-# ==============================================================================
+# Tipo do ID dos modelos que não definem um próprio: 'serial', de 4 bytes.
+# Atenção: os apps core, turmas, usuarios e chamada definem BigAutoField no
+# apps.py deles, e isso vale mais do que esta linha, então lá o ID é de 8 bytes.
+# A tabela de auditoria usa 8 bytes de propósito, porque só cresce.
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-# ==============================================================================
-# APIS EXTERNAS
-# ==============================================================================
+# Chaves das APIs externas: o Gemini, que analisa as respostas, e o Mailgun, dos e-mails.
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
 GEMINI_API_URL = env(
     "GEMINI_API_URL", default="https://generativelanguage.googleapis.com"
@@ -184,9 +176,8 @@ MAILGUN_API_KEY = env("MAILGUN_API_KEY", default="")
 MAILGUN_DOMAIN = env("MAILGUN_DOMAIN", default="")
 MAILGUN_API_URL = env("MAILGUN_API_URL", default="https://api.mailgun.net")
 
-# ==============================================================================
-# E-MAIL
-# ==============================================================================
+# E-mail. Sem nada no .env, as mensagens só aparecem no terminal; em produção
+# o .env aponta para o backend do Mailgun.
 EMAIL_BACKEND = env(
     "EMAIL_BACKEND",
     default="django.core.mail.backends.console.EmailBackend",
@@ -194,9 +185,8 @@ EMAIL_BACKEND = env(
 
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="nao-responda@simap.local")
 
-# ==============================================================================
-# MENSAGENS (compatibilidade com classes do Bootstrap 5.3)
-# ==============================================================================
+# Faz as mensagens do Django (sucesso, erro...) usarem as cores do Bootstrap.
+# O Bootstrap chama o vermelho de 'danger', e não de 'error'.
 from django.contrib.messages import constants as messages  # noqa: E402
 
 MESSAGE_TAGS = {
@@ -207,11 +197,9 @@ MESSAGE_TAGS = {
     messages.ERROR: "danger",
 }
 
-# ==============================================================================
-# SEGURANÇA
-# ==============================================================================
-X_FRAME_OPTIONS = "DENY"                 # Anti-clickjacking
-SECURE_CONTENT_TYPE_NOSNIFF = True       # Anti-MIME sniffing
+# Cabeçalhos de segurança que valem sempre, até em desenvolvimento.
+X_FRAME_OPTIONS = "DENY"                 # ninguém pode abrir o SIMAP dentro de um iframe
+SECURE_CONTENT_TYPE_NOSNIFF = True       # o navegador não tenta adivinhar o tipo do arquivo
 SECURE_REFERRER_POLICY = "same-origin"
 
 if not DEBUG:
@@ -223,13 +211,12 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000        # 1 ano
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    # O Render entrega HTTPS via proxy reverso; sem isto o Django não detecta
+    # O Render recebe o HTTPS e repassa para o Django por dentro. Sem esta linha,
+    # o Django acharia que a conexão não é segura.
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# ==============================================================================
-# LOGGING
-# Requisito da Ficha: falhas de API registradas em log sem interromper o sistema.
-# ==============================================================================
+# Logs no terminal. A ficha pede que uma falha nas APIs externas fique registrada
+# aqui sem derrubar o sistema.
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -255,11 +242,28 @@ LOGGING = {
             "level": env("DJANGO_LOG_LEVEL", default="INFO"),
             "propagate": False,
         },
-        # Logger dedicado às integrações externas (Gemini/Mailgun)
+        # Um log só para as integrações externas (Gemini e Mailgun).
         "simap.integracoes": {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
         },
     },
+}
+
+# Auditoria
+# Por quantos dias guardamos os registros. Depois disso, o comando
+# limpar_auditoria apaga os antigos, como a LGPD pede. Em produção ele deve
+# rodar uma vez por dia.
+AUDITORIA_RETENCAO_DIAS = env.int("AUDITORIA_RETENCAO_DIAS", default=180)
+
+# Quantos proxies existem entre o usuário e o Django. No Render existe 1,
+# então o IP real vem do cabeçalho X-Forwarded-For. Na sua máquina é 0,
+# porque ali esse cabeçalho pode ser inventado por qualquer um.
+AUDITORIA_PROXIES_CONFIAVEIS = env.int("AUDITORIA_PROXIES_CONFIAVEIS", default=0)
+
+LOGGING["loggers"]["simap.auditoria"] = {
+    "handlers": ["console"],
+    "level": "INFO",
+    "propagate": False,
 }
