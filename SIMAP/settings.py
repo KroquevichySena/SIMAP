@@ -131,7 +131,7 @@ SESSION_SAVE_EVERY_REQUEST = True  # cada clique renova o prazo
 # Versão vigente dos Termos de Uso e Política de Privacidade.
 # Fonte única: alimenta o texto exibido em usuarios/termos_de_uso.html e a
 # checagem de reaceite em usuarios/forms.py (LoginComTermosForm).
-TERMOS_DE_USO_VERSAO = "1.1"
+TERMOS_DE_USO_VERSAO = "1.2"
 
 # Idioma e fuso horário.
 LANGUAGE_CODE = "pt-br"
