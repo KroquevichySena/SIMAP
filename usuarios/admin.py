@@ -5,8 +5,10 @@ from .models import AceiteTermos, Usuario
 
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
-    """Admin do Usuario customizado — estende os fieldsets padrão do Django
-    com os campos próprios do SIMAP (perfil, rgm), em vez de redeclarar tudo."""
+    """
+    Reaproveita a tela de usuários padrão do Django e só acrescenta os campos
+    do SIMAP (perfil e RGM), em vez de reescrever o formulário inteiro.
+    """
 
     list_display = ("username", "first_name", "last_name", "email", "perfil", "is_active", "is_staff")
     list_filter = ("perfil", "is_staff", "is_superuser", "is_active")
