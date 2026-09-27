@@ -1,10 +1,13 @@
 """
-Views do SIMAP - Funcionalidade 7 (Trilhas e Publicação de Atividades).
+Telas da Funcionalidade 7: trilhas de aprendizagem e publicação de atividades.
 
-Padrão de segurança adotado:
-  1) Mixin de perfil  -> controla QUEM entra na rota (RBAC).
-  2) get_queryset()   -> controla QUAIS objetos o usuário vê/edita (anti-IDOR).
-  3) form_kwargs      -> controla A QUAIS objetos ele pode vincular (anti-tampering).
+A segurança aqui funciona em três camadas, uma completando a outra:
+
+1. O mixin de perfil decide quem pode entrar em cada tela (docente ou discente).
+2. O get_queryset() decide quais objetos cada um enxerga. Assim, um docente
+   não consegue abrir a trilha de outro só trocando o número na URL (IDOR).
+3. O form_kwargs limita a quais turmas e trilhas um formulário pode ligar
+   um objeto, para ninguém forjar um POST com o ID de uma turma alheia.
 """
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -26,10 +29,10 @@ from .models import (
 )
 
 
-# DASHBOARD — roteia o usuário conforme o perfil
+# Depois do login, cada um vai para a sua área.
 
 class DashboardRedirectView(LoginRequiredMixin, TemplateView):
-    """Ponto de entrada pós-login: encaminha para a área correta."""
+    """Manda o docente para as trilhas dele e o aluno para as trilhas que ele cursa."""
 
     def get(self, request, *args, **kwargs):
         if request.user.is_docente:
@@ -38,7 +41,7 @@ class DashboardRedirectView(LoginRequiredMixin, TemplateView):
 
 
 class TrilhaListView(DocenteRequiredMixin, ListView):
-    """Listagem gerencial das trilhas do docente logado."""
+    """Lista as trilhas das turmas do docente que está logado."""
 
     model = TrilhaAprendizagem
     template_name = "core/docente/trilha_list.html"
@@ -46,7 +49,7 @@ class TrilhaListView(DocenteRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        # ANTI-IDOR: retorna apenas trilhas das turmas do próprio docente
+        # Só as trilhas das turmas do próprio docente, nunca as de outro professor.
         return (
             TrilhaAprendizagem.objects.filter(turma__docente=self.request.user)
             .select_related("turma")
@@ -78,7 +81,8 @@ class TrilhaUpdateView(DocenteRequiredMixin, UpdateView):
     success_url = reverse_lazy("core:trilha_list")
 
     def get_queryset(self):
-        # ANTI-IDOR: impede editar trilha de outro docente pela URL
+        # Se alguém trocar o número na URL para a trilha de outro professor,
+        # ela não é encontrada aqui e a pessoa recebe 404.
         return TrilhaAprendizagem.objects.filter(turma__docente=self.request.user)
 
     def get_form_kwargs(self):
@@ -143,7 +147,8 @@ class AtividadeCreateView(DocenteRequiredMixin, CreateView):
 
     def get_initial(self):
         initial = super().get_initial()
-        # Pré-seleciona a trilha se vier pela query string (validando a posse)
+        # Se a tela foi aberta a partir de uma trilha, ela já vem selecionada,
+        # mas só depois de confirmar que a trilha é mesmo desse docente.
         trilha_id = self.request.GET.get("trilha")
         if trilha_id and trilha_id.isdigit():
             if TrilhaAprendizagem.objects.filter(
@@ -189,7 +194,7 @@ class AtividadeDeleteView(DocenteRequiredMixin, DeleteView):
         return super().form_valid(form)
 
 
-# ÁREA DO DISCENTE — visualização das trilhas das turmas em que está matriculado
+# Área do aluno: ele vê só as trilhas das turmas em que está matriculado.
 
 class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
     """Exibe apenas trilhas publicadas de turmas ativas nas quais o discente
@@ -203,12 +208,13 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
     def get_queryset(self):
         usuario = self.request.user
 
-        # Subconjunto de turmas em que o aluno está efetivamente matriculado
+        # As turmas em que o aluno tem matrícula ativa.
         turmas_do_aluno = Matricula.objects.filter(
             discente=usuario, status='ATIVA', turma__ativa=True
         ).values_list("turma_id", flat=True)
 
-        # Prefetch traz somente atividades publicadas, já ordenadas
+        # Já traz as atividades junto, só as publicadas e na ordem certa, para
+        # não precisar de uma consulta extra por trilha.
         atividades_publicadas = Prefetch(
             "atividades",
             queryset=Atividade.objects.filter(publicada=True).order_by("ordem", "id"),
@@ -274,13 +280,16 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
 
 class ConcluirAtividadeView(DiscenteRequiredMixin, View):
     """
-    Marca / desmarca uma atividade como concluída pelo discente logado.
-    Aceita apenas POST (ação com efeito colateral exige CSRF + método seguro).
+    Marca a atividade como concluída, ou desfaz se ela já estava.
+
+    Só aceita POST: como a ação muda dados, ela precisa do token CSRF e não
+    pode acontecer só por alguém abrir um link.
     """
 
     def post(self, request, pk, *args, **kwargs):
-        # ANTI-IDOR: a atividade precisa estar publicada, em trilha publicada,
-        # de uma turma ativa onde o aluno tenha matrícula ativa.
+        # O aluno só pode concluir uma atividade publicada, de uma trilha
+        # publicada, numa turma ativa em que ele esteja matriculado. Qualquer
+        # outro ID digitado na URL dá 404.
         atividade = get_object_or_404(
             Atividade.objects.filter(
                 publicada=True,
