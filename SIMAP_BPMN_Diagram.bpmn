@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100802/DC" xmlns:di="http://www.omg.org/spec/DD/20100802/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js" exporterVersion="14.0.0">
+  <bpmn:process id="Process_SIMAP" isExecutable="false">
+    <!-- Pool Docente -->
+    <bpmn:startEvent id="StartEvent_Docente" name="Docente Acessa">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_CriarTrilha" name="Criar Trilha de Aprendizagem">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_PublicarAtividades" name="Publicar Atividades">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_GerarChamada" name="Gerar Chamada (Token)">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_AvaliarSubmissoes" name="Avaliar Submissões e Gerar Feedback">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Docente" name="Processo Encerrado">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Pool Discente -->
+    <bpmn:startEvent id="StartEvent_Discente" name="Discente Acessa">
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_VerTrilhas" name="Visualizar Trilhas e Atividades">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_EnviarSubmissao" name="Enviar Submissão">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_AnalisarIA" name="Análise IA (Gemini)">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_RegistrarPresenca" name="Registrar Presença (Token)">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_MarcarConcluida" name="Marcar Atividade como Concluída">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:endEvent id="EndEvent_Discente" name="Atividade Concluída">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <!-- Fluxos -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_Docente" targetRef="Task_CriarTrilha"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_CriarTrilha" targetRef="Task_PublicarAtividades"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_PublicarAtividades" targetRef="Task_GerarChamada"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_GerarChamada" targetRef="Task_AvaliarSubmissoes"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_AvaliarSubmissoes" targetRef="EndEvent_Docente"/>
+    
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="StartEvent_Discente" targetRef="Task_VerTrilhas"/>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_VerTrilhas" targetRef="Task_EnviarSubmissao"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_EnviarSubmissao" targetRef="Task_AnalisarIA"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_AnalisarIA" targetRef="Task_RegistrarPresenca"/>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_RegistrarPresenca" targetRef="Task_MarcarConcluida"/>
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_MarcarConcluida" targetRef="EndEvent_Discente"/>
+  </bpmn:process>
+  
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_SIMAP">
+      <!-- Docente Lane -->
+      <bpmndi:BPMNShape id="StartEvent_Docente_di" bpmnElement="StartEvent_Docente">
+        <dc:Bounds x="72" y="107" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="50" y="143" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_CriarTrilha_di" bpmnElement="Task_CriarTrilha">
+        <dc:Bounds x="150" y="87" width="100" height="80"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="160" y="110" width="80" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_PublicarAtividades_di" bpmnElement="Task_PublicarAtividades">
+        <dc:Bounds x="290" y="87" width="100" height="80"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="305" y="125" width="70" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_GerarChamada_di" bpmnElement="Task_GerarChamada">
+        <dc:Bounds x="430" y="87" width="100" height="80"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="440" y="120" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_AvaliarSubmissoes_di" bpmnElement="Task_AvaliarSubmissoes">
+        <dc:Bounds x="570" y="87" width="120" height="80"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="580" y="110" width="100" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Docente_di" bpmnElement="EndEvent_Docente">
+        <dc:Bounds x="742" y="107" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="720" y="143" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="108" y="125"/>
+        <di:waypoint x="150" y="127"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="250" y="127"/>
+        <di:waypoint x="290" y="127"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="390" y="127"/>
+        <di:waypoint x="430" y="127"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="530" y="127"/>
+        <di:waypoint x="570" y="127"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="690" y="127"/>
+        <di:waypoint x="742" y="125"/>
+      </bpmndi:BPMNEdge>
+      
+      <!-- Discente Lane -->
+      <bpmndi:BPMNShape id="StartEvent_Discente_di" bpmnElement="StartEvent_Discente">
+        <dc:Bounds x="72" y="407" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="50" y="443" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_VerTrilhas_di" bpmnElement="Task_VerTrilhas">
+        <dc:Bounds x="150" y="387" width="100" height="80"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="160" y="410" width="80" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_EnviarSubmissao_di" bpmnElement="Task_EnviarSubmissao">
+        <dc:Bounds x="290" y="387" width="100" height="80"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="305" y="425" width="70" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_AnalisarIA_di" bpmnElement="Task_AnalisarIA">
+        <dc:Bounds x="430" y="387" width="100" height="80"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="440" y="420" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_RegistrarPresenca_di" bpmnElement="Task_RegistrarPresenca">
+        <dc:Bounds x="570" y="387" width="100" height="80"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="580" y="420" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_MarcarConcluida_di" bpmnElement="Task_MarcarConcluida">
+        <dc:Bounds x="510" y="527" width="120" height="80"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="520" y="550" width="100" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_Discente_di" bpmnElement="EndEvent_Discente">
+        <dc:Bounds x="742" y="547" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="720" y="583" width="80" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="108" y="425"/>
+        <di:waypoint x="150" y="427"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="250" y="427"/>
+        <di:waypoint x="290" y="427"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="390" y="427"/>
+        <di:waypoint x="430" y="427"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="530" y="427"/>
+        <di:waypoint x="570" y="427"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="620" y="467"/>
+        <di:waypoint x="620" y="490"/>
+        <di:waypoint x="570" y="527"/>
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="630" y="567"/>
+        <di:waypoint x="742" y="565"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
