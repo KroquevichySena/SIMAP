@@ -1,7 +1,9 @@
 """
-Formulários de Trilha e Atividade.
-Segurança: o queryset das FKs é restrito ao docente logado, impedindo
-vinculação a turmas/trilhas de terceiros via POST forjado (mass assignment).
+Formulários de trilha e de atividade.
+
+Um cuidado importante: as listas de turmas e trilhas mostram só o que é do
+docente logado. E não é só visual: se alguém forjar um POST com o ID da turma
+de outro professor, o formulário recusa, porque aquele ID não está na lista.
 """
 from django import forms
 from django.utils import timezone
@@ -12,7 +14,7 @@ from .models import Atividade, TrilhaAprendizagem
 
 
 class BootstrapFormMixin:
-    """Aplica classes do Bootstrap 5.3 — funciona junto com {{ form.as_p }}."""
+    """Coloca as classes do Bootstrap nos campos, para o {{ form.as_p }} já sair bonito."""
 
     def _aplicar_bootstrap(self):
         for campo in self.fields.values():
@@ -38,7 +40,7 @@ class TrilhaAprendizagemForm(BootstrapFormMixin, forms.ModelForm):
 
     def __init__(self, *args, docente=None, **kwargs):
         super().__init__(*args, **kwargs)
-        # SEGURANÇA: apenas turmas do próprio docente são aceitas
+        # Só aparecem (e só são aceitas) as turmas ativas do próprio docente.
         if docente is not None:
             self.fields["turma"].queryset = Turma.objects.filter(
                 docente=docente, ativa=True
@@ -62,7 +64,7 @@ class AtividadeForm(BootstrapFormMixin, forms.ModelForm):
 
     def __init__(self, *args, docente=None, **kwargs):
         super().__init__(*args, **kwargs)
-        # SEGURANÇA: apenas trilhas das turmas do próprio docente
+        # Mesma ideia: só as trilhas das turmas desse docente.
         if docente is not None:
             self.fields["trilha"].queryset = (
                 TrilhaAprendizagem.objects.filter(turma__docente=docente)

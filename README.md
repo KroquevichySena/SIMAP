@@ -54,6 +54,9 @@ Para que as funcionalidades de inteligência artificial do projeto funcionem per
 4. Abra o novo arquivo `.env` e adicione a sua chave colando o código gerado, ficando neste formato:
    ```env
    GEMINI_API_KEY=sua_chave_gerada_aqui
+   ```
+
+A documentação técnica das integrações com o Google Gemini e com o Mailgun (fluxo, endpoints, autenticação, tratamento de falhas, dados enviados e testes) está em [docs/INTEGRACAO_API.md](docs/INTEGRACAO_API.md).
 
 ---
 

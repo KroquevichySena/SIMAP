@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Auditoria - SIMAP{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">Auditoria</h2>
+        <small class="text-muted">Acessos e ações dos usuários. Consulta restrita à coordenação.</small>
+    </div>
+    <a href="?{{ filtros_url }}{% if filtros_url %}&{% endif %}formato=csv" class="btn btn-outline-secondary">Exportar CSV</a>
+</div>
+
+<form method="get" class="card card-body mb-3">
+    <div class="row g-2">
+        <div class="col-md-2">
+            <label class="form-label small mb-1" for="f-acao">Ação</label>
+            <select name="acao" id="f-acao" class="form-select form-select-sm">
+                <option value="">Todas</option>
+                {% for valor, rotulo in acoes %}
+                    <option value="{{ valor }}" {% if filtros.acao == valor %}selected{% endif %}>{{ rotulo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-1" for="f-usuario">Usuário</label>
+            <input type="text" name="usuario" id="f-usuario" value="{{ filtros.usuario }}" class="form-control form-control-sm" placeholder="login">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-1" for="f-entidade">Entidade</label>
+            <input type="text" name="entidade" id="f-entidade" value="{{ filtros.entidade }}" class="form-control form-control-sm" placeholder="ex.: Atividade">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-1" for="f-de">De</label>
+            <input type="date" name="de" id="f-de" value="{{ filtros.de }}" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-1" for="f-ate">Até</label>
+            <input type="date" name="ate" id="f-ate" value="{{ filtros.ate }}" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small mb-1" for="f-ip">IP</label>
+            <input type="text" name="ip" id="f-ip" value="{{ filtros.ip }}" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-8">
+            <input type="text" name="q" value="{{ filtros.q }}" class="form-control form-control-sm" placeholder="Buscar na descrição, objeto ou caminho">
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-primary flex-grow-1">Filtrar</button>
+            <a href="{% url 'auditoria:registro_list' %}" class="btn btn-sm btn-outline-secondary">Limpar</a>
+        </div>
+    </div>
+</form>
+
+<p class="small text-muted mb-2">{{ paginator.count }} registro{{ paginator.count|pluralize }} encontrado{{ paginator.count|pluralize }}.</p>
+
+<div class="table-responsive">
+    <table class="table table-sm table-striped align-middle small">
+        <thead>
+            <tr>
+                <th>Data e hora</th>
+                <th>Ação</th>
+                <th>Usuário</th>
+                <th>Objeto</th>
+                <th>Descrição</th>
+                <th>Origem</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in registros %}
+            <tr>
+                <td class="text-nowrap">{{ r.data_hora|date:"d/m/Y H:i:s" }}</td>
+                <td>
+                    {% if r.acao == 'ACESSO_NEGADO' or r.acao == 'LOGIN_FALHA' %}
+                        <span class="badge bg-danger">{{ r.get_acao_display }}</span>
+                    {% elif r.acao == 'EXCLUSAO' or r.acao == 'EXPURGO' %}
+                        <span class="badge bg-warning text-dark">{{ r.get_acao_display }}</span>
+                    {% elif r.acao == 'CRIACAO' or r.acao == 'ALTERACAO' %}
+                        <span class="badge bg-primary">{{ r.get_acao_display }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ r.get_acao_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ r.origem }}</td>
+                <td>
+                    {% if r.entidade %}
+                        <span class="text-muted">{{ r.entidade }} #{{ r.objeto_id }}</span><br>{{ r.objeto_repr }}
+                    {% else %}—{% endif %}
+                </td>
+                <td>
+                    {{ r.descricao }}
+                    {% if r.dados %}
+                        <details>
+                            <summary class="text-primary">detalhes</summary>
+                            <pre class="mb-0 small bg-white border rounded p-2">{{ r.dados|pprint }}</pre>
+                        </details>
+                    {% endif %}
+                </td>
+                <td class="text-nowrap">
+                    {{ r.ip|default:"—" }}
+                    {% if r.metodo %}<br><span class="text-muted">{{ r.metodo }} {{ r.status_http|default:"" }}</span>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">Nenhum registro encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<nav aria-label="Paginação">
+    <ul class="pagination pagination-sm">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?{{ filtros_url }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?{{ filtros_url }}&page={{ page_obj.next_page_number }}">Próxima</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

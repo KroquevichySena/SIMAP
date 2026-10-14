@@ -1,8 +1,8 @@
 """
-Entidades do núcleo acadêmico do SIMAP:
-Trilha de Aprendizagem, Atividade e Conclusão de Atividade.
+Os modelos das trilhas de aprendizagem: a trilha, as atividades dentro dela
+e o registro de quais atividades cada aluno já concluiu.
 
-Turma e Matrícula vivem no app `turmas`.
+Turma e matrícula ficam no app turmas.
 """
 from django.conf import settings
 from django.db import models
@@ -19,7 +19,7 @@ TIPO_ATIVIDADE_CHOICES = (
 
 
 class TrilhaAprendizagem(models.Model):
-    """Agrupamento ordenado de atividades dentro de uma turma."""
+    """Um módulo da turma, com as atividades em sequência (ex.: "Módulo 1 - Variáveis")."""
 
     turma = models.ForeignKey(
         "turmas.Turma", on_delete=models.CASCADE, related_name="trilhas", verbose_name="Turma"
@@ -61,7 +61,7 @@ class TrilhaAprendizagem(models.Model):
 
 
 class Atividade(models.Model):
-    """Atividade publicada pelo docente dentro de uma trilha."""
+    """Uma atividade que o docente publica dentro de uma trilha."""
 
     trilha = models.ForeignKey(
         TrilhaAprendizagem,
@@ -109,7 +109,8 @@ class Atividade(models.Model):
 
 class ConclusaoAtividade(models.Model):
     """
-    Registro de progresso do discente: uma linha por atividade concluída.
+    O progresso do aluno: cada linha diz que ele concluiu uma atividade.
+    Para saber o percentual de uma trilha, basta contar essas linhas.
     """
 
     atividade = models.ForeignKey(
@@ -132,7 +133,8 @@ class ConclusaoAtividade(models.Model):
         verbose_name_plural = "Conclusões de atividades"
         ordering = ["-data_conclusao"]
         constraints = [
-            # Impede contagem duplicada de progresso para a mesma atividade
+            # O mesmo aluno não pode concluir a mesma atividade duas vezes,
+            # senão o progresso passaria de 100%.
             models.UniqueConstraint(
                 fields=["atividade", "discente"], name="uq_conclusao_atividade_discente"
             ),

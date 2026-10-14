@@ -1,18 +1,22 @@
 """
-Testes da Funcionalidade 7 — Trilhas de Aprendizagem e Publicação de Atividades.
+Testes das trilhas de aprendizagem e da publicação de atividades.
 
-Cobrem os critérios de aceitação da Ficha de Caracterização:
-  - docente cria trilha vinculada a uma turma e publica atividades;
-  - atividades exibidas ao discente na ordem definida pela trilha;
-  - discente visualiza apenas as trilhas das turmas em que está matriculado;
-  - progresso registrado por atividade concluída.
-E os requisitos não funcionais de segurança (autorização por perfil, anti-IDOR).
+Cada critério de aceitação da ficha tem pelo menos um teste aqui:
+  - o docente cria a trilha ligada a uma turma e publica atividades;
+  - o aluno vê as atividades na ordem definida pela trilha;
+  - o aluno só vê trilhas das turmas em que está matriculado;
+  - o progresso fica registrado a cada atividade concluída.
+
+Também testamos a parte de segurança: cada perfil só entra nas próprias
+telas, e ninguém acessa o que é de outra pessoa trocando o ID na URL.
 """
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
 from django.test import TestCase
+from django.conf import settings
+from django.shortcuts import resolve_url
 from django.urls import reverse
 from django.utils import timezone
 
@@ -25,7 +29,7 @@ SENHA = "SenhaDeTeste123"
 
 
 class BaseSIMAPTestCase(TestCase):
-    """Cenário comum: dois docentes, dois discentes, duas turmas."""
+    """O cenário que todos os testes usam: dois docentes, dois alunos e duas turmas."""
 
     @classmethod
     def setUpTestData(cls):
@@ -87,7 +91,7 @@ class ModeloTrilhaTests(BaseSIMAPTestCase):
 
 
 class ControleDeAcessoTests(BaseSIMAPTestCase):
-    """RN: aluno recebe negação de acesso a funcionalidade exclusiva do docente."""
+    """Regra de negócio: o aluno recebe acesso negado nas telas exclusivas do docente."""
 
     def test_discente_recebe_403_em_rota_de_docente(self):
         self.client.login(username="aluno.carla", password=SENHA)
@@ -99,8 +103,14 @@ class ControleDeAcessoTests(BaseSIMAPTestCase):
         self.client.login(username="prof.ana", password=SENHA)
         self.assertEqual(self.client.get(reverse("core:minhas_trilhas")).status_code, 403)
 
-    def test_usuario_anonimo_nao_acessa_trilhas(self):
-        self.assertEqual(self.client.get(reverse("core:trilha_list")).status_code, 403)
+    def test_usuario_anonimo_e_redirecionado_para_login(self):
+        """Quem não está logado é mandado para o login e não vê nada da página."""
+        url = reverse("core:trilha_list")
+        resposta = self.client.get(url)
+        self.assertEqual(resposta.status_code, 302)
+        self.assertEqual(
+            resposta["Location"], f"{resolve_url(settings.LOGIN_URL)}?next={url}"
+        )
 
     def test_dashboard_encaminha_conforme_perfil(self):
         self.client.login(username="prof.ana", password=SENHA)
@@ -132,7 +142,7 @@ class TrilhaDocenteTests(BaseSIMAPTestCase):
         )
 
     def test_docente_nao_cria_trilha_em_turma_de_outro_docente(self):
-        """Anti-tampering: POST forjado com turma alheia deve ser rejeitado."""
+        """Um POST forjado com a turma de outro professor tem que ser recusado."""
         resposta = self.client.post(
             reverse("core:trilha_create"),
             {
@@ -158,7 +168,7 @@ class TrilhaDocenteTests(BaseSIMAPTestCase):
         self.assertNotIn("Trilha do Bruno", titulos)
 
     def test_docente_nao_edita_trilha_alheia(self):
-        """Anti-IDOR: acesso direto por PK a objeto de terceiro retorna 404."""
+        """Abrir pela URL a trilha de outro professor tem que dar 404 (proteção contra IDOR)."""
         trilha_alheia = TrilhaAprendizagem.objects.create(
             turma=self.turma_alheia, titulo="Trilha do Bruno", ordem=1
         )
@@ -285,7 +295,7 @@ class MinhasTrilhasDiscenteTests(BaseSIMAPTestCase):
 
 
 class ProgressoAtividadeTests(BaseSIMAPTestCase):
-    """Critério de aceitação: progresso registrado por atividade concluída."""
+    """Critério de aceitação: o progresso é registrado a cada atividade concluída."""
 
     def setUp(self):
         self.client.login(username="aluno.carla", password=SENHA)
@@ -332,7 +342,7 @@ class ProgressoAtividadeTests(BaseSIMAPTestCase):
         self.assertEqual(resposta.context["percentual_geral"], 50)
 
     def test_discente_nao_conclui_atividade_de_turma_em_que_nao_esta_matriculado(self):
-        """Anti-IDOR no registro de progresso."""
+        """O aluno não consegue concluir uma atividade de turma que não é dele (IDOR)."""
         self.client.logout()
         self.client.login(username="aluno.diego", password=SENHA)
         resposta = self.client.post(self.url)

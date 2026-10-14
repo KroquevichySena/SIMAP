@@ -20,6 +20,11 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'chamada:abrir_chamada' %}">Chamada</a>
         </li>
+        {% if user.is_superuser %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'auditoria:registro_list' %}">Auditoria</a>
+        </li>
+        {% endif %}
       </ul>
 
       <div class="d-flex align-items-center gap-2">

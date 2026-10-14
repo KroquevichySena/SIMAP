@@ -1,13 +1,12 @@
 """
-Popula o banco com dados fictícios para demonstrar a Funcionalidade 7
-(Trilhas de Aprendizagem e Publicação de Atividades).
+Enche o banco com dados de exemplo para demonstrar as trilhas de aprendizagem.
 
-Uso:
+Como usar:
     python manage.py popular_dados
-    python manage.py popular_dados --limpar    (apaga os dados de demo antes)
+    python manage.py popular_dados --limpar    (apaga os dados de exemplo antes)
 
-ATENÇÃO: comando destinado a desenvolvimento e demonstração. Não executar
-em ambiente de produção.
+É só para desenvolvimento e apresentação. Em produção o comando se recusa a
+rodar, para ninguém encher o sistema real de dados fictícios.
 """
 from datetime import timedelta
 
@@ -149,7 +148,7 @@ class Command(BaseCommand):
 
         self._resumo(docente, discentes, turma)
 
-    # ------------------------------------------------------------------ etapas
+    # Cada etapa abaixo monta uma parte do cenário de demonstração.
     def _limpar(self):
         self.stdout.write("Removendo dados de demonstração anteriores...")
         ConclusaoAtividade.objects.all().delete()
@@ -214,8 +213,8 @@ class Command(BaseCommand):
         return turma
 
     def _matricular(self, turma, discentes):
-        # O último aluno fica SEM matrícula, para demonstrar que ele não
-        # enxerga nenhuma trilha (critério de aceitação da ficha).
+        # O último aluno fica sem matrícula de propósito: assim dá para mostrar
+        # que ele não enxerga trilha nenhuma, como pede a ficha.
         for discente in discentes[:-1]:
             _, novo = Matricula.objects.get_or_create(
                 turma=turma, discente=discente, defaults={"status": "ATIVA"}
@@ -263,7 +262,7 @@ class Command(BaseCommand):
         return trilhas
 
     def _registrar_progresso(self, trilhas, discentes):
-        """Deixa o primeiro aluno com progresso parcial, para a barra não ficar zerada."""
+        """O primeiro aluno já começa com parte das atividades feitas, para a barra de progresso não aparecer zerada."""
         primeira_trilha = trilhas[0]
         aluno = discentes[0]
         atividades = list(primeira_trilha.atividades.order_by("ordem")[:2])
