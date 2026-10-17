@@ -33,15 +33,7 @@ class AbrirChamadaForm(forms.ModelForm):
 class ConfirmarPresencaForm(forms.Form):
     """Formulário enxuto: usuário, turma da aula e token — pensado pra prazo curto."""
 
-    username = forms.CharField(
-        label="Usuário",
-        max_length=150,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Seu usuário',
-            'autofocus': True,
-        }),
-    )
+
     turma = forms.ModelChoiceField(
         label="Turma",
         queryset=Turma.objects.filter(ativa=True),
@@ -53,18 +45,13 @@ class ConfirmarPresencaForm(forms.Form):
         widget=forms.TextInput(attrs={
             'class': 'form-control text-uppercase',
             'placeholder': 'Ex: AULA01',
+            'autofocus': True
         }),
     )
 
-    def clean_username(self):
-        username = self.cleaned_data['username']
-        try:
-            self.discente = Usuario.objects.get(
-                username=username, perfil='DISCENTE', is_active=True
-            )
-        except Usuario.DoesNotExist:
-            raise forms.ValidationError("Usuário não encontrado ou não é um discente ativo.")
-        return username
+    def __init__(self, *args, **kwargs):
+        self.discente = kwargs.pop('discente', None)
+        super().__init__(*args, **kwargs)
 
     def clean_token_chamada(self):
         return self.cleaned_data.get('token_chamada', '').upper()
@@ -73,13 +60,13 @@ class ConfirmarPresencaForm(forms.Form):
         cleaned_data = super().clean()
         turma = cleaned_data.get('turma')
         token = cleaned_data.get('token_chamada')
-        discente = getattr(self, 'discente', None)
+
+        discente = self.discente
 
         if not (turma and token and discente):
             return cleaned_data  # já tem erro de campo individual, não precisa empilhar
 
-        # ANTI-TAMPERING: o aluno só confirma presença em turma na qual está
-        # de fato matriculado (não basta escolher a turma no <select>).
+        #o aluno só confirma presença em turma na qual está de fato matriculado .
         if not Matricula.objects.filter(turma=turma, discente=discente).exists():
             raise forms.ValidationError("Você não está matriculado nesta turma.")
 

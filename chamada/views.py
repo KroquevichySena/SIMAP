@@ -35,16 +35,21 @@ def abrir_chamada(request):
     }
     return render(request, 'chamada/abrir_chamada.html', context)
      
-
+@login_required
 def confirmar_presenca(request):
+
+    if request.user.perfil != 'DISCENTE':
+        messages.error(request, "Apenas discentes podem confirmar presença.")
+        return redirect('core:dashboard')
+
     if request.method == 'POST':
-        form = ConfirmarPresencaForm(request.POST)
+        form = ConfirmarPresencaForm(request.POST, discente=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Presença confirmada com sucesso!")
             return redirect('chamada:confirmar_presenca')
     else:
-        form = ConfirmarPresencaForm()
+        form = ConfirmarPresencaForm(discente=request.user)
 
     context = {
         'form': form,
