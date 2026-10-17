@@ -17,14 +17,22 @@
         <li class="nav-item">
           <a class="nav-link" href="{% url 'core:atividade_list' %}">Atividades</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'chamada:abrir_chamada' %}">Chamada</a>
-        </li>
+
+        {% if user.perfil == 'DOCENTE' %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'chamada:abrir_chamada' %}">Chamada</a>
+          </li>
+        {% elif user.perfil == 'DISCENTE' %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'chamada:confirmar_presenca' %}">Chamada</a>
+          </li>
+        {% endif %}
         {% if user.is_superuser %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'auditoria:registro_list' %}">Auditoria</a>
         </li>
         {% endif %}
+
       </ul>
 
       <div class="d-flex align-items-center gap-2">
