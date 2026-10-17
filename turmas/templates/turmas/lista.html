@@ -4,8 +4,10 @@
 
 {% block content %}
     <h2>Turmas</h2>
+    {% if user.is_docente %}
      <a href="{% url 'criar_turma' %}" class="btn btn-primary">Nova Turma</a>
      <a href="{% url 'criar_matricula' %}" class="btn btn-secondary">Matricular Aluno</a>
+     {% endif %}
     <table class="table table-striped">
         <thead>
             <tr>

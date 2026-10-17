@@ -5,7 +5,7 @@ from .models import Turma, Matricula
 class TurmaForm(forms.ModelForm):
     class Meta:
         model = Turma
-        fields = ['nome', 'periodo', 'docente', 'ativa']
+        fields = ['nome', 'periodo', 'ativa']
 
 class MatriculaForm(forms.ModelForm):
     class Meta:
