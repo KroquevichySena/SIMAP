@@ -33,10 +33,10 @@ def criar_turma(request):
 @docente_required
 def criar_matricula(request):
     if request.method == 'POST':
-        form = MatriculaForm(request.POST)
+        form = MatriculaForm(request.POST, docente=request.user)
         if form.is_valid():
             form.save()
             return redirect('lista_turmas')
     else:
-        form = MatriculaForm()
+        form = MatriculaForm(docente=request.user)
     return render(request, 'turmas/matricula_form.html', {'form': form})          
