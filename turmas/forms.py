@@ -1,5 +1,6 @@
 from django import forms
 from .models import Turma, Matricula
+from django.contrib.auth import get_user_model
 
 
 class TurmaForm(forms.ModelForm):
@@ -14,6 +15,11 @@ class MatriculaForm(forms.ModelForm):
         docente=docente,
         ativa=True,
         )
+        self.fields['discente'].queryset = get_user_model().objects.filter(
+            perfil='DISCENTE',
+            is_active=True,
+        )
+
     class Meta:
         model = Matricula
         fields = ['turma', 'discente', 'status']
