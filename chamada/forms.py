@@ -1,10 +1,8 @@
 from django import forms
-from django.contrib.auth import get_user_model
 
 from .models import Chamada, Registro_de_Presenca
 from turmas.models import Matricula, Turma
 
-Usuario = get_user_model()
 
 class AbrirChamadaForm(forms.ModelForm):
     class Meta:

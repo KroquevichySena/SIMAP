@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 from django import forms
 from django.test import SimpleTestCase
 
-from chamada.forms import ConfirmarPresencaForm, Usuario
+from chamada.forms import ConfirmarPresencaForm
 from chamada.models import Chamada
 
 AGORA = datetime(2026, 10, 6, 10, 0, tzinfo=fuso.utc)
@@ -14,7 +14,6 @@ RELOGIO = "chamada.models.timezone.now"
 MATRICULAS = "chamada.forms.Matricula.objects"
 CHAMADAS = "chamada.forms.Chamada.objects"
 PRESENCAS = "chamada.forms.Registro_de_Presenca.objects"
-USUARIOS = "chamada.forms.Usuario.objects"
 
 
 def chamada_expirando_em(minutos, limite=3):
@@ -85,9 +84,8 @@ class ChamadaTest(SimpleTestCase):
 
 def montar_form(turma="turma", token="AULA01", discente="discente"):
     """Cria o formulário sem validar campos (evita consultar o banco)."""
-    form = ConfirmarPresencaForm()
-    form.cleaned_data = {"username": "ana", "turma": turma, "token_chamada": token}
-    form.discente = discente
+    form = ConfirmarPresencaForm(discente=discente)
+    form.cleaned_data = {"turma": turma, "token_chamada": token}
     return form
 
 
@@ -167,17 +165,6 @@ class ConfirmarPresencaFormTest(SimpleTestCase):
             forms.ValidationError, "Você já confirmou presença nesta chamada."
         ):
             montar_form().clean()
-
-    @patch(USUARIOS)
-    def test_deve_rejeitar_usuario_que_nao_e_discente_ativo(self, usuarios):
-        usuarios.get.side_effect = Usuario.DoesNotExist
-        form = ConfirmarPresencaForm()
-        form.cleaned_data = {"username": "fantasma"}
-
-        with self.assertRaisesMessage(
-            forms.ValidationError, "não é um discente ativo"
-        ):
-            form.clean_username()
 
     # ---------- casos-limite ----------
     @patch(MATRICULAS)
