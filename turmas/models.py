@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 
 class Turma(models.Model):
     nome = models.CharField(max_length=100)
@@ -7,6 +9,13 @@ class Turma(models.Model):
     docente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     ativa = models.BooleanField(default=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
+    limite_atencao = models.DecimalField(
+        max_digits=4,
+        decimal_places=1,
+        default=60,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+
 
     def __str__(self):
         return f"{self.nome} - {self.periodo}"  
