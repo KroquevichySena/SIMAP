@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu Desempenho - SIMAP{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <h2 class="mb-0">Meu Desempenho</h2>
+    {% if turmas %}
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <form method="GET">
+            <select name="turma" class="form-select" onchange="this.form.submit()">
+                {% for opcao in turmas %}
+                    <option value="{{ opcao.pk }}" {% if opcao.pk == turma.pk %}selected{% endif %}>{{ opcao }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <a href="{% url 'core:minhas_trilhas' %}" class="btn btn-primary">Minhas trilhas</a>
+    </div>
+    {% endif %}
+</div>
+
+{% if not turma %}
+    <div class="text-center text-muted py-5">
+        <p>Você ainda não está matriculado em nenhuma turma.</p>
+    </div>
+{% else %}
+    {% if linha.em_atencao %}
+        <div class="alert alert-warning">
+            Alguns dos seus indicadores estão abaixo do mínimo esperado pelo professor ({{ turma.limite_atencao }}%).
+            Confira os detalhes abaixo e procure acompanhar as aulas e as entregas.
+        </div>
+    {% endif %}
+
+    <div class="row row-cols-2 row-cols-lg-4 g-3 mb-4">
+        <div class="col">
+            <div class="card h-100 {% if 'frequencia' in linha.abaixo %}border-warning{% endif %}">
+                <div class="card-body">
+                    <div class="text-muted small">Frequência</div>
+                    <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=linha.frequencia %}</div>
+                    <div class="small text-muted">{{ linha.faltas }} falta{{ linha.faltas|pluralize }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 {% if 'entregas' in linha.abaixo %}border-warning{% endif %}">
+                <div class="card-body">
+                    <div class="text-muted small">Entregas</div>
+                    <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=linha.entregas %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 {% if 'progresso' in linha.abaixo %}border-warning{% endif %}">
+                <div class="card-body">
+                    <div class="text-muted small">Progresso</div>
+                    <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=linha.progresso %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Média de notas</div>
+                    <div class="fs-3 fw-bold">{{ linha.media|default_if_none:"—" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Meus indicadores</h6>
+                    <div style="position: relative; height: 280px;">
+                        <canvas id="grafico-indicadores"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Progresso por trilha</h6>
+                    {% if historico.trilhas %}
+                        <div style="position: relative; height: 280px;">
+                            <canvas id="grafico-trilhas"></canvas>
+                        </div>
+                    {% else %}
+                        <p class="text-muted small mb-0">Nenhuma trilha publicada nesta turma.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6 class="card-title">Minhas entregas</h6>
+            {% for item_trilha in historico.trilhas %}
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <strong>{{ item_trilha.trilha.titulo }}</strong>
+                    <span class="small text-muted">Progresso: {% include 'painel/_percentual.html' with valor=item_trilha.percentual %}</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Atividade</th>
+                                <th>Prazo</th>
+                                <th>Entrega</th>
+                                <th>Nota</th>
+                                <th>Feedback do professor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in item_trilha.atividades %}
+                            <tr>
+                                <td>
+                                    {{ item.atividade.titulo }}
+                                    {% if item.submissao %}
+                                        <details class="small">
+                                            <summary class="text-muted">Minha resposta</summary>
+                                            <pre class="bg-dark text-light p-2 rounded mb-0" style="white-space: pre-wrap;"><code>{{ item.submissao.resposta_texto }}</code></pre>
+                                        </details>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.atividade.prazo|date:"d/m/Y"|default:"Sem prazo" }}</td>
+                                <td>
+                                    {% if item.situacao == "no_prazo" %}
+                                        <span class="badge bg-success">No prazo</span>
+                                    {% elif item.situacao == "atrasada" %}
+                                        <span class="badge bg-warning text-dark">Atrasada</span>
+                                    {% elif item.situacao == "pendente" %}
+                                        <span class="badge bg-danger">Pendente</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">Em aberto</span>
+                                    {% endif %}
+                                </td>
+                                {% if item.submissao.avaliacao_oficial %}
+                                    <td>{{ item.submissao.avaliacao_oficial.nota }}</td>
+                                    <td class="small">{{ item.submissao.avaliacao_oficial.feedback_professor|default:"—"|linebreaksbr }}</td>
+                                {% elif item.submissao %}
+                                    <td colspan="2" class="small text-muted">Aguardando correção</td>
+                                {% else %}
+                                    <td>—</td>
+                                    <td class="small">—</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% empty %}
+                <p class="text-muted mb-0">Nenhuma trilha publicada nesta turma.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6 class="card-title">Minhas presenças</h6>
+            <div class="table-responsive" style="max-height: 300px;">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in historico.chamadas %}
+                        <tr>
+                            <td>{{ item.chamada.data_expiracao|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if item.presente %}
+                                    <span class="badge bg-success">Presente</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Falta</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">Nenhuma chamada encerrada desde a sua matrícula.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if turma %}
+{{ dados_grafico|json_script:"dados-grafico" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    const dados = JSON.parse(document.getElementById("dados-grafico").textContent);
+    const rotulos = ["Frequência", "Entregas", "Progresso"];
+
+    new Chart(document.getElementById("grafico-indicadores"), {
+        type: "bar",
+        data: {
+            labels: rotulos,
+            datasets: [
+                {label: "Você", data: dados.indicadores, backgroundColor: ["#0d6efd", "#198754", "#6f42c1"]},
+                {
+                    label: "Mínimo esperado",
+                    type: "line",
+                    data: rotulos.map(() => dados.limite),
+                    borderColor: "#ffc107",
+                    borderDash: [6, 4],
+                    pointRadius: 0,
+                },
+            ],
+        },
+        options: {maintainAspectRatio: false, scales: {y: {min: 0, max: 100, title: {display: true, text: "%"}}}},
+    });
+
+    const canvasTrilhas = document.getElementById("grafico-trilhas");
+    if (canvasTrilhas) {
+        new Chart(canvasTrilhas, {
+            type: "bar",
+            data: {
+                labels: dados.trilhas.map((trilha) => trilha.rotulo),
+                datasets: [{label: "Concluído (%)", data: dados.trilhas.map((trilha) => trilha.valor), backgroundColor: "#6f42c1"}],
+            },
+            options: {indexAxis: "y", maintainAspectRatio: false, scales: {x: {min: 0, max: 100}}},
+        });
+    }
+</script>
+{% endif %}
+{% endblock %}

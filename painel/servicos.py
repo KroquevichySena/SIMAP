@@ -1,9 +1,10 @@
 from collections import defaultdict
 
+from django.db.models import Prefetch
 from django.utils import timezone
 
 from chamada.models import Chamada, Registro_de_Presenca
-from core.models import Atividade, ConclusaoAtividade
+from core.models import Atividade, ConclusaoAtividade, TrilhaAprendizagem
 from entregas.models import AvaliacaoOficial, Submissao
 from turmas.models import Matricula
 
@@ -216,3 +217,72 @@ def dados_do_grafico(turma, linhas):
         "evolucao": evolucao,
         "limite": float(turma.limite_atencao),
     }
+
+
+def _situacao_da_entrega(atividade, submissao, agora):
+    if submissao:
+        return "atrasada" if submissao.is_atrasado else "no_prazo"
+    if atividade.prazo and atividade.prazo < agora:
+        return "pendente"
+    return "aberta"
+
+
+def historico_do_aluno(turma, discente):
+    matricula = Matricula.objects.filter(
+        turma=turma, discente=discente, status="ATIVA"
+    ).first()
+    if matricula is None:
+        return None
+    agora = timezone.now()
+
+    presencas = set(
+        Registro_de_Presenca.objects.filter(
+            chamada__turma=turma, discente=discente
+        ).values_list("chamada_id", flat=True)
+    )
+    chamadas = [
+        {"chamada": chamada, "presente": chamada.pk in presencas}
+        for chamada in Chamada.objects.filter(turma=turma).order_by("-data_expiracao")
+        if chamada.pk in presencas
+        or matricula.data_matricula <= chamada.data_expiracao <= agora
+    ]
+
+    submissoes = {
+        submissao.atividade_id: submissao
+        for submissao in Submissao.objects.filter(
+            atividade__trilha__turma=turma, aluno=discente
+        ).select_related("atividade", "avaliacao_oficial")
+    }
+    concluidas = set(
+        ConclusaoAtividade.objects.filter(
+            atividade__trilha__turma=turma, discente=discente
+        ).values_list("atividade_id", flat=True)
+    )
+    trilhas = TrilhaAprendizagem.objects.filter(turma=turma, publicada=True).prefetch_related(
+        Prefetch(
+            "atividades",
+            queryset=Atividade.objects.filter(publicada=True).order_by("ordem", "id"),
+            to_attr="atividades_visiveis",
+        )
+    ).order_by("ordem", "id")
+
+    historico_trilhas = []
+    for trilha in trilhas:
+        atividades = [
+            {
+                "atividade": atividade,
+                "submissao": submissoes.get(atividade.pk),
+                "situacao": _situacao_da_entrega(atividade, submissoes.get(atividade.pk), agora),
+                "concluida": atividade.pk in concluidas,
+            }
+            for atividade in trilha.atividades_visiveis
+        ]
+        historico_trilhas.append({
+            "trilha": trilha,
+            "atividades": atividades,
+            "percentual": _percentual(
+                sum(1 for item in atividades if item["concluida"]), len(atividades)
+            ),
+        })
+
+    return {"chamadas": chamadas, "trilhas": historico_trilhas}

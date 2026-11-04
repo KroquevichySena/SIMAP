@@ -136,7 +136,7 @@
                     <tbody>
                         {% for linha in linhas %}
                         <tr {% if linha.em_atencao %}class="table-danger"{% endif %}>
-                            <td>{{ linha.discente.get_full_name|default:linha.discente.username }}</td>
+                            <td><a href="{% url 'painel:detalhe_aluno' turma.pk linha.discente.pk %}">{{ linha.discente.get_full_name|default:linha.discente.username }}</a></td>
                             <td class="{% if 'frequencia' in linha.abaixo %}text-danger fw-bold{% endif %}">
                                 {% include 'painel/_percentual.html' with valor=linha.frequencia %}
                                 <span class="small text-muted fw-normal">({{ linha.faltas }} falta{{ linha.faltas|pluralize }})</span>
@@ -178,6 +178,7 @@
         notas: {rotulo: "Média de notas", cor: "#fd7e14", eixo: "y1"},
     };
     const CORES_RADAR = ["#0d6efd", "#fd7e14", "#198754"];
+    const URL_DETALHE = "{% url 'painel:detalhe_aluno' turma.pk 0 %}";
     const canvas = document.getElementById("grafico");
     const aviso = document.getElementById("aviso-grafico");
     const seletorRadar = document.getElementById("alunos-radar");
@@ -214,6 +215,14 @@
         };
     }
 
+    function abrirDetalhe(alunos) {
+        return (evento, elementos) => {
+            if (elementos.length) {
+                window.location.href = URL_DETALHE.replace("/0/", `/${alunos[elementos[0].index].id}/`);
+            }
+        };
+    }
+
     function alunosVisiveis() {
         const somenteAtencao = document.getElementById("somente-atencao").checked;
         return dados.alunos.filter((aluno) => !somenteAtencao || aluno.em_atencao);
@@ -238,6 +247,7 @@
             type: "bar",
             data: {labels: rotulos, datasets: datasets},
             options: {
+                onClick: abrirDetalhe(alunos),
                 scales: escalas(metricas),
                 plugins: {tooltip: {callbacks: {afterBody: (itens) => `Faltas: ${alunos[itens[0].dataIndex].faltas}`}}},
             },
@@ -262,6 +272,7 @@
                 }],
             },
             options: {
+                onClick: abrirDetalhe(alunos),
                 scales: {x: eixo(x), y: eixo(y)},
                 plugins: {
                     legend: {display: false},
