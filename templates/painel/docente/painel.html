@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel de Desempenho - SIMAP{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <h2 class="mb-0">Painel de Desempenho</h2>
+    {% if turmas %}
+    <div class="d-flex flex-wrap align-items-center gap-3">
+        <form method="GET">
+            <select name="turma" class="form-select" onchange="this.form.submit()">
+                {% for opcao in turmas %}
+                    <option value="{{ opcao.pk }}" {% if opcao.pk == turma.pk %}selected{% endif %}>{{ opcao }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <form method="POST" action="{% url 'painel:definir_limite' turma.pk %}" class="d-flex align-items-center gap-2">
+            {% csrf_token %}
+            <label for="{{ form_limite.limite_atencao.id_for_label }}" class="small mb-0 text-nowrap">Limite de atenção (%)</label>
+            <div style="width: 90px;">{{ form_limite.limite_atencao }}</div>
+            <button type="submit" class="btn btn-sm btn-outline-primary">Salvar</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+{% if not turma %}
+    <div class="text-center text-muted py-5">
+        <p>Você ainda não possui turmas ativas.</p>
+        <a href="{% url 'criar_turma' %}" class="btn btn-success">+ Nova Turma</a>
+    </div>
+{% else %}
+    <div class="row row-cols-2 row-cols-lg-5 g-3 mb-4">
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Frequência média</div>
+                    <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=resumo.frequencia %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Taxa de entrega</div>
+                    <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=resumo.entregas %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Progresso médio</div>
+                    <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=resumo.progresso %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Média de notas</div>
+                    <div class="fs-3 fw-bold">{{ resumo.media|default_if_none:"—" }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 {% if resumo.em_atencao %}border-danger{% endif %}">
+                <div class="card-body">
+                    <div class="text-muted small">Alunos em atenção</div>
+                    <div class="fs-3 fw-bold {% if resumo.em_atencao %}text-danger{% endif %}">{{ resumo.em_atencao }} de {{ resumo.total }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="small text-muted me-1">Gráfico</span>
+                <div class="btn-group btn-group-sm" role="group">
+                    <input type="radio" class="btn-check" name="tipo-grafico" id="tipo-barras" value="barras" checked>
+                    <label class="btn btn-outline-primary" for="tipo-barras">Barras</label>
+                    <input type="radio" class="btn-check" name="tipo-grafico" id="tipo-dispersao" value="dispersao">
+                    <label class="btn btn-outline-primary" for="tipo-dispersao">Dispersão</label>
+                    <input type="radio" class="btn-check" name="tipo-grafico" id="tipo-evolucao" value="evolucao">
+                    <label class="btn btn-outline-primary" for="tipo-evolucao">Evolução</label>
+                    <input type="radio" class="btn-check" name="tipo-grafico" id="tipo-radar" value="radar">
+                    <label class="btn btn-outline-primary" for="tipo-radar">Radar</label>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="small text-muted me-1">Métricas</span>
+                <input type="checkbox" class="btn-check metrica" id="metrica-frequencia" value="frequencia" checked>
+                <label class="btn btn-sm btn-outline-secondary" for="metrica-frequencia">Frequência</label>
+                <input type="checkbox" class="btn-check metrica" id="metrica-entregas" value="entregas" checked>
+                <label class="btn btn-sm btn-outline-secondary" for="metrica-entregas">Entregas</label>
+                <input type="checkbox" class="btn-check metrica" id="metrica-progresso" value="progresso">
+                <label class="btn btn-sm btn-outline-secondary" for="metrica-progresso">Progresso</label>
+                <input type="checkbox" class="btn-check metrica" id="metrica-notas" value="notas">
+                <label class="btn btn-sm btn-outline-secondary" for="metrica-notas">Notas</label>
+                <div class="form-check form-switch ms-lg-3 mb-0">
+                    <input class="form-check-input" type="checkbox" id="somente-atencao">
+                    <label class="form-check-label small" for="somente-atencao">Somente alunos em atenção</label>
+                </div>
+            </div>
+            <div id="bloco-radar" class="mb-2 d-none">
+                <label for="alunos-radar" class="small text-muted">Alunos para comparar (até 3, use Ctrl para selecionar)</label>
+                <select id="alunos-radar" class="form-select form-select-sm" multiple size="4">
+                    {% for linha in linhas %}
+                        <option value="{{ linha.discente.pk }}" {% if forloop.first %}selected{% endif %}>{{ linha.discente.get_full_name|default:linha.discente.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div id="aviso-grafico" class="alert alert-info small mb-0 d-none"></div>
+            <div style="position: relative; height: 380px;">
+                <canvas id="grafico"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6 class="card-title">Alunos</h6>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Frequência</th>
+                            <th>Entregas</th>
+                            <th>Progresso</th>
+                            <th>Média</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for linha in linhas %}
+                        <tr {% if linha.em_atencao %}class="table-danger"{% endif %}>
+                            <td>{{ linha.discente.get_full_name|default:linha.discente.username }}</td>
+                            <td class="{% if 'frequencia' in linha.abaixo %}text-danger fw-bold{% endif %}">
+                                {% include 'painel/_percentual.html' with valor=linha.frequencia %}
+                                <span class="small text-muted fw-normal">({{ linha.faltas }} falta{{ linha.faltas|pluralize }})</span>
+                            </td>
+                            <td class="{% if 'entregas' in linha.abaixo %}text-danger fw-bold{% endif %}">{% include 'painel/_percentual.html' with valor=linha.entregas %}</td>
+                            <td class="{% if 'progresso' in linha.abaixo %}text-danger fw-bold{% endif %}">{% include 'painel/_percentual.html' with valor=linha.progresso %}</td>
+                            <td>{{ linha.media|default_if_none:"—" }}</td>
+                            <td>
+                                {% if linha.em_atencao %}
+                                    <span class="badge bg-danger">Atenção</span>
+                                {% else %}
+                                    <span class="badge bg-success">OK</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Nenhum aluno com matrícula ativa nesta turma.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if turma %}
+{{ dados_grafico|json_script:"dados-grafico" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    const dados = JSON.parse(document.getElementById("dados-grafico").textContent);
+    const METRICAS = {
+        frequencia: {rotulo: "Frequência (%)", cor: "#0d6efd", eixo: "y"},
+        entregas: {rotulo: "Entregas (%)", cor: "#198754", eixo: "y"},
+        progresso: {rotulo: "Progresso (%)", cor: "#6f42c1", eixo: "y"},
+        notas: {rotulo: "Média de notas", cor: "#fd7e14", eixo: "y1"},
+    };
+    const CORES_RADAR = ["#0d6efd", "#fd7e14", "#198754"];
+    const canvas = document.getElementById("grafico");
+    const aviso = document.getElementById("aviso-grafico");
+    const seletorRadar = document.getElementById("alunos-radar");
+    let grafico = null;
+
+    function usaPercentual(metricas) {
+        return metricas.some((metrica) => METRICAS[metrica].eixo === "y");
+    }
+
+    function eixo(metrica) {
+        return {min: 0, max: metrica === "notas" ? 10 : 100, title: {display: true, text: METRICAS[metrica].rotulo}};
+    }
+
+    function escalas(metricas) {
+        const resultado = {};
+        if (usaPercentual(metricas)) {
+            resultado.y = {min: 0, max: 100, title: {display: true, text: "%"}};
+        }
+        if (metricas.includes("notas")) {
+            resultado.y1 = {min: 0, max: 10, position: "right", grid: {drawOnChartArea: false}, title: {display: true, text: "Nota"}};
+        }
+        return resultado;
+    }
+
+    function linhaLimite(rotulos) {
+        return {
+            label: "Limite de atenção",
+            type: "line",
+            data: rotulos.map(() => dados.limite),
+            borderColor: "#dc3545",
+            borderDash: [6, 4],
+            pointRadius: 0,
+            yAxisID: "y",
+        };
+    }
+
+    function alunosVisiveis() {
+        const somenteAtencao = document.getElementById("somente-atencao").checked;
+        return dados.alunos.filter((aluno) => !somenteAtencao || aluno.em_atencao);
+    }
+
+    function configBarras(metricas) {
+        const alunos = alunosVisiveis();
+        if (!alunos.length) {
+            return "Nenhum aluno para exibir com o filtro atual.";
+        }
+        const rotulos = alunos.map((aluno) => aluno.nome);
+        const datasets = metricas.map((metrica) => ({
+            label: METRICAS[metrica].rotulo,
+            data: alunos.map((aluno) => aluno[metrica]),
+            backgroundColor: METRICAS[metrica].cor,
+            yAxisID: METRICAS[metrica].eixo,
+        }));
+        if (usaPercentual(metricas)) {
+            datasets.push(linhaLimite(rotulos));
+        }
+        return {
+            type: "bar",
+            data: {labels: rotulos, datasets: datasets},
+            options: {
+                scales: escalas(metricas),
+                plugins: {tooltip: {callbacks: {afterBody: (itens) => `Faltas: ${alunos[itens[0].dataIndex].faltas}`}}},
+            },
+        };
+    }
+
+    function configDispersao(metricas) {
+        if (metricas.length !== 2) {
+            return "Selecione exatamente 2 métricas para ver a relação entre elas.";
+        }
+        const [x, y] = metricas;
+        const alunos = alunosVisiveis().filter((aluno) => aluno[x] !== null && aluno[y] !== null);
+        return {
+            type: "scatter",
+            data: {
+                datasets: [{
+                    label: "Alunos",
+                    data: alunos.map((aluno) => ({x: aluno[x], y: aluno[y], nome: aluno.nome})),
+                    backgroundColor: alunos.map((aluno) => (aluno.em_atencao ? "#dc3545" : "#0d6efd")),
+                    pointRadius: 7,
+                    pointHoverRadius: 9,
+                }],
+            },
+            options: {
+                scales: {x: eixo(x), y: eixo(y)},
+                plugins: {
+                    legend: {display: false},
+                    tooltip: {callbacks: {label: (item) => `${item.raw.nome}: ${item.raw.x} × ${item.raw.y}`}},
+                },
+            },
+        };
+    }
+
+    function configEvolucao(metricas) {
+        const evolucao = dados.evolucao;
+        if (!evolucao.rotulos.length) {
+            return "Ainda não há aulas ou prazos encerrados para mostrar a evolução.";
+        }
+        const datasets = metricas.map((metrica) => ({
+            label: METRICAS[metrica].rotulo,
+            data: evolucao[metrica],
+            borderColor: METRICAS[metrica].cor,
+            backgroundColor: METRICAS[metrica].cor,
+            yAxisID: METRICAS[metrica].eixo,
+            spanGaps: true,
+            tension: 0.3,
+        }));
+        if (usaPercentual(metricas)) {
+            datasets.push(linhaLimite(evolucao.rotulos));
+        }
+        return {type: "line", data: {labels: evolucao.rotulos, datasets: datasets}, options: {scales: escalas(metricas)}};
+    }
+
+    function configRadar(metricas) {
+        if (metricas.length < 3) {
+            return "Selecione pelo menos 3 métricas para o radar.";
+        }
+        const ids = Array.from(seletorRadar.selectedOptions).map((opcao) => Number(opcao.value));
+        if (!ids.length || ids.length > 3) {
+            return "Escolha de 1 a 3 alunos para comparar no radar.";
+        }
+        const valor = (aluno, metrica) => (metrica === "notas" && aluno.notas !== null ? aluno.notas * 10 : aluno[metrica]);
+        const mediaDaTurma = (metrica) => {
+            const valores = dados.alunos.map((aluno) => valor(aluno, metrica)).filter((v) => v !== null);
+            return valores.length ? valores.reduce((soma, v) => soma + v, 0) / valores.length : null;
+        };
+        const datasets = dados.alunos
+            .filter((aluno) => ids.includes(aluno.id))
+            .map((aluno, indice) => ({
+                label: aluno.nome,
+                data: metricas.map((metrica) => valor(aluno, metrica)),
+                borderColor: CORES_RADAR[indice],
+                backgroundColor: `${CORES_RADAR[indice]}33`,
+            }));
+        datasets.push({
+            label: "Média da turma",
+            data: metricas.map(mediaDaTurma),
+            borderColor: "#6c757d",
+            borderDash: [6, 4],
+            backgroundColor: "transparent",
+        });
+        return {
+            type: "radar",
+            data: {labels: metricas.map((metrica) => (metrica === "notas" ? "Notas (×10)" : METRICAS[metrica].rotulo)), datasets: datasets},
+            options: {scales: {r: {min: 0, max: 100}}},
+        };
+    }
+
+    const CONFIGURACOES = {barras: configBarras, dispersao: configDispersao, evolucao: configEvolucao, radar: configRadar};
+
+    function desenhar() {
+        const tipo = document.querySelector('input[name="tipo-grafico"]:checked').value;
+        const metricas = Array.from(document.querySelectorAll(".metrica:checked")).map((campo) => campo.value);
+        document.getElementById("bloco-radar").classList.toggle("d-none", tipo !== "radar");
+
+        if (grafico) {
+            grafico.destroy();
+            grafico = null;
+        }
+        const config = metricas.length ? CONFIGURACOES[tipo](metricas) : "Selecione ao menos uma métrica.";
+        const invalido = typeof config === "string";
+        aviso.classList.toggle("d-none", !invalido);
+        canvas.classList.toggle("d-none", invalido);
+        if (invalido) {
+            aviso.textContent = config;
+            return;
+        }
+        config.options.maintainAspectRatio = false;
+        grafico = new Chart(canvas, config);
+    }
+
+    document
+        .querySelectorAll('input[name="tipo-grafico"], .metrica, #somente-atencao, #alunos-radar')
+        .forEach((campo) => campo.addEventListener("change", desenhar));
+    desenhar();
+</script>
+{% endif %}
+{% endblock %}
