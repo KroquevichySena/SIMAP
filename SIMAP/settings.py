@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "core",
     "chamada",
     "entregas",
+    "painel",
 ]
 
 MIDDLEWARE = [
