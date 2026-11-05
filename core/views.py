@@ -11,22 +11,63 @@ A segurança aqui funciona em três camadas, uma completando a outra:
 """
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.db.models import Count, Prefetch
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView, View
 
+from comunicacao.arquivos import resposta_de_download, salvar_arquivos
+from comunicacao.forms import ACEITAR
 from entregas.models import Submissao
 from turmas.models import Matricula
 
-
+from . import avisos
 from .forms import AtividadeForm, TrilhaAprendizagemForm
 from .mixins import DiscenteRequiredMixin, DocenteRequiredMixin
 from .models import (
     Atividade,
     ConclusaoAtividade,
+    MaterialDeApoio,
     TrilhaAprendizagem,
 )
+
+
+class SalvarComMateriaisMixin:
+    """
+    Usado nas telas de criar e editar trilha e atividade.
+
+    Depois de gravar o objeto, tira os materiais marcados para remoção, grava
+    os arquivos novos e, se o conteúdo acabou de ficar visível para os alunos,
+    manda o aviso. Tudo numa transação só: se algo falhar, nada fica pela metade.
+    """
+
+    campo_dono = None  # "trilha" ou "atividade"
+
+    def estava_visivel(self):
+        raise NotImplementedError
+
+    def esta_visivel(self, obj):
+        raise NotImplementedError
+
+    def avisar(self, obj):
+        raise NotImplementedError
+
+    def form_valid(self, form):
+        # Lê do banco como estava antes: o form já alterou o objeto em memória.
+        antes = self.estava_visivel() if form.instance.pk else False
+        with transaction.atomic():
+            resposta = super().form_valid(form)
+            removidos = form.cleaned_data.get("remover_materiais") or []
+            for material in removidos:
+                material.delete()
+            salvar_arquivos(MaterialDeApoio, form.materiais_validados, **{self.campo_dono: self.object})
+            if not antes and self.esta_visivel(self.object):
+                total = self.avisar(self.object)
+                if total:
+                    messages.info(self.request, f"{total} aluno(s) foram notificados.")
+        return resposta
 
 
 # Depois do login, cada um vai para a sua área.
@@ -58,7 +99,20 @@ class TrilhaListView(DocenteRequiredMixin, ListView):
         )
 
 
-class TrilhaCreateView(DocenteRequiredMixin, CreateView):
+class TrilhaMateriaisMixin(SalvarComMateriaisMixin):
+    campo_dono = "trilha"
+
+    def estava_visivel(self):
+        return TrilhaAprendizagem.objects.filter(pk=self.object.pk, publicada=True).exists()
+
+    def esta_visivel(self, trilha):
+        return trilha.publicada
+
+    def avisar(self, trilha):
+        return avisos.avisar_trilha_publicada(trilha)
+
+
+class TrilhaCreateView(DocenteRequiredMixin, TrilhaMateriaisMixin, CreateView):
     model = TrilhaAprendizagem
     form_class = TrilhaAprendizagemForm
     template_name = "core/docente/trilha_form.html"
@@ -74,7 +128,7 @@ class TrilhaCreateView(DocenteRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class TrilhaUpdateView(DocenteRequiredMixin, UpdateView):
+class TrilhaUpdateView(DocenteRequiredMixin, TrilhaMateriaisMixin, UpdateView):
     model = TrilhaAprendizagem
     form_class = TrilhaAprendizagemForm
     template_name = "core/docente/trilha_form.html"
@@ -134,7 +188,23 @@ class AtividadeListView(DocenteRequiredMixin, ListView):
         return ctx
 
 
-class AtividadeCreateView(DocenteRequiredMixin, CreateView):
+class AtividadeMateriaisMixin(SalvarComMateriaisMixin):
+    campo_dono = "atividade"
+
+    def estava_visivel(self):
+        # Visível = atividade publicada dentro de uma trilha publicada.
+        return Atividade.objects.filter(
+            pk=self.object.pk, publicada=True, trilha__publicada=True
+        ).exists()
+
+    def esta_visivel(self, atividade):
+        return atividade.publicada and atividade.trilha.publicada
+
+    def avisar(self, atividade):
+        return avisos.avisar_atividade_publicada(atividade)
+
+
+class AtividadeCreateView(DocenteRequiredMixin, AtividadeMateriaisMixin, CreateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = "core/docente/atividade_form.html"
@@ -162,7 +232,7 @@ class AtividadeCreateView(DocenteRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class AtividadeUpdateView(DocenteRequiredMixin, UpdateView):
+class AtividadeUpdateView(DocenteRequiredMixin, AtividadeMateriaisMixin, UpdateView):
     model = Atividade
     form_class = AtividadeForm
     template_name = "core/docente/atividade_form.html"
@@ -217,7 +287,9 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
         # não precisar de uma consulta extra por trilha.
         atividades_publicadas = Prefetch(
             "atividades",
-            queryset=Atividade.objects.filter(publicada=True).order_by("ordem", "id"),
+            queryset=Atividade.objects.filter(publicada=True)
+            .prefetch_related("materiais")
+            .order_by("ordem", "id"),
             to_attr="atividades_visiveis",
         )
 
@@ -226,7 +298,7 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
                 turma_id__in=turmas_do_aluno, publicada=True
             )
             .select_related("turma", "turma__docente")
-            .prefetch_related(atividades_publicadas)
+            .prefetch_related(atividades_publicadas, "materiais")
             .order_by("turma__nome", "ordem", "id")
         )
 
@@ -245,9 +317,9 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
         )
         enviadas = {
             s.atividade_id: s
-            for s in Submissao.objects.filter(aluno=self.request.user).select_related(
-                "avaliacao_oficial"
-            )
+            for s in Submissao.objects.filter(aluno=self.request.user)
+            .select_related("avaliacao_oficial")
+            .prefetch_related("anexos")
         }
 
 
@@ -270,6 +342,7 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
             total_geral += trilha.total_visiveis
             concluidas_geral += trilha.total_concluidas
 
+        ctx["extensoes_aceitas"] = ACEITAR
         ctx["total_atividades"] = total_geral
         ctx["total_concluidas"] = concluidas_geral
         ctx["percentual_geral"] = (
@@ -310,3 +383,33 @@ class ConcluirAtividadeView(DiscenteRequiredMixin, View):
             conclusao.delete()
             messages.info(request, f"Conclusão de “{atividade.titulo}” desfeita.")
         return redirect("core:minhas_trilhas")
+
+
+class BaixarMaterialView(LoginRequiredMixin, View):
+    """
+    Entrega um material de apoio.
+
+    Pode baixar o professor dono da turma, ou o aluno com matrícula ativa,
+    desde que a trilha (e a atividade, se o material for dela) esteja
+    publicada. Para qualquer outra pessoa o arquivo "não existe" (404).
+    """
+
+    def get(self, request, pk):
+        material = get_object_or_404(
+            MaterialDeApoio.objects.select_related("trilha__turma", "atividade__trilha__turma"), pk=pk
+        )
+        if not self._pode_baixar(request.user, material):
+            raise Http404
+        return resposta_de_download(material, mostrar_na_tela=request.GET.get("ver") == "1")
+
+    @staticmethod
+    def _pode_baixar(usuario, material):
+        turma = material.turma
+        if turma.docente_id == usuario.pk:
+            return True
+        trilha = material.trilha or material.atividade.trilha
+        if not (trilha.publicada and turma.ativa):
+            return False
+        if material.atividade_id and not material.atividade.publicada:
+            return False
+        return Matricula.objects.filter(turma=turma, discente=usuario, status="ATIVA").exists()

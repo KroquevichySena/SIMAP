@@ -1,0 +1,6 @@
+<div class="small my-2">
+    <span class="text-muted">Material de apoio:</span>
+    {% for material in materiais %}
+        <a href="{% url 'core:baixar_material' material.pk %}{% if material.eh_imagem %}?ver=1{% endif %}" class="me-2"{% if material.eh_imagem %} target="_blank" rel="noopener"{% endif %}>📎 {{ material.nome_original }}</a><span class="text-muted me-3">({{ material.tamanho_legivel }})</span>
+    {% endfor %}
+</div>

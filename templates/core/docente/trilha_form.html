@@ -10,9 +10,17 @@
                 <h4 class="mb-0">{% if object %}Editar Trilha{% else %}Nova Trilha{% endif %}</h4>
             </div>
             <div class="card-body">
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.as_p }}
+                    {% if object and object.materiais.all %}
+                    <div class="border rounded p-2 mb-3 small">
+                        <div class="fw-semibold mb-1">Material já publicado</div>
+                        {% for material in object.materiais.all %}
+                        <div><a href="{% url 'core:baixar_material' material.pk %}">📎 {{ material.nome_original }}</a> <span class="text-muted">({{ material.tamanho_legivel }})</span></div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                     <div class="d-flex justify-content-between mt-4">
                         <a href="{% url 'core:trilha_list' %}" class="btn btn-secondary">Cancelar</a>
                         <button type="submit" class="btn btn-success">Salvar</button>
