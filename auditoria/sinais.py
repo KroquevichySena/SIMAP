@@ -42,6 +42,9 @@ MODELOS_PADRAO = [
     "entregas.Submissao",
     "entregas.AnaliseIA",
     "entregas.AvaliacaoOficial",
+    "comunicacao.Publicacao",
+    "comunicacao.Resposta",
+    "comunicacao.Anexo",
 ]
 
 # O Django atualiza o last_login sozinho a cada login. Não é uma ação do
@@ -99,11 +102,24 @@ def _campos_auditaveis(modelo):
         yield campo
 
 
+# Um modelo pode pedir que o conteúdo de alguns campos não seja copiado para
+# a auditoria, como o texto das mensagens da comunicação. A ação continua
+# registrada (quem, quando, em qual objeto); só o conteúdo fica de fora.
+OCULTO = "[conteúdo não registrado]"
+
+
+def _valor_auditado(modelo, nome, valor):
+    if nome in getattr(modelo, "AUDITORIA_CAMPOS_OCULTOS", ()):
+        return OCULTO
+    return valor_para_json(nome, valor)
+
+
 def _retrato(instancia):
     """Uma "foto" dos valores do objeto, com os campos sensíveis escondidos."""
+    modelo = type(instancia)
     return {
-        campo.name: valor_para_json(campo.name, getattr(instancia, campo.attname))
-        for campo in _campos_auditaveis(type(instancia))
+        campo.name: _valor_auditado(modelo, campo.name, getattr(instancia, campo.attname))
+        for campo in _campos_auditaveis(modelo)
     }
 
 
@@ -143,8 +159,8 @@ def depois_de_salvar(sender, instance, created, raw=False, update_fields=None, *
         valor_novo = getattr(instance, campo.attname)
         if valor_antigo != valor_novo:
             alteracoes[campo.name] = {
-                "antes": valor_para_json(campo.name, valor_antigo),
-                "depois": valor_para_json(campo.name, valor_novo),
+                "antes": _valor_auditado(sender, campo.name, valor_antigo),
+                "depois": _valor_auditado(sender, campo.name, valor_novo),
             }
     instance._auditoria_antes = None
 
