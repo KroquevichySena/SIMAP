@@ -8,6 +8,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from comunicacao.models import ArquivoSeguro
+
 
 TIPO_TEORICA = 'TEORICA'
 TIPO_PRATICA = 'PRATICA'  # Reservado para versões futuras (exige sandbox)
@@ -145,3 +147,40 @@ class ConclusaoAtividade(models.Model):
 
     def __str__(self):
         return f"{self.discente} - {self.atividade}"
+
+
+class MaterialDeApoio(ArquivoSeguro):
+    """
+    Arquivo que o professor anexa a uma trilha ou a uma atividade (slides,
+    lista de exercícios, código de exemplo...).
+
+    Passa pela mesma validação dos anexos da comunicação: só tipos da lista,
+    conteúdo conferido e nada de executável, macro ou PDF com JavaScript.
+    """
+
+    trilha = models.ForeignKey(
+        TrilhaAprendizagem, on_delete=models.CASCADE, null=True, blank=True,
+        related_name="materiais", verbose_name="Trilha",
+    )
+    atividade = models.ForeignKey(
+        Atividade, on_delete=models.CASCADE, null=True, blank=True,
+        related_name="materiais", verbose_name="Atividade",
+    )
+
+    class Meta(ArquivoSeguro.Meta):
+        verbose_name = "Material de apoio"
+        verbose_name_plural = "Materiais de apoio"
+        constraints = [
+            # Cada material pertence a uma trilha OU a uma atividade.
+            models.CheckConstraint(
+                condition=(
+                    models.Q(trilha__isnull=False, atividade__isnull=True)
+                    | models.Q(trilha__isnull=True, atividade__isnull=False)
+                ),
+                name="ck_material_um_unico_dono",
+            ),
+        ]
+
+    @property
+    def turma(self):
+        return self.trilha.turma if self.trilha_id else self.atividade.trilha.turma

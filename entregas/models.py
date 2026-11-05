@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+from comunicacao.models import ArquivoSeguro
 from core.models import Atividade
 
 
@@ -40,6 +41,23 @@ class Submissao(models.Model):
     @property
     def is_atrasado(self) -> bool:
         return bool(self.atividade.prazo and self.data_envio > self.atividade.prazo)
+
+
+class AnexoSubmissao(ArquivoSeguro):
+    """
+    Arquivo enviado pelo aluno junto com a resposta (ex.: o .py da questão).
+
+    Passa pela mesma validação dos anexos da comunicação. Os anexos não são
+    enviados ao Gemini: a análise de IA continua usando só o texto da resposta.
+    """
+
+    submissao = models.ForeignKey(
+        Submissao, on_delete=models.CASCADE, related_name="anexos", verbose_name="Submissão"
+    )
+
+    class Meta(ArquivoSeguro.Meta):
+        verbose_name = "Anexo da submissão"
+        verbose_name_plural = "Anexos das submissões"
 
 
 
