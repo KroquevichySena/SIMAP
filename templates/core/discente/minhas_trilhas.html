@@ -51,6 +51,8 @@
                         </form>
                     </div>
 
+                    <a href="{% url 'comunicacao:atividade' atividade.pk %}" class="btn btn-sm btn-link px-0">💬 Comentários e dúvidas</a>
+
                     {% if atividade.submissao %}
                         <div class="mt-2 small">
                             <span class="badge bg-info text-dark">Resposta enviada</span>

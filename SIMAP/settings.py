@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "core",
     "chamada",
     "entregas",
+    "comunicacao",
 ]
 
 MIDDLEWARE = [
@@ -74,6 +75,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "comunicacao.context_processors.notificacoes",
             ],
         },
     },
@@ -269,3 +271,12 @@ LOGGING["loggers"]["simap.auditoria"] = {
     "level": "INFO",
     "propagate": False,
 }
+
+# Comunicação (mural, comentários e mensagens privadas)
+# Os anexos ficam em MEDIA_ROOT, que NÃO é servido direto pelo servidor web:
+# todo download passa por uma view que confere se a pessoa pode ver o arquivo.
+MEDIA_ROOT = BASE_DIR / "media"
+
+COMUNICACAO_TAMANHO_MAXIMO_ANEXO = 10 * 1024 * 1024  # 10 MB por arquivo
+COMUNICACAO_MAXIMO_ANEXOS = 5                         # por publicação ou resposta
+COMUNICACAO_TAMANHO_MAXIMO_TEXTO = 5000               # caracteres

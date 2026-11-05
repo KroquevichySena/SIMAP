@@ -1,0 +1,35 @@
+<form method="post" enctype="multipart/form-data" class="card card-body shadow-sm mb-4" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+  {% if form.destinatario %}
+  <div class="mb-2">
+    <label class="form-label fw-semibold" for="{{ form.destinatario.id_for_label }}">{{ form.destinatario.label }}</label>
+    <select name="{{ form.destinatario.html_name }}" id="{{ form.destinatario.id_for_label }}" class="form-select{% if form.destinatario.errors %} is-invalid{% endif %}">
+      {% for valor, rotulo in form.destinatario.field.choices %}
+        <option value="{{ valor }}"{% if form.destinatario.value|stringformat:"s" == valor|stringformat:"s" %} selected{% endif %}>{{ rotulo }}</option>
+      {% endfor %}
+    </select>
+    <div class="form-text">{{ form.destinatario.help_text }}</div>
+    {% for erro in form.destinatario.errors %}<div class="invalid-feedback d-block">{{ erro }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="mb-2">
+    <label class="form-label fw-semibold" for="{{ form.texto.id_for_label }}">{{ titulo_texto|default:form.texto.label }}</label>
+    <textarea name="{{ form.texto.html_name }}" id="{{ form.texto.id_for_label }}" rows="3" maxlength="{{ form.texto.field.max_length }}"
+      class="form-control{% if form.texto.errors %} is-invalid{% endif %}"
+      placeholder="{{ form.texto.field.widget.attrs.placeholder }}">{{ form.texto.value|default:"" }}</textarea>
+    {% for erro in form.texto.errors %}<div class="invalid-feedback d-block">{{ erro }}</div>{% endfor %}
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label fw-semibold" for="{{ form.anexos.id_for_label }}">Anexos <span class="fw-normal text-muted">(opcional)</span></label>
+    <input type="file" name="{{ form.anexos.html_name }}" id="{{ form.anexos.id_for_label }}" multiple
+      accept="{{ form.anexos.field.widget.attrs.accept }}" class="form-control{% if form.anexos.errors %} is-invalid{% endif %}">
+    <div class="form-text">{{ form.anexos.help_text }} Arquivos executáveis (.exe, .bat, .msi…), compactados e documentos com macro são bloqueados.</div>
+    {% for erro in form.anexos.errors %}<div class="invalid-feedback d-block">{{ erro }}</div>{% endfor %}
+  </div>
+
+  <div><button type="submit" class="btn btn-primary">{{ texto_botao|default:"Publicar" }}</button></div>
+</form>
