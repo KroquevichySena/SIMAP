@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Prefetch
-from django.http import FileResponse, Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -13,7 +13,7 @@ from core.models import Atividade
 from . import permissoes, servicos
 from .forms import PublicacaoForm, RespostaForm
 from .models import Anexo, Notificacao, Publicacao, Resposta
-from .seguranca import nome_para_download
+from .arquivos import resposta_de_download
 
 
 def _com_anexos_e_respostas(queryset):
@@ -206,22 +206,7 @@ class BaixarAnexoView(LoginRequiredMixin, View):
         )
         if not permissoes.pode_ver_publicacao(request.user, anexo.publicacao_de_origem):
             raise Http404
-        try:
-            arquivo = anexo.arquivo.open("rb")
-        except FileNotFoundError:
-            raise Http404("O arquivo não está mais disponível.")
-
-        mostrar_na_tela = anexo.eh_imagem and request.GET.get("ver") == "1"
-        resposta = FileResponse(
-            arquivo,
-            as_attachment=not mostrar_na_tela,
-            filename=nome_para_download(anexo.nome_original, anexo.extensao),
-            content_type=anexo.tipo_conteudo,
-        )
-        resposta["X-Content-Type-Options"] = "nosniff"
-        resposta["Content-Security-Policy"] = "default-src 'none'; img-src 'self'; sandbox"
-        resposta["Cache-Control"] = "private, no-store"
-        return resposta
+        return resposta_de_download(anexo, mostrar_na_tela=request.GET.get("ver") == "1")
 
 
 class NotificacoesView(LoginRequiredMixin, ListView):

@@ -23,8 +23,47 @@ from django.urls import reverse
 def caminho_do_anexo(instancia, nome_arquivo):
     # O nome que o usuário deu ao arquivo nunca vira caminho no disco. Ele só
     # é guardado no banco para aparecer na tela; no disco o nome é aleatório.
+    # A pasta é a do app dono do arquivo (comunicacao/, core/, entregas/).
     extensao = os.path.splitext(nome_arquivo)[1].lower()
-    return f"comunicacao/{uuid.uuid4().hex}{extensao}"
+    return f"{instancia._meta.app_label}/{uuid.uuid4().hex}{extensao}"
+
+
+class ArquivoSeguro(models.Model):
+    """
+    Base de todo arquivo enviado por usuário no SIMAP.
+
+    Só chega aqui o que passou por seguranca.validar_anexo(). Os anexos da
+    comunicação, o material de apoio das trilhas e os arquivos das entregas
+    herdam daqui, então todos têm a mesma validação, o mesmo armazenamento
+    com nome aleatório e o mesmo download protegido.
+    """
+
+    arquivo = models.FileField("Arquivo", upload_to=caminho_do_anexo, max_length=255)
+    nome_original = models.CharField("Nome do arquivo", max_length=255)
+    extensao = models.CharField("Extensão", max_length=10)
+    tipo_conteudo = models.CharField("Tipo de conteúdo", max_length=120)
+    tamanho = models.PositiveIntegerField("Tamanho (bytes)")
+    sha256 = models.CharField("Hash SHA-256", max_length=64)
+    enviado_em = models.DateTimeField("Enviado em", auto_now_add=True)
+
+    class Meta:
+        abstract = True
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.nome_original
+
+    @property
+    def eh_imagem(self):
+        return self.tipo_conteudo.startswith("image/")
+
+    @property
+    def tamanho_legivel(self):
+        if self.tamanho < 1024:
+            return f"{self.tamanho} B"
+        if self.tamanho < 1024 * 1024:
+            return f"{self.tamanho / 1024:.0f} KB"
+        return f"{self.tamanho / (1024 * 1024):.1f} MB"
 
 
 class Publicacao(models.Model):
@@ -119,7 +158,7 @@ class Resposta(models.Model):
         return f"{self.publicacao.get_absolute_url()}#resposta-{self.pk}"
 
 
-class Anexo(models.Model):
+class Anexo(ArquivoSeguro):
     """Arquivo enviado numa publicação ou numa resposta, já validado."""
 
     publicacao = models.ForeignKey(
@@ -128,18 +167,10 @@ class Anexo(models.Model):
     resposta = models.ForeignKey(
         Resposta, on_delete=models.CASCADE, null=True, blank=True, related_name="anexos"
     )
-    arquivo = models.FileField("Arquivo", upload_to=caminho_do_anexo, max_length=255)
-    nome_original = models.CharField("Nome do arquivo", max_length=255)
-    extensao = models.CharField("Extensão", max_length=10)
-    tipo_conteudo = models.CharField("Tipo de conteúdo", max_length=120)
-    tamanho = models.PositiveIntegerField("Tamanho (bytes)")
-    sha256 = models.CharField("Hash SHA-256", max_length=64)
-    enviado_em = models.DateTimeField("Enviado em", auto_now_add=True)
 
-    class Meta:
+    class Meta(ArquivoSeguro.Meta):
         verbose_name = "Anexo"
         verbose_name_plural = "Anexos"
-        ordering = ["id"]
         constraints = [
             # Todo anexo pertence a exatamente uma publicação OU uma resposta.
             models.CheckConstraint(
@@ -151,24 +182,9 @@ class Anexo(models.Model):
             ),
         ]
 
-    def __str__(self):
-        return self.nome_original
-
     @property
     def publicacao_de_origem(self):
         return self.publicacao if self.publicacao_id else self.resposta.publicacao
-
-    @property
-    def eh_imagem(self):
-        return self.tipo_conteudo.startswith("image/")
-
-    @property
-    def tamanho_legivel(self):
-        if self.tamanho < 1024:
-            return f"{self.tamanho} B"
-        if self.tamanho < 1024 * 1024:
-            return f"{self.tamanho / 1024:.0f} KB"
-        return f"{self.tamanho / (1024 * 1024):.1f} MB"
 
 
 class Notificacao(models.Model):
@@ -177,6 +193,9 @@ class Notificacao(models.Model):
         COMENTARIO = "COMENTARIO", "Novo comentário em atividade"
         PRIVADA = "PRIVADA", "Nova mensagem privada"
         RESPOSTA = "RESPOSTA", "Nova resposta"
+        TRILHA = "TRILHA", "Nova trilha"
+        ATIVIDADE = "ATIVIDADE", "Nova atividade"
+        PRAZO = "PRAZO", "Prazo terminando"
 
     destinatario = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,

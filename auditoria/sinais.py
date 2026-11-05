@@ -45,6 +45,8 @@ MODELOS_PADRAO = [
     "comunicacao.Publicacao",
     "comunicacao.Resposta",
     "comunicacao.Anexo",
+    "core.MaterialDeApoio",
+    "entregas.AnexoSubmissao",
 ]
 
 # O Django atualiza o last_login sozinho a cada login. Não é uma ação do

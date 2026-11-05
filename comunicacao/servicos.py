@@ -8,6 +8,7 @@ from django.db import transaction
 from django.utils.text import Truncator
 
 from . import permissoes
+from .arquivos import salvar_arquivos
 from .models import Anexo, Notificacao, Publicacao, Resposta
 
 
@@ -18,18 +19,7 @@ def _nome(usuario):
 def _salvar_anexos(dono, pares):
     """pares: lista de (arquivo enviado, ArquivoValidado)."""
     campo = "publicacao" if isinstance(dono, Publicacao) else "resposta"
-    for arquivo, dados in pares:
-        anexo = Anexo(
-            nome_original=dados.nome_original,
-            extensao=dados.extensao,
-            tipo_conteudo=dados.tipo_conteudo,
-            tamanho=dados.tamanho,
-            sha256=dados.sha256,
-            **{campo: dono},
-        )
-        arquivo.seek(0)
-        anexo.arquivo.save(dados.nome_original, arquivo, save=False)
-        anexo.save()
+    salvar_arquivos(Anexo, pares, **{campo: dono})
 
 
 def _notificar(destinatarios, tipo, mensagem, url, exceto):
@@ -98,3 +88,13 @@ def responder(autor, publicacao, texto, anexos=()):
         resposta.get_absolute_url(), autor,
     )
     return resposta
+
+
+def notificar_alunos(turma, tipo, mensagem, url):
+    """Avisa todos os alunos ativos da turma (usado pelas trilhas e atividades)."""
+    notificacoes = [
+        Notificacao(destinatario=aluno, tipo=tipo, mensagem=mensagem[:255], url=url)
+        for aluno in permissoes.alunos_da_turma(turma)
+    ]
+    Notificacao.objects.bulk_create(notificacoes)
+    return len(notificacoes)
