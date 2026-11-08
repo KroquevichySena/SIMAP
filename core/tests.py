@@ -114,11 +114,11 @@ class ControleDeAcessoTests(BaseSIMAPTestCase):
 
     def test_dashboard_encaminha_conforme_perfil(self):
         self.client.login(username="prof.ana", password=SENHA)
-        self.assertRedirects(self.client.get(reverse("core:dashboard")), reverse("core:trilha_list"))
+        self.assertRedirects(self.client.get(reverse("core:dashboard")), reverse("painel:docente"))
         self.client.logout()
 
         self.client.login(username="aluno.carla", password=SENHA)
-        self.assertRedirects(self.client.get(reverse("core:dashboard")), reverse("core:minhas_trilhas"))
+        self.assertRedirects(self.client.get(reverse("core:dashboard")), reverse("painel:discente"))
 
 
 class TrilhaDocenteTests(BaseSIMAPTestCase):

@@ -11,6 +11,7 @@ A segurança aqui funciona em três camadas, uma completando a outra:
 """
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Count, Prefetch
 from django.http import Http404
@@ -73,12 +74,16 @@ class SalvarComMateriaisMixin:
 # Depois do login, cada um vai para a sua área.
 
 class DashboardRedirectView(LoginRequiredMixin, TemplateView):
-    """Manda o docente para as trilhas dele e o aluno para as trilhas que ele cursa."""
+    """Manda cada perfil para o seu painel de desempenho."""
 
     def get(self, request, *args, **kwargs):
         if request.user.is_docente:
-            return redirect("core:trilha_list")
-        return redirect("core:minhas_trilhas")
+            return redirect("painel:docente")
+        if request.user.is_discente:
+            return redirect("painel:discente")
+        if request.user.is_superuser:
+            return redirect("auditoria:registro_list")
+        raise PermissionDenied("Seu usuário não possui um perfil definido.")
 
 
 class TrilhaListView(DocenteRequiredMixin, ListView):
