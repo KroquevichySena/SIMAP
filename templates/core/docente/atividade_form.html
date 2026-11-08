@@ -21,6 +21,46 @@
                         {% endfor %}
                     </div>
                     {% endif %}
+
+                    {% with casos=form.casos %}
+                    <div id="secao-casos" class="border rounded p-3 mb-3 bg-light">
+                        <div class="fw-semibold">Casos de teste (opcional)</div>
+                        <p class="small text-muted mb-2">
+                            O aluno roda estes casos no editor e vê ✔ ou ✘ antes de entregar. Em "Entrada",
+                            coloque uma linha para cada <code>input()</code>. A saída é comparada linha a linha,
+                            ignorando espaços no fim. Serve só de retorno para o aluno: a nota continua sendo sua.
+                        </p>
+                        {{ casos.management_form }}
+                        {% if casos.non_form_errors %}<div class="alert alert-danger py-1 small">{{ casos.non_form_errors|join:" " }}</div>{% endif %}
+                        <div id="lista-casos">
+                            {% for caso in casos %}
+                            <div class="caso-de-teste row g-2 mb-2 align-items-start">
+                                {{ caso.id }}
+                                <div class="col-md-5">
+                                    <label class="form-label small mb-0">Entrada</label>{{ caso.entrada }}
+                                    {% for erro in caso.entrada.errors %}<div class="text-danger small">{{ erro }}</div>{% endfor %}
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small mb-0">Saída esperada</label>{{ caso.saida_esperada }}
+                                    {% for erro in caso.saida_esperada.errors %}<div class="text-danger small">{{ erro }}</div>{% endfor %}
+                                </div>
+                                <div class="col-md-2 small pt-4">
+                                    {% if caso.instance.pk %}<label>{{ caso.DELETE }} Remover</label>{% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <template id="modelo-caso">
+                            <div class="caso-de-teste row g-2 mb-2 align-items-start">
+                                {{ casos.empty_form.id }}
+                                <div class="col-md-5"><label class="form-label small mb-0">Entrada</label>{{ casos.empty_form.entrada }}</div>
+                                <div class="col-md-5"><label class="form-label small mb-0">Saída esperada</label>{{ casos.empty_form.saida_esperada }}</div>
+                            </div>
+                        </template>
+                        <button type="button" id="adicionar-caso" class="btn btn-sm btn-outline-secondary">+ Adicionar caso</button>
+                    </div>
+                    {% endwith %}
+
                     <div class="d-flex justify-content-between mt-4">
                         <a href="{% url 'core:atividade_list' %}" class="btn btn-secondary">Cancelar</a>
                         <button type="submit" class="btn btn-success">Salvar</button>
@@ -30,4 +70,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% load static %}
+<script src="{% static 'js/atividade_form.js' %}"></script>
 {% endblock %}
