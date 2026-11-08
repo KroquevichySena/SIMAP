@@ -137,7 +137,10 @@ class TrilhaAprendizagemForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.Mod
 class AtividadeForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Atividade
-        fields = ["trilha", "titulo", "enunciado", "tipo", "codigo_inicial", "ordem", "prazo", "publicada"]
+        fields = [
+            "trilha", "titulo", "enunciado", "tipo", "codigo_inicial", "ordem", "prazo", "publicada",
+            "ajuda_ia", "ajuda_ia_nivel_maximo",
+        ]
         widgets = {
             "enunciado": forms.Textarea(attrs={"rows": 6}),
             "codigo_inicial": forms.Textarea(attrs={
@@ -163,6 +166,12 @@ class AtividadeForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.ModelForm):
         self.fields["trilha"].empty_label = "Selecione a trilha"
         # Espaços no começo do código importam em Python: nada de "strip".
         self.fields["codigo_inicial"].strip = False
+        self.fields["ajuda_ia_nivel_maximo"].required = False
+        # Um envio sem os campos da IA (formulário antigo, teste, API) não
+        # pode desligar a ajuda sem querer: a caixa desmarcada some do POST.
+        if self.is_bound and "ajuda_ia_nivel_maximo" not in self.data:
+            del self.fields["ajuda_ia"]
+            del self.fields["ajuda_ia_nivel_maximo"]
 
         if self.instance and self.instance.pk and self.instance.prazo:
             self.initial["prazo"] = timezone.localtime(self.instance.prazo).strftime(
@@ -177,6 +186,9 @@ class AtividadeForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.ModelForm):
         valido = super().is_valid()
         casos = getattr(self, "casos", None)
         return valido and (casos is None or not casos.is_bound or casos.is_valid())
+
+    def clean_ajuda_ia_nivel_maximo(self):
+        return self.cleaned_data.get("ajuda_ia_nivel_maximo") or self.instance.ajuda_ia_nivel_maximo or 3
 
     def clean_prazo(self):
         prazo = self.cleaned_data.get("prazo")

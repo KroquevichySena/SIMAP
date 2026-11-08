@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "chamada",
     "entregas",
     "comunicacao",
+    "tutoria",
     "painel",
 ]
 
@@ -178,6 +179,12 @@ SIMAP_PYODIDE_URL = env("SIMAP_PYODIDE_URL", default="https://cdn.jsdelivr.net/n
 EDITOR_TAMANHO_MAXIMO_CODIGO = 50_000  # caracteres
 
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
+
+# Ajuda da IA para o aluno (app "tutoria").
+TUTORIA_MODELO = env("TUTORIA_MODELO", default="gemini-3.1-flash-lite")
+TUTORIA_PEDIDOS_POR_DIA = 10          # por aluno, em cada atividade
+TUTORIA_DICAS_POR_NIVEL = 2           # o aluno pode pedir "outra dica" do mesmo nível
+TUTORIA_INTERVALO_SEGUNDOS = 15       # entre um pedido e outro do mesmo aluno
 GEMINI_API_URL = env(
     "GEMINI_API_URL", default="https://generativelanguage.googleapis.com"
 )

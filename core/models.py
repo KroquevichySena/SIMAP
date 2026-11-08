@@ -86,6 +86,16 @@ class Atividade(models.Model):
     )
     publicada = models.BooleanField("Visível aos discentes", default=True)
     data_criacao = models.DateTimeField("Criada em", auto_now_add=True)
+    ajuda_ia = models.BooleanField(
+        "Ajuda da IA para o aluno", default=True,
+        help_text="Deixa o aluno pedir dicas, explicação do conceito e material de estudo à IA. "
+        "Desligue em provas e avaliações.",
+    )
+    ajuda_ia_nivel_maximo = models.PositiveSmallIntegerField(
+        "Até qual nível de dica", default=3,
+        choices=[(1, "1 - só perguntas que fazem pensar"), (2, "2 - aponta o conceito"),
+                 (3, "3 - estrutura em pseudocódigo")],
+    )
     codigo_inicial = models.TextField(
         "Código inicial", blank=True,
         help_text="Só para atividades práticas: o código que já aparece no editor do aluno "
