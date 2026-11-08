@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 
 from .models import Chamada, Registro_de_Presenca
 from turmas.models import Matricula, Turma
@@ -27,6 +28,18 @@ class AbrirChamadaForm(forms.ModelForm):
         if token:
             return token.upper()
         return token
+
+    def clean_data_expiracao(self):
+        data = self.cleaned_data.get('data_expiracao')
+        if data and data <= timezone.now():
+            raise forms.ValidationError("A data de expiração precisa ser no futuro.")
+        return data
+
+    def clean_limite_uso(self):
+        limite = self.cleaned_data.get('limite_uso')
+        if limite is not None and limite < 1:
+            raise forms.ValidationError("O limite de uso precisa ser de pelo menos 1 aluno.")
+        return limite
 
 class ConfirmarPresencaForm(forms.Form):
     """Formulário enxuto: usuário, turma da aula e token — pensado pra prazo curto."""
@@ -65,7 +78,7 @@ class ConfirmarPresencaForm(forms.Form):
             return cleaned_data  # já tem erro de campo individual, não precisa empilhar
 
         #o aluno só confirma presença em turma na qual está de fato matriculado .
-        if not Matricula.objects.filter(turma=turma, discente=discente).exists():
+        if not Matricula.objects.filter(turma=turma, discente=discente, status='ATIVA').exists():
             raise forms.ValidationError("Você não está matriculado nesta turma.")
 
         try:

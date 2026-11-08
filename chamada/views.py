@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .forms import AbrirChamadaForm, ConfirmarPresencaForm
 from .models import Chamada
 
@@ -24,9 +25,10 @@ def abrir_chamada(request):
     else:
         form = AbrirChamadaForm(professor=request.user)
 
-    chamadas_recentes = Chamada.objects.filter(
+    chamadas = Chamada.objects.filter(
         turma__docente=request.user
-    ).select_related('turma').prefetch_related('presencas').order_by('-data_criacao')[:10]
+    ).select_related('turma').prefetch_related('presencas').order_by('-data_criacao')
+    chamadas_recentes = Paginator(chamadas, 10).get_page(request.GET.get('pagina'))
 
     context = {
         'form': form,

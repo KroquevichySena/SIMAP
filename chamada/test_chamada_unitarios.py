@@ -108,7 +108,7 @@ class ConfirmarPresencaFormTest(SimpleTestCase):
 
         self.assertIs(form.chamada, chamada)
         self.assertEqual(dados["token_chamada"], "AULA01")
-        matriculas.filter.assert_called_once_with(turma="turma", discente="discente")
+        matriculas.filter.assert_called_once_with(turma="turma", discente="discente", status="ATIVA")
         presencas.filter.assert_called_once_with(chamada=chamada, discente="discente")
 
     # ---------- violações / exceções ----------

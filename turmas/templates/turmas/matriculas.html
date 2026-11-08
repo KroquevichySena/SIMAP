@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Alunos - {{ turma.nome }} - SIMAP{% endblock %}
+
+{% block content %}
+    <h2>Alunos de {{ turma }}</h2>
+    <a href="{% url 'lista_turmas' %}" class="btn btn-secondary mb-3">Voltar</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Aluno</th>
+                <th>RGM</th>
+                <th>Matriculado em</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for matricula in matriculas %}
+            <tr>
+                <td>{{ matricula.discente.get_full_name|default:matricula.discente }}</td>
+                <td>{{ matricula.discente.rgm|default:"N/A" }}</td>
+                <td>{{ matricula.data_matricula|date:"d/m/Y" }}</td>
+                <td>
+                    <span class="badge {% if matricula.status == 'ATIVA' %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ matricula.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    <form method="post" action="{% url 'alterar_status_matricula' matricula.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            {% if matricula.status == 'ATIVA' %}Inativar{% else %}Reativar{% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">Nenhum aluno matriculado nesta turma.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
