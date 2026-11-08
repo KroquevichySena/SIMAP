@@ -86,6 +86,11 @@ class Atividade(models.Model):
     )
     publicada = models.BooleanField("Visível aos discentes", default=True)
     data_criacao = models.DateTimeField("Criada em", auto_now_add=True)
+    codigo_inicial = models.TextField(
+        "Código inicial", blank=True,
+        help_text="Só para atividades práticas: o código que já aparece no editor do aluno "
+        "(por exemplo, o esqueleto de uma função para ele completar).",
+    )
 
     class Meta:
         verbose_name = "Atividade"
@@ -109,6 +114,10 @@ class Atividade(models.Model):
     @property
     def prazo_expirado(self) -> bool:
         return bool(self.prazo and self.prazo < timezone.now())
+
+    @property
+    def eh_pratica(self) -> bool:
+        return self.tipo == TIPO_PRATICA
 
 
 class ConclusaoAtividade(models.Model):
@@ -229,3 +238,27 @@ class VideoDeApoio(models.Model):
     @property
     def endereco_para_assistir(self):
         return youtube.endereco_para_assistir(self.codigo)
+
+
+class CasoDeTeste(models.Model):
+    """
+    Exemplo de entrada e saída esperada de uma atividade prática.
+
+    O aluno roda os casos no editor e vê se o programa dele acerta. Serve só
+    como retorno para o aluno: quem dá a nota continua sendo o professor.
+    """
+
+    atividade = models.ForeignKey(Atividade, on_delete=models.CASCADE, related_name="casos_de_teste")
+    entrada = models.TextField(
+        "Entrada", blank=True, help_text="Uma linha para cada input() do programa."
+    )
+    saida_esperada = models.TextField("Saída esperada")
+    ordem = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["ordem", "id"]
+        verbose_name = "caso de teste"
+        verbose_name_plural = "casos de teste"
+
+    def __str__(self):
+        return f"Caso {self.ordem + 1} de {self.atividade}"
