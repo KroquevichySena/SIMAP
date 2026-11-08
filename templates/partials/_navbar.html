@@ -35,6 +35,11 @@
             <a class="nav-link" href="{% url 'chamada:confirmar_presenca' %}">Chamada</a>
           </li>
         {% endif %}
+        {% if user.perfil == 'DOCENTE' or user.perfil == 'DISCENTE' %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'comunicacao:inicio' %}">Comunicação</a>
+          </li>
+        {% endif %}
         {% if user.is_superuser %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'auditoria:registro_list' %}">Auditoria</a>
@@ -45,6 +50,23 @@
 
       <div class="d-flex align-items-center gap-2">
         {% if user.is_authenticated %}
+          <div class="dropdown">
+            <a class="btn btn-sm btn-outline-light position-relative" href="{% url 'comunicacao:notificacoes' %}" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificações">
+              🔔
+              {% if notificacoes_nao_lidas %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ notificacoes_nao_lidas }}</span>
+              {% endif %}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+              {% for notificacao in notificacoes_recentes %}
+                <li><a class="dropdown-item small text-wrap" href="{% url 'comunicacao:notificacao_abrir' notificacao.pk %}">{{ notificacao.mensagem }}</a></li>
+              {% empty %}
+                <li><span class="dropdown-item-text small text-muted">Nenhuma notificação nova.</span></li>
+              {% endfor %}
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item small" href="{% url 'comunicacao:notificacoes' %}">Ver todas as notificações</a></li>
+            </ul>
+          </div>
           <span class="navbar-text text-white">
             Logado como: {{ user.first_name }} ({{ user.perfil }})
           </span>

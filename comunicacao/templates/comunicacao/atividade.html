@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load comunicacao_tags %}
+{% block title %}Comentários - {{ atividade.titulo }} - SIMAP{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small">
+  <li class="breadcrumb-item"><a href="{% url 'comunicacao:inicio' %}">Comunicação</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'comunicacao:mural' turma.pk %}">{{ turma.nome }}</a></li>
+  <li class="breadcrumb-item active">{{ atividade.titulo }}</li>
+</ol></nav>
+
+<h2 class="mb-1">Comentários da atividade</h2>
+<div class="card card-body mb-3 bg-white">
+  <strong>{{ atividade.titulo }}</strong>
+  <div class="small text-muted mb-2">{{ atividade.trilha.titulo }}{% if atividade.prazo %} · Prazo: {{ atividade.prazo|date:"d/m/Y H:i" }}{% endif %}</div>
+  <div style="overflow-wrap:anywhere">{{ atividade.enunciado|texto_com_links }}</div>
+</div>
+
+{% include 'comunicacao/_form_mensagem.html' with texto_botao="Comentar" titulo_texto="Seu comentário" %}
+
+{% for publicacao in publicacoes %}
+  {% include 'comunicacao/_publicacao_card.html' with resumo=True %}
+{% empty %}
+  <p class="text-muted">Nenhum comentário ainda. Dúvidas sobre a atividade podem ser feitas aqui.</p>
+{% endfor %}
+{% endblock %}

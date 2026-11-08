@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Mural - {{ turma.nome }} - SIMAP{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small">
+  <li class="breadcrumb-item"><a href="{% url 'comunicacao:inicio' %}">Comunicação</a></li>
+  <li class="breadcrumb-item active">{{ turma.nome }}</li>
+</ol></nav>
+
+<h2 class="mb-1">Mural · {{ turma.nome }}</h2>
+<p class="text-muted mb-3">{{ turma.periodo }} · Prof. {{ turma.docente.get_full_name|default:turma.docente.username }}</p>
+
+{% include 'comunicacao/_form_mensagem.html' with texto_botao="Publicar" %}
+
+<ul class="nav nav-pills mb-3 small">
+  <li class="nav-item"><a class="nav-link{% if not filtro %} active{% endif %}" href="?">Tudo</a></li>
+  <li class="nav-item"><a class="nav-link{% if filtro == 'mural' %} active{% endif %}" href="?filtro=mural">Mural da turma</a></li>
+  <li class="nav-item"><a class="nav-link{% if filtro == 'privadas' %} active{% endif %}" href="?filtro=privadas">🔒 Mensagens privadas</a></li>
+</ul>
+
+{% for publicacao in publicacoes %}
+  {% include 'comunicacao/_publicacao_card.html' with resumo=True %}
+{% empty %}
+  <p class="text-muted">Nada por aqui ainda.</p>
+{% endfor %}
+{% endblock %}
