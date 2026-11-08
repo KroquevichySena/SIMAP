@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "chamada",
     "entregas",
     "comunicacao",
+    "painel",
 ]
 
 MIDDLEWARE = [
