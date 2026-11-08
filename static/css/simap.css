@@ -19,3 +19,20 @@ body.simap-app {
     font-size: 14px;
     line-height: 1.5;
 }
+
+.simap-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.simap-conteudo {
+    flex: 1;
+    min-width: 0;
+}
+
+.simap-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background-color: var(--sidebar);
+    color: white;
+}
