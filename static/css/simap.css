@@ -1,0 +1,17 @@
+:root {
+    --background: #f8fafc;
+    --card: #ffffff;
+    --foreground: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --sidebar: #0f172a;
+    --sidebar-hover: #1e293b;
+}
+
+body.simap-app {
+    background-color: var(--background);
+    color: var(--foreground);
+}
