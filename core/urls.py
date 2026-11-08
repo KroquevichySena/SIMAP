@@ -21,5 +21,6 @@ urlpatterns = [
 
     #Área do Discente
     path("minhas-trilhas/", views.MinhasTrilhasListView.as_view(), name="minhas_trilhas"),
+    path("materiais/<int:pk>/", views.BaixarMaterialView.as_view(), name="baixar_material"),
     path("atividades/<int:pk>/concluir/", views.ConcluirAtividadeView.as_view(), name="atividade_concluir"),
 ]

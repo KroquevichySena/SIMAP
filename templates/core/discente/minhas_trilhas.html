@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load comunicacao_tags %}
 
 {% block title %}Minhas Trilhas - SIMAP{% endblock %}
 
@@ -17,14 +18,17 @@
 </div>
 
 {% for trilha in trilhas %}
-<div class="card mb-3 shadow-sm">
+<div class="card mb-3 shadow-sm" id="trilha-{{ trilha.pk }}">
     <div class="card-header d-flex justify-content-between align-items-center">
         <strong>{{ trilha.titulo }}</strong>
         <span class="text-muted">{{ trilha.turma }}</span>
     </div>
     <div class="card-body">
         {% if trilha.descricao %}
-            <p>{{ trilha.descricao }}</p>
+            <p style="overflow-wrap:anywhere">{{ trilha.descricao|texto_com_links }}</p>
+        {% endif %}
+        {% if trilha.materiais.all %}
+            {% include "core/_materiais.html" with materiais=trilha.materiais.all %}
         {% endif %}
 
         <div class="progress mb-3" role="progressbar" style="height: 6px;">
@@ -33,7 +37,7 @@
 
         <ul class="list-group">
             {% for atividade in trilha.atividades_visiveis %}
-                <li class="list-group-item">
+                <li class="list-group-item" id="atividade-{{ atividade.pk }}">
                     <div class="d-flex justify-content-between align-items-center">
                         <span>
                             {{ atividade.titulo }}
@@ -51,6 +55,13 @@
                         </form>
                     </div>
 
+                    {% if atividade.enunciado %}
+                        <div class="small mt-2" style="overflow-wrap:anywhere">{{ atividade.enunciado|texto_com_links }}</div>
+                    {% endif %}
+                    {% if atividade.materiais.all %}
+                        {% include "core/_materiais.html" with materiais=atividade.materiais.all %}
+                    {% endif %}
+
                     <a href="{% url 'comunicacao:atividade' atividade.pk %}" class="btn btn-sm btn-link px-0">💬 Comentários e dúvidas</a>
 
                     {% if atividade.submissao %}
@@ -59,11 +70,16 @@
                             {% if atividade.submissao.avaliacao_oficial %}
                                 <span class="badge bg-success">Nota: {{ atividade.submissao.avaliacao_oficial.nota }}</span>
                             {% endif %}
+                            {% for anexo in atividade.submissao.anexos.all %}
+                                <div><a href="{% url 'entregas:baixar_anexo' anexo.pk %}">📎 {{ anexo.nome_original }}</a> <span class="text-muted">({{ anexo.tamanho_legivel }})</span></div>
+                            {% endfor %}
                         </div>
                     {% else %}
-                        <form method="POST" action="{% url 'entregas:submeter' atividade.pk %}" class="mt-2">
+                        <form method="POST" action="{% url 'entregas:submeter' atividade.pk %}" class="mt-2" enctype="multipart/form-data">
                             {% csrf_token %}
                             <textarea name="resposta_texto" class="form-control form-control-sm mb-2" rows="3" placeholder="Escreva sua resposta ou código aqui..." required></textarea>
+                            <label class="form-label small text-muted mb-1" for="anexos-{{ atividade.pk }}">Anexar arquivos (opcional): código-fonte, PDF, Word, imagens…</label>
+                            <input type="file" name="anexos" id="anexos-{{ atividade.pk }}" class="form-control form-control-sm mb-2" multiple accept="{{ extensoes_aceitas }}">
                             <button type="submit" class="btn btn-sm btn-primary">Submeter</button>
                         </form>
                     {% endif %}

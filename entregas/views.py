@@ -3,16 +3,22 @@ from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mass_mail
+from django.db import IntegrityError, transaction
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView, View
+
+from comunicacao.arquivos import resposta_de_download, salvar_arquivos, validar_arquivos
 
 from core.mixins import DiscenteRequiredMixin, DocenteRequiredMixin
 from core.models import Atividade
 from turmas.models import Matricula
 
 from .ia_services import gerar_analise
-from .models import AvaliacaoOficial, Submissao
+from .models import AnexoSubmissao, AvaliacaoOficial, Submissao
 
 logger = logging.getLogger("simap.integracoes")
 
@@ -37,6 +43,7 @@ class CorrigirAtividadeView(DocenteRequiredMixin, DetailView):
         submissoes = (
             Submissao.objects.filter(atividade=atividade)
             .select_related("aluno", "analise_ia", "avaliacao_oficial")
+            .prefetch_related("anexos")
             .order_by("-data_envio")
         )
         ctx["submissoes"] = submissoes
@@ -149,17 +156,51 @@ class SubmeterAtividadeView(DiscenteRequiredMixin, View):
         resposta_texto = request.POST.get("resposta_texto", "").strip()
         if not resposta_texto:
             messages.error(request, "Escreva uma resposta antes de enviar.")
-            return redirect("core:minhas_trilhas")
+            return redirect(self._voltar(atividade))
 
-        submissao, criada = Submissao.objects.get_or_create(
-            atividade=atividade,
-            aluno=request.user,
-            defaults={"resposta_texto": resposta_texto},
-        )
-        if not criada:
+        # Os arquivos passam pela mesma checagem dos anexos da comunicação.
+        # Se um deles for barrado, nada é gravado e o aluno vê o motivo.
+        try:
+            anexos = validar_arquivos(request.FILES.getlist("anexos"))
+        except ValidationError as erro:
+            for mensagem in erro.messages:
+                messages.error(request, mensagem)
+            return redirect(self._voltar(atividade))
+
+        if Submissao.objects.filter(atividade=atividade, aluno=request.user).exists():
             messages.info(request, "Você já enviou uma resposta para esta atividade.")
-            return redirect("core:minhas_trilhas")
+            return redirect(self._voltar(atividade))
 
+        try:
+            with transaction.atomic():
+                submissao = Submissao.objects.create(
+                    atividade=atividade, aluno=request.user, resposta_texto=resposta_texto
+                )
+                salvar_arquivos(AnexoSubmissao, anexos, submissao=submissao)
+        except IntegrityError:
+            # Dois cliques seguidos em "Submeter": a segunda tentativa cai aqui.
+            messages.info(request, "Você já enviou uma resposta para esta atividade.")
+            return redirect(self._voltar(atividade))
+
+        # A análise de IA continua usando só o texto da resposta.
         gerar_analise(submissao)
         messages.success(request, "Resposta enviada e analisada.")
-        return redirect("core:minhas_trilhas")
+        return redirect(self._voltar(atividade))
+
+    @staticmethod
+    def _voltar(atividade):
+        return "core:minhas_trilhas"
+
+
+class BaixarAnexoSubmissaoView(LoginRequiredMixin, View):
+    """O arquivo da entrega só sai para o aluno que enviou e para o professor da turma."""
+
+    def get(self, request, pk):
+        anexo = get_object_or_404(
+            AnexoSubmissao.objects.select_related("submissao__atividade__trilha__turma"), pk=pk
+        )
+        submissao = anexo.submissao
+        docente_id = submissao.atividade.trilha.turma.docente_id
+        if request.user.pk not in (submissao.aluno_id, docente_id):
+            raise Http404
+        return resposta_de_download(anexo, mostrar_na_tela=request.GET.get("ver") == "1")

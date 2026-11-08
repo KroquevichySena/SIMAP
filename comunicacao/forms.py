@@ -2,8 +2,9 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from .arquivos import validar_arquivos
 from .permissoes import destinatarios_permitidos
-from .seguranca import EXTENSOES_PERMITIDAS, validar_anexo
+from .seguranca import EXTENSOES_PERMITIDAS
 
 ACEITAR = ",".join(sorted(EXTENSOES_PERMITIDAS))
 
@@ -47,20 +48,7 @@ class MensagemBaseForm(forms.Form):
 
     def clean_anexos(self):
         arquivos = self.cleaned_data.get("anexos") or []
-        if len(arquivos) > settings.COMUNICACAO_MAXIMO_ANEXOS:
-            raise ValidationError(
-                f"Envie no máximo {settings.COMUNICACAO_MAXIMO_ANEXOS} arquivos por mensagem."
-            )
-        erros = []
-        validados = []
-        for arquivo in arquivos:
-            try:
-                validados.append((arquivo, validar_anexo(arquivo)))
-            except ValidationError as erro:
-                erros.extend(erro.messages)
-        if erros:
-            raise ValidationError(erros)
-        self.anexos_validados = validados
+        self.anexos_validados = validar_arquivos(arquivos)
         return arquivos
 
 

@@ -8,9 +8,11 @@ de outro professor, o formulário recusa, porque aquele ID não está na lista.
 from django import forms
 from django.utils import timezone
 
+from comunicacao.arquivos import validar_arquivos
+from comunicacao.forms import VariosArquivosField
 from turmas.models import Turma
 
-from .models import Atividade, TrilhaAprendizagem
+from .models import Atividade, MaterialDeApoio, TrilhaAprendizagem
 
 
 class BootstrapFormMixin:
@@ -19,6 +21,8 @@ class BootstrapFormMixin:
     def _aplicar_bootstrap(self):
         for campo in self.fields.values():
             widget = campo.widget
+            if isinstance(widget, forms.CheckboxSelectMultiple):
+                continue
             if isinstance(widget, forms.CheckboxInput):
                 widget.attrs.setdefault("class", "form-check-input")
             elif isinstance(widget, forms.Select):
@@ -27,7 +31,45 @@ class BootstrapFormMixin:
                 widget.attrs.setdefault("class", "form-control")
 
 
-class TrilhaAprendizagemForm(BootstrapFormMixin, forms.ModelForm):
+class MaterialDeApoioMixin(forms.Form):
+    """
+    Campos de material de apoio, comuns à trilha e à atividade.
+
+    - "materiais": arquivos novos, validados como os anexos da comunicação.
+    - "remover_materiais": na edição, os arquivos que o professor quer tirar.
+    """
+
+    materiais = VariosArquivosField(
+        label="Material de apoio (opcional)",
+        help_text="PDF, Word, Excel, PowerPoint, imagens, texto ou código-fonte. "
+        "Até 5 arquivos por vez, de até 10 MB cada. Executáveis, compactados e "
+        "documentos com macro são bloqueados.",
+    )
+    remover_materiais = forms.ModelMultipleChoiceField(
+        label="Remover material já enviado",
+        queryset=MaterialDeApoio.objects.none(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    def _preparar_materiais(self):
+        self.materiais_validados = []
+        if self.instance.pk:
+            campo = self.fields["remover_materiais"]
+            campo.queryset = self.instance.materiais.all()
+            campo.label_from_instance = lambda m: f"{m.nome_original} ({m.tamanho_legivel})"
+            if not campo.queryset.exists():
+                del self.fields["remover_materiais"]
+        else:
+            del self.fields["remover_materiais"]
+
+    def clean_materiais(self):
+        arquivos = self.cleaned_data.get("materiais") or []
+        self.materiais_validados = validar_arquivos(arquivos)
+        return arquivos
+
+
+class TrilhaAprendizagemForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = TrilhaAprendizagem
         fields = ["turma", "titulo", "descricao", "ordem", "publicada"]
@@ -48,10 +90,11 @@ class TrilhaAprendizagemForm(BootstrapFormMixin, forms.ModelForm):
         else:
             self.fields["turma"].queryset = Turma.objects.none()
         self.fields["turma"].empty_label = "Selecione a turma"
+        self._preparar_materiais()
         self._aplicar_bootstrap()
 
 
-class AtividadeForm(BootstrapFormMixin, forms.ModelForm):
+class AtividadeForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Atividade
         fields = ["trilha", "titulo", "enunciado", "tipo", "ordem", "prazo", "publicada"]
@@ -79,6 +122,7 @@ class AtividadeForm(BootstrapFormMixin, forms.ModelForm):
             self.initial["prazo"] = timezone.localtime(self.instance.prazo).strftime(
                 "%Y-%m-%dT%H:%M"
             )
+        self._preparar_materiais()
         self._aplicar_bootstrap()
 
     def clean_prazo(self):
