@@ -10,6 +10,8 @@ from django.utils import timezone
 
 from comunicacao.models import ArquivoSeguro
 
+from . import youtube
+
 
 TIPO_TEORICA = 'TEORICA'
 TIPO_PRATICA = 'PRATICA'  # Reservado para versões futuras (exige sandbox)
@@ -184,3 +186,46 @@ class MaterialDeApoio(ArquivoSeguro):
     @property
     def turma(self):
         return self.trilha.turma if self.trilha_id else self.atividade.trilha.turma
+
+
+class VideoDeApoio(models.Model):
+    """
+    Vídeo do YouTube indicado pelo professor numa trilha ou numa atividade.
+
+    Guardamos o código do vídeo, não o link colado: o endereço do player é
+    sempre montado pelo SIMAP (ver core/youtube.py).
+    """
+
+    trilha = models.ForeignKey(
+        TrilhaAprendizagem, on_delete=models.CASCADE, null=True, blank=True, related_name="videos"
+    )
+    atividade = models.ForeignKey(
+        Atividade, on_delete=models.CASCADE, null=True, blank=True, related_name="videos"
+    )
+    codigo = models.CharField("código do vídeo", max_length=11)
+    ordem = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["ordem", "id"]
+        verbose_name = "vídeo de apoio"
+        verbose_name_plural = "vídeos de apoio"
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(trilha__isnull=False, atividade__isnull=True)
+                    | models.Q(trilha__isnull=True, atividade__isnull=False)
+                ),
+                name="ck_video_um_unico_dono",
+            )
+        ]
+
+    def __str__(self):
+        return self.endereco_para_assistir
+
+    @property
+    def endereco_do_player(self):
+        return youtube.endereco_do_player(self.codigo)
+
+    @property
+    def endereco_para_assistir(self):
+        return youtube.endereco_para_assistir(self.codigo)
