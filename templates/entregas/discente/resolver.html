@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load comunicacao_tags videos_tags %}
+
+{% block title %}{{ atividade.titulo }} - SIMAP{% endblock %}
+
+{% block extra_head %}{% include "entregas/_editor_assets.html" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{% url 'core:minhas_trilhas' %}#atividade-{{ atividade.pk }}">Minhas trilhas</a></li>
+        <li class="breadcrumb-item">{{ atividade.trilha.titulo }}</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ atividade.titulo }}</li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+    <h3 class="mb-0 me-auto">💻 {{ atividade.titulo }}</h3>
+    {% if atividade.prazo %}<span class="badge bg-warning text-dark">Prazo: {{ atividade.prazo }}</span>{% endif %}
+    {% if submissao %}
+        <span class="badge bg-info text-dark">Resposta enviada</span>
+        {% if submissao.avaliacao_oficial %}<span class="badge bg-success">Nota: {{ submissao.avaliacao_oficial.nota }}</span>{% endif %}
+    {% endif %}
+</div>
+
+<div class="card mb-3">
+    <div class="card-body py-2" style="overflow-wrap:anywhere">
+        {{ atividade.enunciado|texto_com_links }}
+        {% if atividade.materiais.all %}{% include "core/_materiais.html" with materiais=atividade.materiais.all %}{% endif %}
+        {% if atividade.videos.all %}{% include "core/_videos.html" with codigos=atividade.videos.all|codigos_dos_videos %}{% endif %}
+    </div>
+</div>
+
+{% if submissao %}
+    <p class="small text-muted mb-2">Esta é a resposta que você entregou. Você ainda pode executá-la, mas não alterá-la.</p>
+    {% include "entregas/_editor_codigo.html" with sufixo="aluno" codigo=codigo somente_leitura="1" casos=casos %}
+    {% for anexo in submissao.anexos.all %}
+        <div class="small mt-2"><a href="{% url 'entregas:baixar_anexo' anexo.pk %}">📎 {{ anexo.nome_original }}</a> <span class="text-muted">({{ anexo.tamanho_legivel }})</span></div>
+    {% endfor %}
+{% else %}
+    <form method="POST" action="{% url 'entregas:submeter' atividade.pk %}" enctype="multipart/form-data" id="form-entrega">
+        {% csrf_token %}
+        {% include "entregas/_editor_codigo.html" with sufixo="aluno" codigo=codigo nome_campo="resposta_texto" casos=casos url_rascunho=url_rascunho %}
+        <div class="d-flex flex-wrap align-items-end gap-2 mt-3">
+            <div class="me-auto">
+                <label class="form-label small text-muted mb-1" for="anexos">Anexar arquivos (opcional)</label>
+                <input type="file" name="anexos" id="anexos" class="form-control form-control-sm" multiple accept="{{ extensoes_aceitas }}">
+            </div>
+            <a href="{% url 'comunicacao:atividade' atividade.pk %}" class="btn btn-outline-secondary">💬 Dúvidas</a>
+            <button type="submit" class="btn btn-primary"
+                    onclick="return confirm('Depois de entregar não dá para mudar o código. Entregar agora?')">Entregar resposta</button>
+        </div>
+        <p class="small text-muted mt-2 mb-0">O rascunho é salvo sozinho enquanto você escreve{% if rascunho %} (último: {{ rascunho.atualizado_em|date:"d/m H:i" }}){% endif %}.</p>
+    </form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}{% include "entregas/_editor_scripts.html" %}{% endblock %}

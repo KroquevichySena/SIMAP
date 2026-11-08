@@ -12,7 +12,7 @@ from comunicacao.arquivos import validar_arquivos
 from comunicacao.forms import VariosArquivosField
 from turmas.models import Turma
 
-from .models import Atividade, MaterialDeApoio, TrilhaAprendizagem
+from .models import Atividade, CasoDeTeste, MaterialDeApoio, TrilhaAprendizagem
 from .youtube import codigo_do_video, endereco_para_assistir
 
 MAXIMO_VIDEOS = 10
@@ -137,9 +137,13 @@ class TrilhaAprendizagemForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.Mod
 class AtividadeForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Atividade
-        fields = ["trilha", "titulo", "enunciado", "tipo", "ordem", "prazo", "publicada"]
+        fields = ["trilha", "titulo", "enunciado", "tipo", "codigo_inicial", "ordem", "prazo", "publicada"]
         widgets = {
             "enunciado": forms.Textarea(attrs={"rows": 6}),
+            "codigo_inicial": forms.Textarea(attrs={
+                "rows": 5, "spellcheck": "false", "class": "form-control font-monospace",
+                "placeholder": "def soma(a, b):\n    # complete aqui\n    pass",
+            }),
             "prazo": forms.DateTimeInput(
                 attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
             ),
@@ -157,6 +161,8 @@ class AtividadeForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.ModelForm):
         else:
             self.fields["trilha"].queryset = TrilhaAprendizagem.objects.none()
         self.fields["trilha"].empty_label = "Selecione a trilha"
+        # Espaços no começo do código importam em Python: nada de "strip".
+        self.fields["codigo_inicial"].strip = False
 
         if self.instance and self.instance.pk and self.instance.prazo:
             self.initial["prazo"] = timezone.localtime(self.instance.prazo).strftime(
@@ -165,8 +171,60 @@ class AtividadeForm(MaterialDeApoioMixin, BootstrapFormMixin, forms.ModelForm):
         self._preparar_materiais()
         self._aplicar_bootstrap()
 
+    def is_valid(self):
+        # Os casos de teste vêm num formset à parte, mas fazem parte do mesmo
+        # formulário para o professor: se um caso estiver errado, nada é salvo.
+        valido = super().is_valid()
+        casos = getattr(self, "casos", None)
+        return valido and (casos is None or not casos.is_bound or casos.is_valid())
+
     def clean_prazo(self):
         prazo = self.cleaned_data.get("prazo")
         if prazo and not self.instance.pk and prazo < timezone.now():
             raise forms.ValidationError("O prazo informado já expirou. Escolha uma data futura.")
         return prazo
+
+
+MAXIMO_CASOS_DE_TESTE = 10
+LIMITE_TEXTO_CASO = 5000
+
+
+class CasoDeTesteForm(forms.ModelForm):
+    class Meta:
+        model = CasoDeTeste
+        fields = ["entrada", "saida_esperada"]
+        widgets = {
+            "entrada": forms.Textarea(attrs={
+                "rows": 3, "spellcheck": "false", "class": "form-control form-control-sm font-monospace",
+                "placeholder": "7",
+            }),
+            "saida_esperada": forms.Textarea(attrs={
+                "rows": 3, "spellcheck": "false", "class": "form-control form-control-sm font-monospace",
+                "placeholder": "Tabuada de: 7\n7 x 1 = 7",
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Espaços no começo de uma linha da saída fazem parte da resposta
+        # (um desenho com asteriscos, por exemplo).
+        for campo in ("entrada", "saida_esperada"):
+            self.fields[campo].strip = False
+
+    def clean(self):
+        dados = super().clean()
+        for campo in ("entrada", "saida_esperada"):
+            if len(dados.get(campo) or "") > LIMITE_TEXTO_CASO:
+                self.add_error(campo, f"Use no máximo {LIMITE_TEXTO_CASO} caracteres.")
+        return dados
+
+
+CasoDeTesteFormSet = forms.inlineformset_factory(
+    Atividade,
+    CasoDeTeste,
+    form=CasoDeTesteForm,
+    extra=1,
+    max_num=MAXIMO_CASOS_DE_TESTE,
+    validate_max=True,
+    can_delete=True,
+)
