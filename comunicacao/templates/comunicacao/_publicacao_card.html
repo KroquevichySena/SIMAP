@@ -1,4 +1,4 @@
-{% load comunicacao_tags %}
+{% load comunicacao_tags videos_tags %}
 <article class="card mb-3 shadow-sm{% if publicacao.privada %} border-warning{% endif %}" id="publicacao-{{ publicacao.pk }}">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -17,6 +17,7 @@
     </div>
 
     <div class="mb-1" style="overflow-wrap:anywhere">{{ publicacao.texto|texto_com_links }}</div>
+    {% with codigos=publicacao.texto|videos_do_youtube %}{% if codigos %}{% include "core/_videos.html" %}{% endif %}{% endwith %}
     {% include 'comunicacao/_anexos.html' with anexos=publicacao.anexos.all %}
 
     {% if resumo %}

@@ -1,0 +1,20 @@
+{% comment %}
+Player do YouTube. O endereço é sempre montado pelo SIMAP a partir do código do
+vídeo (youtube-nocookie.com). O referrerpolicy é necessário porque o site manda
+"same-origin" por padrão e, sem a origem, o YouTube se recusa a tocar o vídeo.
+{% endcomment %}
+<div class="row g-2 my-2">
+    {% for codigo in codigos %}
+    <div class="col-12 col-lg-6">
+        <div class="ratio ratio-16x9 rounded overflow-hidden border">
+            <iframe src="https://www.youtube-nocookie.com/embed/{{ codigo|urlencode }}"
+                    title="Vídeo do YouTube"
+                    loading="lazy"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+        </div>
+        <a class="small" href="https://www.youtube.com/watch?v={{ codigo|urlencode }}" target="_blank" rel="noopener noreferrer nofollow">▶ Abrir no YouTube</a>
+    </div>
+    {% endfor %}
+</div>

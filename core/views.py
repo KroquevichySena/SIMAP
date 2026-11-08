@@ -32,6 +32,7 @@ from .models import (
     ConclusaoAtividade,
     MaterialDeApoio,
     TrilhaAprendizagem,
+    VideoDeApoio,
 )
 
 
@@ -55,6 +56,14 @@ class SalvarComMateriaisMixin:
     def avisar(self, obj):
         raise NotImplementedError
 
+    def _salvar_videos(self, codigos):
+        # A lista do formulário é a lista completa: o que saiu do campo é apagado.
+        self.object.videos.all().delete()
+        VideoDeApoio.objects.bulk_create(
+            VideoDeApoio(codigo=codigo, ordem=i, **{self.campo_dono: self.object})
+            for i, codigo in enumerate(codigos)
+        )
+
     def form_valid(self, form):
         # Lê do banco como estava antes: o form já alterou o objeto em memória.
         antes = self.estava_visivel() if form.instance.pk else False
@@ -64,6 +73,7 @@ class SalvarComMateriaisMixin:
             for material in removidos:
                 material.delete()
             salvar_arquivos(MaterialDeApoio, form.materiais_validados, **{self.campo_dono: self.object})
+            self._salvar_videos(form.videos_validados)
             if not antes and self.esta_visivel(self.object):
                 total = self.avisar(self.object)
                 if total:
@@ -293,7 +303,7 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
         atividades_publicadas = Prefetch(
             "atividades",
             queryset=Atividade.objects.filter(publicada=True)
-            .prefetch_related("materiais")
+            .prefetch_related("materiais", "videos")
             .order_by("ordem", "id"),
             to_attr="atividades_visiveis",
         )
@@ -303,7 +313,7 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
                 turma_id__in=turmas_do_aluno, publicada=True
             )
             .select_related("turma", "turma__docente")
-            .prefetch_related(atividades_publicadas, "materiais")
+            .prefetch_related(atividades_publicadas, "materiais", "videos")
             .order_by("turma__nome", "ordem", "id")
         )
 

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load comunicacao_tags %}
+{% load comunicacao_tags videos_tags %}
 {% block title %}Publicação - SIMAP{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb"><ol class="breadcrumb small">
@@ -39,6 +39,7 @@
         {% endif %}
       </div>
       <div class="mt-1" style="overflow-wrap:anywhere">{{ resposta.texto|texto_com_links }}</div>
+      {% with codigos=resposta.texto|videos_do_youtube %}{% if codigos %}{% include "core/_videos.html" %}{% endif %}{% endwith %}
       {% include 'comunicacao/_anexos.html' with anexos=resposta.anexos.all %}
     </div>
   </div>
