@@ -12,6 +12,15 @@ dos anexos do mural.
 - Na edição aparece a lista **Remover material já enviado**. Só dá para remover material daquela própria trilha ou atividade.
 - O download (`/materiais/<id>/`) é liberado para o professor da turma e para alunos com matrícula ativa, desde que a trilha (e a atividade, se for o caso) esteja publicada. Para qualquer outra pessoa a resposta é 404.
 
+## Vídeos do YouTube
+
+- Nos formulários de trilha e de atividade há o campo **Vídeos do YouTube**: um link por linha, até 10. Aceita `youtube.com/watch?v=`, `youtu.be/`, `/shorts/`, `/embed/` e `/live/`.
+- Qualquer link que não seja do YouTube é recusado com a lista dos links errados (inclusive imitações como `youtube.com.site-falso.com` e links com usuário embutido).
+- O SIMAP guarda só o código de 11 caracteres do vídeo e monta ele mesmo o endereço do player, usando `youtube-nocookie.com` (sem cookies de rastreio até o aluno dar play).
+- Na edição, o campo vem preenchido com os vídeos atuais. Apagar uma linha remove aquele vídeo.
+- O aluno vê o player dentro da trilha e da atividade, com o link "Abrir no YouTube" ao lado.
+- No mural, nos comentários e nas respostas, links do YouTube no texto também viram player (até 3 por mensagem).
+
 ## Entrega com arquivo
 
 - O aluno pode anexar arquivos junto com a resposta (por exemplo, o `.py` do exercício).
@@ -51,4 +60,5 @@ comando rode.
 ## Testes
 
 - `core/test_materiais.py`: envio e remoção de material, `.bat` recusado, permissão de download, avisos de publicação sem duplicar, lembrete de prazo e links na tela do aluno.
+- `core/test_videos.py`: formatos de link aceitos e recusados, cadastro e remoção dos vídeos, limite, player na tela do aluno e no mural.
 - `entregas/test_anexos.py`: entrega com e sem arquivo, `.bat` e `.exe` disfarçado barrando a entrega, permissão de download e arquivo visível na correção.

@@ -13,6 +13,9 @@ from comunicacao.forms import VariosArquivosField
 from turmas.models import Turma
 
 from .models import Atividade, MaterialDeApoio, TrilhaAprendizagem
+from .youtube import codigo_do_video, endereco_para_assistir
+
+MAXIMO_VIDEOS = 10
 
 
 class BootstrapFormMixin:
@@ -52,8 +55,24 @@ class MaterialDeApoioMixin(forms.Form):
         widget=forms.CheckboxSelectMultiple,
     )
 
+    videos = forms.CharField(
+        label="Vídeos do YouTube (opcional)",
+        required=False,
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": "https://www.youtube.com/watch?v=...\nhttps://youtu.be/...",
+        }),
+        help_text=f"Cole um link por linha (até {MAXIMO_VIDEOS}). Só links do YouTube são aceitos; "
+        "o vídeo aparece com o player na tela do aluno.",
+    )
+
     def _preparar_materiais(self):
         self.materiais_validados = []
+        self.videos_validados = []
+        if self.instance.pk and not self.is_bound:
+            self.initial["videos"] = "\n".join(
+                v.endereco_para_assistir for v in self.instance.videos.all()
+            )
         if self.instance.pk:
             campo = self.fields["remover_materiais"]
             campo.queryset = self.instance.materiais.all()
@@ -62,6 +81,27 @@ class MaterialDeApoioMixin(forms.Form):
                 del self.fields["remover_materiais"]
         else:
             del self.fields["remover_materiais"]
+
+    def clean_videos(self):
+        texto = self.cleaned_data.get("videos") or ""
+        codigos, invalidos = [], []
+        for linha in texto.splitlines():
+            linha = linha.strip()
+            if not linha:
+                continue
+            codigo = codigo_do_video(linha)
+            if codigo is None:
+                invalidos.append(linha[:80])
+            elif codigo not in codigos:
+                codigos.append(codigo)
+        if invalidos:
+            raise forms.ValidationError(
+                "Estes links não são vídeos do YouTube: " + "; ".join(invalidos)
+            )
+        if len(codigos) > MAXIMO_VIDEOS:
+            raise forms.ValidationError(f"Indique no máximo {MAXIMO_VIDEOS} vídeos.")
+        self.videos_validados = codigos
+        return "\n".join(endereco_para_assistir(c) for c in codigos)
 
     def clean_materiais(self):
         arquivos = self.cleaned_data.get("materiais") or []

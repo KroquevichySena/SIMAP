@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load comunicacao_tags %}
+{% load comunicacao_tags videos_tags %}
 
 {% block title %}Minhas Trilhas - SIMAP{% endblock %}
 
@@ -29,6 +29,9 @@
         {% endif %}
         {% if trilha.materiais.all %}
             {% include "core/_materiais.html" with materiais=trilha.materiais.all %}
+        {% endif %}
+        {% if trilha.videos.all %}
+            {% include "core/_videos.html" with codigos=trilha.videos.all|codigos_dos_videos %}
         {% endif %}
 
         <div class="progress mb-3" role="progressbar" style="height: 6px;">
@@ -60,6 +63,9 @@
                     {% endif %}
                     {% if atividade.materiais.all %}
                         {% include "core/_materiais.html" with materiais=atividade.materiais.all %}
+                    {% endif %}
+                    {% if atividade.videos.all %}
+                        {% include "core/_videos.html" with codigos=atividade.videos.all|codigos_dos_videos %}
                     {% endif %}
 
                     <a href="{% url 'comunicacao:atividade' atividade.pk %}" class="btn btn-sm btn-link px-0">💬 Comentários e dúvidas</a>
