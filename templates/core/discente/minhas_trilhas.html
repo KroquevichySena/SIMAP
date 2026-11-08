@@ -80,6 +80,11 @@
                                 <div><a href="{% url 'entregas:baixar_anexo' anexo.pk %}">📎 {{ anexo.nome_original }}</a> <span class="text-muted">({{ anexo.tamanho_legivel }})</span></div>
                             {% endfor %}
                         </div>
+                        {% if atividade.eh_pratica %}
+                            <a href="{% url 'entregas:resolver' atividade.pk %}" class="btn btn-sm btn-outline-dark mt-2">💻 Ver minha resposta no editor</a>
+                        {% endif %}
+                    {% elif atividade.eh_pratica %}
+                        <a href="{% url 'entregas:resolver' atividade.pk %}" class="btn btn-sm btn-dark mt-2">💻 Abrir editor de código</a>
                     {% else %}
                         <form method="POST" action="{% url 'entregas:submeter' atividade.pk %}" class="mt-2" enctype="multipart/form-data">
                             {% csrf_token %}

@@ -1,0 +1,9 @@
+{% comment %}
+Arquivos do editor (CodeMirror 5). A versão é fixa e o "integrity" garante que
+o navegador só aceita exatamente estes arquivos. Se a CDN falhar, a caixa de
+texto comum continua funcionando.
+{% endcomment %}
+{% load static %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.21/lib/codemirror.css"
+      integrity="sha384-bsaAhvdduZPAwUb7RRLRvDgtEtOsggrgjkr/EjPO1i/vdoi+DmdLaG79UOt6M5hD" crossorigin="anonymous">
+<link rel="stylesheet" href="{% static 'css/editor_codigo.css' %}">
