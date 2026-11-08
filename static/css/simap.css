@@ -4,6 +4,7 @@
     --foreground: #0f172a;
     --muted: #64748b;
     --border: #e2e8f0;
+    --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
     --primary: #2563eb;
     --primary-hover: #1d4ed8;
@@ -14,4 +15,7 @@
 body.simap-app {
     background-color: var(--background);
     color: var(--foreground);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
 }
