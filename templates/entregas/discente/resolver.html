@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load comunicacao_tags videos_tags %}
+{% load comunicacao_tags videos_tags tutoria_tags %}
 
 {% block title %}{{ atividade.titulo }} - SIMAP{% endblock %}
 
@@ -53,6 +53,8 @@
         <p class="small text-muted mt-2 mb-0">O rascunho é salvo sozinho enquanto você escreve{% if rascunho %} (último: {{ rascunho.atualizado_em|date:"d/m H:i" }}){% endif %}.</p>
     </form>
 {% endif %}
+
+{% painel_de_ajuda atividade com_codigo=True %}
 {% endblock %}
 
 {% block scripts %}{% include "entregas/_editor_scripts.html" %}{% endblock %}

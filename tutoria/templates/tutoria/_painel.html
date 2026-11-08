@@ -1,0 +1,38 @@
+{% load static %}
+{% if atividade.ajuda_ia %}
+<div class="card mt-3 painel-ajuda" data-painel-ajuda
+     data-url="{% url 'tutoria:pedir' atividade.pk %}"
+     data-proximo-nivel="{{ situacao.proximo_nivel|default_if_none:'' }}"
+     data-restantes="{{ situacao.restantes_hoje }}">
+    <div class="card-header d-flex align-items-center gap-2">
+        <button class="btn btn-warning btn-sm fw-semibold" type="button" data-bs-toggle="collapse"
+                data-bs-target="#ajuda-{{ atividade.pk }}" aria-expanded="false" aria-controls="ajuda-{{ atividade.pk }}">
+            🙋 Preciso de ajuda
+        </button>
+        <span class="small text-muted ms-auto ajuda-restantes">{{ situacao.restantes_hoje }} ajuda(s) restante(s) hoje</span>
+    </div>
+    <div class="collapse{% if pedidos %} show{% endif %}" id="ajuda-{{ atividade.pk }}">
+        <div class="card-body">
+            <p class="small text-muted mb-2">
+                A IA não resolve o exercício por você: ela dá pistas, explica o assunto e indica onde estudar.
+                O professor vê quantas ajudas você usou.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                <button type="button" class="btn btn-outline-dark btn-sm" data-tipo="DICA">
+                    💡 Me dá uma dica <span class="ajuda-nivel small text-muted"></span>
+                </button>
+                <button type="button" class="btn btn-outline-dark btn-sm" data-tipo="CONCEITO">📖 Explica o conceito</button>
+                <button type="button" class="btn btn-outline-dark btn-sm" data-tipo="MATERIAL">🔎 Busca material</button>
+                {% if com_codigo %}
+                <button type="button" class="btn btn-outline-dark btn-sm" data-tipo="CODIGO">🐞 Olha meu código</button>
+                {% endif %}
+            </div>
+            <div class="small ajuda-status mb-2" aria-live="polite"></div>
+            <div class="ajuda-historico">
+                {% for pedido in pedidos %}{% include "tutoria/_pedido.html" %}{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/tutoria.js' %}" defer></script>
+{% endif %}

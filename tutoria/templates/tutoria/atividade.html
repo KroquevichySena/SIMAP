@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load comunicacao_tags tutoria_tags %}
+
+{% block title %}Ajuda - {{ atividade.titulo }} - SIMAP{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{% url 'core:minhas_trilhas' %}#atividade-{{ atividade.pk }}">Minhas trilhas</a></li>
+        <li class="breadcrumb-item">{{ atividade.trilha.titulo }}</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ atividade.titulo }}</li>
+    </ol>
+</nav>
+<h3>{{ atividade.titulo }}</h3>
+<div class="card"><div class="card-body" style="overflow-wrap:anywhere">{{ atividade.enunciado|texto_com_links }}</div></div>
+{% painel_de_ajuda atividade %}
+<p class="mt-3"><a href="{% url 'core:minhas_trilhas' %}#atividade-{{ atividade.pk }}">← Voltar para responder a atividade</a></p>
+{% endblock %}
