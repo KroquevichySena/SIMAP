@@ -1,0 +1,6 @@
+<div class="sm-campo{% if campo.errors %} sm-campo-erro{% endif %}">
+    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+    {{ campo }}
+    {% if campo.help_text %}<p class="sm-dica">{{ campo.help_text }}</p>{% endif %}
+    {% for erro in campo.errors %}<p class="sm-erro">{{ erro }}</p>{% endfor %}
+</div>
