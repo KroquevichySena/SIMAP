@@ -2,12 +2,8 @@
   <div class="container-fluid">
     <a class="navbar-brand" href="{% url 'core:dashboard' %}">SIMAP Acadêmico</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Alternar navegação">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarMenu">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    <div class="simap-menu">
+      <ul class="simap-menu-links">
         {% if user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'core:dashboard' %}">Início</a>
@@ -35,41 +31,70 @@
             <a class="nav-link" href="{% url 'chamada:confirmar_presenca' %}">Chamada</a>
           </li>
         {% endif %}
+
         {% if user.perfil == 'DOCENTE' or user.perfil == 'DISCENTE' %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'comunicacao:inicio' %}">Comunicação</a>
           </li>
         {% endif %}
-        {% if user.is_superuser %}
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'auditoria:registro_list' %}">Auditoria</a>
-        </li>
-        {% endif %}
 
+        {% if user.is_superuser %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'auditoria:registro_list' %}">Auditoria</a>
+          </li>
+        {% endif %}
       </ul>
 
-      <div class="d-flex align-items-center gap-2">
+      <div class="simap-usuario">
         {% if user.is_authenticated %}
           <div class="dropdown">
-            <a class="btn btn-sm btn-outline-light position-relative" href="{% url 'comunicacao:notificacoes' %}" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificações">
-              🔔
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-light simap-notificacoes"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Notificações
               {% if notificacoes_nao_lidas %}
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ notificacoes_nao_lidas }}</span>
+                <span class="badge bg-danger">
+                  {{ notificacoes_nao_lidas }}
+                  <span class="visually-hidden">não lidas</span>
+                </span>
               {% endif %}
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+            </button>
+
+            <ul class="dropdown-menu simap-notificacoes-lista">
               {% for notificacao in notificacoes_recentes %}
-                <li><a class="dropdown-item small text-wrap" href="{% url 'comunicacao:notificacao_abrir' notificacao.pk %}">{{ notificacao.mensagem }}</a></li>
+                <li>
+                  <a
+                    class="dropdown-item small text-wrap"
+                    href="{% url 'comunicacao:notificacao_abrir' notificacao.pk %}"
+                  >
+                    {{ notificacao.mensagem }}
+                  </a>
+                </li>
               {% empty %}
-                <li><span class="dropdown-item-text small text-muted">Nenhuma notificação nova.</span></li>
+                <li>
+                  <span class="dropdown-item-text small text-muted">
+                    Nenhuma notificação nova.
+                  </span>
+                </li>
               {% endfor %}
+
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item small" href="{% url 'comunicacao:notificacoes' %}">Ver todas as notificações</a></li>
+              <li>
+                <a class="dropdown-item small" href="{% url 'comunicacao:notificacoes' %}">
+                  Ver todas as notificações
+                </a>
+              </li>
             </ul>
           </div>
-          <span class="navbar-text text-white">
-            Logado como: {{ user.first_name }} ({{ user.perfil }})
-          </span>
+
+          <div class="simap-usuario-info">
+            <strong>{{ user.get_full_name|default:user.username }}</strong>
+            <span>{{ user.get_perfil_display }}</span>
+          </div>
+
           <form method="post" action="{% url 'logout' %}" class="m-0">
             {% csrf_token %}
             <button type="submit" class="btn btn-sm btn-outline-light">Sair</button>
