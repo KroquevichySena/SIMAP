@@ -184,6 +184,262 @@ body.simap-app {
     transform: translateY(0);
 }
 
+/* Componentes compartilhados das páginas internas. */
+.simap-pagina {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.simap-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.simap-cabecalho > div:first-child {
+    flex: 1 1 300px;
+    min-width: 0;
+}
+
+.simap-cabecalho h1 {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+}
+
+.simap-subtitulo {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.simap-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.simap-icone {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.simap-botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 20px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.simap-botao-primario {
+    background-color: var(--primary);
+    color: white;
+}
+
+.simap-botao-primario:hover {
+    background-color: var(--primary-hover);
+    color: white;
+}
+
+.simap-botao-secundario {
+    border-color: var(--border);
+    background-color: var(--card);
+    color: #334155;
+}
+
+.simap-botao-secundario:hover {
+    border-color: #cbd5e1;
+    background-color: #f1f5f9;
+    color: var(--foreground);
+}
+
+.simap-botao:focus-visible,
+.simap-link-acao:focus-visible,
+.simap-tabela-rolagem:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.simap-cartao {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background-color: var(--card);
+}
+
+.simap-cartao-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 24px;
+}
+
+.simap-cartao-cabecalho h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.simap-contagem {
+    color: var(--muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.simap-tabela-rolagem {
+    position: relative;
+    overflow-x: auto;
+    margin: 0 24px 24px;
+    border-radius: 8px;
+}
+
+.simap-tabela {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    color: #475569;
+    text-align: left;
+}
+
+.simap-tabela thead th {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--background);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.simap-tabela tbody th,
+.simap-tabela tbody td {
+    padding: 18px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+.simap-tabela tbody tr:last-child > * {
+    border-bottom: 0;
+}
+
+.simap-tabela tbody tr:hover > * {
+    background-color: var(--background);
+}
+
+.simap-turma-nome {
+    min-width: 220px;
+    color: var(--foreground);
+    font-weight: 600;
+}
+
+.simap-turma-data {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.simap-periodo {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.simap-situacao {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 3px 10px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.simap-situacao-ativa {
+    border-color: #a7f3d0;
+    background-color: #ecfdf5;
+    color: #047857;
+}
+
+.simap-situacao-inativa {
+    border-color: var(--border);
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.simap-tabela-acoes {
+    text-align: right;
+}
+
+.simap-link-acao {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.simap-link-acao:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+.simap-vazio {
+    padding: 36px 24px 48px;
+    text-align: center;
+}
+
+.simap-vazio-icone {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 20px;
+    color: var(--muted);
+}
+
+.simap-vazio h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.simap-vazio p {
+    max-width: 460px;
+    margin: 0 auto;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
 @media (max-width: 959.98px) {
     .simap-layout {
         flex-direction: column;
@@ -231,5 +487,23 @@ body.simap-app {
 
     .simap-principal {
         padding-top: 24px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .simap-acoes {
+        width: 100%;
+    }
+
+    .simap-acoes .simap-botao {
+        flex: 1 1 180px;
+    }
+
+    .simap-cartao-cabecalho {
+        padding: 20px 16px;
+    }
+
+    .simap-tabela-rolagem {
+        margin: 0 16px 16px;
     }
 }

@@ -1,37 +1,112 @@
 {% extends 'base.html' %}
 
-{% block title %}Turmas - SIMAP{% endblock %}
+{% block title %}{% if user.is_discente %}Minhas turmas{% else %}Turmas{% endif %} - SIMAP{% endblock %}
 
 {% block content %}
-    <h2>Turmas</h2>
-    {% if user.is_docente %}
-     <a href="{% url 'criar_turma' %}" class="btn btn-primary">Nova Turma</a>
-     <a href="{% url 'criar_matricula' %}" class="btn btn-secondary">Matricular Aluno</a>
-     {% endif %}
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Período</th>
-                <th>Docente</th>
-                {% if user.is_docente %}<th></th>{% endif %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for turma in turmas %}
-            <tr>
-                <td>{{ turma.nome }}</td>
-                <td>{{ turma.periodo }}</td>
-                <td>{{ turma.docente }}</td>
-                {% if user.is_docente %}
-                <td><a href="{% url 'matriculas_turma' turma.pk %}" class="btn btn-sm btn-outline-primary">Alunos</a></td>
-                {% endif %}
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4">Nenhuma turma cadastrada ainda.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="simap-pagina">
+        <header class="simap-cabecalho">
+            <div>
+                <h1>{% if user.is_discente %}Minhas turmas{% else %}Turmas{% endif %}</h1>
+                <p class="simap-subtitulo">
+                    {% if user.is_docente %}
+                        Gerencie as turmas sob sua responsabilidade e as matrículas dos alunos.
+                    {% elif user.is_discente %}
+                        Consulte as turmas em que você tem matrícula ativa.
+                    {% else %}
+                        Consulte as turmas disponíveis para seu perfil.
+                    {% endif %}
+                </p>
+            </div>
+
+            {% if user.is_docente %}
+                <div class="simap-acoes">
+                    <a href="{% url 'criar_matricula' %}" class="simap-botao simap-botao-secundario">
+                        <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="m16 11 2 2 4-4" />
+                        </svg>
+                        Matricular aluno
+                    </a>
+                    <a href="{% url 'criar_turma' %}" class="simap-botao simap-botao-primario">
+                        <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Nova turma
+                    </a>
+                </div>
+            {% endif %}
+        </header>
+
+        <section class="simap-cartao" aria-labelledby="titulo-lista-turmas">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-lista-turmas">{% if user.is_discente %}Turmas com matrícula ativa{% else %}Turmas cadastradas{% endif %}</h2>
+                <span class="simap-contagem">{{ turmas|length }} turma{{ turmas|length|pluralize }}</span>
+            </div>
+
+            {% if turmas %}
+                <div class="simap-tabela-rolagem" role="region" aria-labelledby="titulo-lista-turmas" tabindex="0">
+                    <table class="simap-tabela">
+                        <caption class="visually-hidden">Nome, período, docente responsável e situação das turmas.</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Nome da turma</th>
+                                <th scope="col">Período</th>
+                                <th scope="col">Docente</th>
+                                <th scope="col">Situação</th>
+                                {% if user.is_docente %}<th scope="col"><span class="visually-hidden">Ações</span></th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for turma in turmas %}
+                                <tr>
+                                    <th scope="row" class="simap-turma-nome">
+                                        {{ turma.nome }}
+                                        <span class="simap-turma-data">Criada em {{ turma.data_criacao|date:"d/m/Y" }}</span>
+                                    </th>
+                                    <td class="simap-periodo">{{ turma.periodo }}</td>
+                                    <td>{{ turma.docente.get_full_name|default:turma.docente.username }}</td>
+                                    <td>
+                                        {% if turma.ativa %}
+                                            <span class="simap-situacao simap-situacao-ativa">Ativa</span>
+                                        {% else %}
+                                            <span class="simap-situacao simap-situacao-inativa">Inativa</span>
+                                        {% endif %}
+                                    </td>
+                                    {% if user.is_docente %}
+                                        <td class="simap-tabela-acoes">
+                                            <a class="simap-link-acao" href="{% url 'matriculas_turma' turma.pk %}">
+                                                Ver alunos<span class="visually-hidden"> de {{ turma.nome }}</span>
+                                                <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                    <path d="M5 12h14m-6-6 6 6-6 6" />
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="simap-vazio">
+                    <svg class="simap-icone simap-vazio-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    <h3>{% if user.is_docente %}Você ainda não possui turmas cadastradas{% elif user.is_discente %}Você ainda não possui matrícula ativa em uma turma{% else %}Nenhuma turma disponível{% endif %}</h3>
+                    <p>
+                        {% if user.is_docente %}
+                            Use “Nova turma” para cadastrar sua primeira turma e começar a matricular os alunos.
+                        {% elif user.is_discente %}
+                            Quando seu docente registrar uma matrícula ativa, a turma aparecerá aqui.
+                        {% else %}
+                            Nenhuma turma está vinculada ao seu perfil.
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
 {% endblock %}
