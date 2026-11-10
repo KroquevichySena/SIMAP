@@ -26,15 +26,66 @@ body.simap-app {
 }
 
 .simap-conteudo {
+    display: flex;
+    flex-direction: column;
     flex: 1;
     min-width: 0;
+}
+
+.simap-principal {
+    flex: 1;
+    width: 100%;
+    max-width: 1500px;
+    margin-inline: auto;
+    padding: 32px clamp(16px, 3vw, 40px);
 }
 
 .simap-sidebar {
     width: 260px;
     flex-shrink: 0;
+    align-self: flex-start;
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
     background-color: var(--sidebar);
     color: white;
+}
+
+.simap-sidebar-interno {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.simap-marca {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 32px 32px 24px;
+    color: white;
+    text-decoration: none;
+}
+
+.simap-marca:hover {
+    color: white;
+}
+
+.simap-marca strong {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.simap-marca span {
+    font-size: 12px;
+    color: #cbd5e1;
+}
+
+.simap-menu {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .simap-menu-links {
@@ -61,11 +112,23 @@ body.simap-app {
     color: white;
 }
 
+.simap-menu-links .nav-link.active {
+    background-color: var(--primary);
+    color: white;
+}
+
+.simap-sidebar a:focus-visible,
+.simap-sidebar button:focus-visible {
+    outline: 2px solid #93c5fd;
+    outline-offset: 3px;
+}
+
 .simap-usuario {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
+    margin-top: auto;
     padding: 20px 16px;
     border-top: 1px solid var(--sidebar-hover);
 }
@@ -92,7 +155,81 @@ body.simap-app {
 
 .simap-notificacoes-lista {
     --bs-dropdown-min-width: 0;
-    width: min(320px, calc(100vw - 32px));
+    position: static !important;
+    transform: none !important;
+    width: 100%;
     max-height: 360px;
     overflow-y: auto;
+    margin-top: 8px !important;
+    border-color: var(--border);
+}
+
+.simap-sair {
+    width: 100%;
+}
+
+.simap-pular-conteudo {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1100;
+    padding: 12px 16px;
+    transform: translateY(-200%);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--primary);
+}
+
+.simap-pular-conteudo:focus {
+    transform: translateY(0);
+}
+
+@media (max-width: 959.98px) {
+    .simap-layout {
+        flex-direction: column;
+    }
+
+    .simap-sidebar {
+        position: static;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .simap-sidebar-interno {
+        min-height: 0;
+    }
+
+    .simap-marca {
+        padding: 16px;
+    }
+
+    .simap-marca strong {
+        font-size: 22px;
+    }
+
+    .simap-menu-links {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-top: 0;
+    }
+
+    .simap-menu-links .nav-link {
+        white-space: nowrap;
+    }
+
+    .simap-usuario {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        padding: 16px;
+    }
+
+    .simap-usuario > .dropdown {
+        grid-column: 1 / -1;
+    }
+
+    .simap-principal {
+        padding-top: 24px;
+    }
 }

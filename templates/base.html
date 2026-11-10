@@ -11,11 +11,12 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="simap-app">
+    <a class="simap-pular-conteudo" href="#conteudo-principal">Ir para o conteúdo</a>
     <div class="simap-layout">
         {% include 'partials/_navbar.html' %}
 
         <div class="simap-conteudo">
-            <main class="container mt-5">
+            <main id="conteudo-principal" class="simap-principal" tabindex="-1">
                 {% if messages %}
                     {% for message in messages %}
                         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
