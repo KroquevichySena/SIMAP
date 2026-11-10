@@ -7,18 +7,21 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mass_mail
 from django.db import IntegrityError, transaction
-from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
 from django.views.generic import DetailView, View
 
 from comunicacao.arquivos import resposta_de_download, salvar_arquivos, validar_arquivos
+from comunicacao.forms import ACEITAR
 
 from core.mixins import DiscenteRequiredMixin, DocenteRequiredMixin
 from core.models import Atividade
 from turmas.models import Matricula
 
 from .ia_services import gerar_analise
-from .models import AnexoSubmissao, AvaliacaoOficial, Submissao
+from .models import AnexoSubmissao, AvaliacaoOficial, RascunhoCodigo, Submissao
 
 logger = logging.getLogger("simap.integracoes")
 
@@ -47,6 +50,7 @@ class CorrigirAtividadeView(DocenteRequiredMixin, DetailView):
             .order_by("-data_envio")
         )
         ctx["submissoes"] = submissoes
+        ctx["casos"] = list(atividade.casos_de_teste.all())
 
         ids_ja_enviaram = submissoes.values_list("aluno_id", flat=True)
         ctx["pendentes"] = (
@@ -138,20 +142,22 @@ class NotificarPendentesView(DocenteRequiredMixin, View):
 
 
 
+def atividades_do_aluno(aluno):
+    """Atividades que o aluno pode ver e responder: publicadas e da turma dele."""
+    return Atividade.objects.filter(
+        publicada=True,
+        trilha__publicada=True,
+        trilha__turma__ativa=True,
+        trilha__turma__matricula__discente=aluno,
+        trilha__turma__matricula__status="ATIVA",
+    )
+
+
 class SubmeterAtividadeView(DiscenteRequiredMixin, View):
     """Recebe a resposta do aluno e dispara a análise de IA."""
 
     def post(self, request, pk, *args, **kwargs):
-        atividade = get_object_or_404(
-            Atividade.objects.filter(
-                publicada=True,
-                trilha__publicada=True,
-                trilha__turma__ativa=True,
-                trilha__turma__matricula__discente=request.user,
-                trilha__turma__matricula__status="ATIVA",
-            ),
-            pk=pk,
-        )
+        atividade = get_object_or_404(atividades_do_aluno(request.user), pk=pk)
 
         resposta_texto = request.POST.get("resposta_texto", "").strip()
         if not resposta_texto:
@@ -177,6 +183,8 @@ class SubmeterAtividadeView(DiscenteRequiredMixin, View):
                     atividade=atividade, aluno=request.user, resposta_texto=resposta_texto
                 )
                 salvar_arquivos(AnexoSubmissao, anexos, submissao=submissao)
+                # O rascunho do editor já virou a entrega; não precisa mais dele.
+                RascunhoCodigo.objects.filter(atividade=atividade, aluno=request.user).delete()
         except IntegrityError:
             # Dois cliques seguidos em "Submeter": a segunda tentativa cai aqui.
             messages.info(request, "Você já enviou uma resposta para esta atividade.")
@@ -190,6 +198,57 @@ class SubmeterAtividadeView(DiscenteRequiredMixin, View):
     @staticmethod
     def _voltar(atividade):
         return "core:minhas_trilhas"
+
+
+class ResolverAtividadeView(DiscenteRequiredMixin, View):
+    """
+    Tela do editor de código de uma atividade prática.
+
+    O código abre com, nesta ordem: a resposta já entregue (só leitura), o
+    rascunho salvo ou o código inicial que o professor deixou.
+    """
+
+    template_name = "entregas/discente/resolver.html"
+
+    def get(self, request, pk):
+        atividade = get_object_or_404(
+            atividades_do_aluno(request.user).select_related("trilha__turma"), pk=pk, tipo="PRATICA"
+        )
+        submissao = (
+            Submissao.objects.filter(atividade=atividade, aluno=request.user)
+            .select_related("avaliacao_oficial").prefetch_related("anexos").first()
+        )
+        rascunho = None
+        if submissao:
+            codigo = submissao.resposta_texto
+        else:
+            rascunho = RascunhoCodigo.objects.filter(atividade=atividade, aluno=request.user).first()
+            codigo = rascunho.codigo if rascunho else atividade.codigo_inicial
+        return render(request, self.template_name, {
+            "atividade": atividade,
+            "submissao": submissao,
+            "rascunho": rascunho,
+            "codigo": codigo,
+            "casos": list(atividade.casos_de_teste.all()),
+            "extensoes_aceitas": ACEITAR,
+            "url_rascunho": "" if submissao else reverse("entregas:salvar_rascunho", args=[atividade.pk]),
+        })
+
+
+class SalvarRascunhoView(DiscenteRequiredMixin, View):
+    """Guarda o código do editor enquanto o aluno ainda não entregou (chamado pelo JavaScript)."""
+
+    def post(self, request, pk):
+        atividade = get_object_or_404(atividades_do_aluno(request.user), pk=pk, tipo="PRATICA")
+        codigo = request.POST.get("codigo", "")
+        if len(codigo) > settings.EDITOR_TAMANHO_MAXIMO_CODIGO:
+            return JsonResponse({"erro": "O código passou do tamanho máximo."}, status=400)
+        if Submissao.objects.filter(atividade=atividade, aluno=request.user).exists():
+            return JsonResponse({"erro": "Esta atividade já foi entregue."}, status=409)
+        RascunhoCodigo.objects.update_or_create(
+            atividade=atividade, aluno=request.user, defaults={"codigo": codigo}
+        )
+        return JsonResponse({"salvo_em": timezone.localtime().strftime("%H:%M")})
 
 
 class BaixarAnexoSubmissaoView(LoginRequiredMixin, View):

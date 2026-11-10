@@ -25,13 +25,14 @@ from entregas.models import Submissao
 from turmas.models import Matricula
 
 from . import avisos
-from .forms import AtividadeForm, TrilhaAprendizagemForm
+from .forms import AtividadeForm, CasoDeTesteFormSet, TrilhaAprendizagemForm
 from .mixins import DiscenteRequiredMixin, DocenteRequiredMixin
 from .models import (
     Atividade,
     ConclusaoAtividade,
     MaterialDeApoio,
     TrilhaAprendizagem,
+    VideoDeApoio,
 )
 
 
@@ -55,6 +56,17 @@ class SalvarComMateriaisMixin:
     def avisar(self, obj):
         raise NotImplementedError
 
+    def _salvar_videos(self, codigos):
+        # A lista do formulário é a lista completa: o que saiu do campo é apagado.
+        self.object.videos.all().delete()
+        VideoDeApoio.objects.bulk_create(
+            VideoDeApoio(codigo=codigo, ordem=i, **{self.campo_dono: self.object})
+            for i, codigo in enumerate(codigos)
+        )
+
+    def _salvar_casos(self, form):
+        """Só a atividade tem casos de teste; na trilha não faz nada."""
+
     def form_valid(self, form):
         # Lê do banco como estava antes: o form já alterou o objeto em memória.
         antes = self.estava_visivel() if form.instance.pk else False
@@ -64,6 +76,8 @@ class SalvarComMateriaisMixin:
             for material in removidos:
                 material.delete()
             salvar_arquivos(MaterialDeApoio, form.materiais_validados, **{self.campo_dono: self.object})
+            self._salvar_videos(form.videos_validados)
+            self._salvar_casos(form)
             if not antes and self.esta_visivel(self.object):
                 total = self.avisar(self.object)
                 if total:
@@ -208,6 +222,25 @@ class AtividadeMateriaisMixin(SalvarComMateriaisMixin):
     def avisar(self, atividade):
         return avisos.avisar_atividade_publicada(atividade)
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Um POST sem os campos dos casos (formulários antigos, testes, API) só
+        # não mexe nos casos já cadastrados.
+        enviou_casos = self.request.method == "POST" and "casos-TOTAL_FORMS" in self.request.POST
+        dados = (self.request.POST, self.request.FILES) if enviou_casos else ()
+        form.casos = CasoDeTesteFormSet(*dados, instance=form.instance, prefix="casos")
+        return form
+
+    def _salvar_casos(self, form):
+        if not form.casos.is_bound:
+            return
+        form.casos.instance = self.object
+        form.casos.save()
+        for ordem, caso in enumerate(self.object.casos_de_teste.order_by("ordem", "id")):
+            if caso.ordem != ordem:
+                caso.ordem = ordem
+                caso.save(update_fields=["ordem"])
+
 
 class AtividadeCreateView(DocenteRequiredMixin, AtividadeMateriaisMixin, CreateView):
     model = Atividade
@@ -293,7 +326,7 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
         atividades_publicadas = Prefetch(
             "atividades",
             queryset=Atividade.objects.filter(publicada=True)
-            .prefetch_related("materiais")
+            .prefetch_related("materiais", "videos")
             .order_by("ordem", "id"),
             to_attr="atividades_visiveis",
         )
@@ -303,7 +336,7 @@ class MinhasTrilhasListView(DiscenteRequiredMixin, ListView):
                 turma_id__in=turmas_do_aluno, publicada=True
             )
             .select_related("turma", "turma__docente")
-            .prefetch_related(atividades_publicadas, "materiais")
+            .prefetch_related(atividades_publicadas, "materiais", "videos")
             .order_by("turma__nome", "ordem", "id")
         )
 

@@ -120,3 +120,22 @@ class AvaliacaoOficial(models.Model):
 
     def __str__(self):
         return f"Nota {self.nota} - {self.submissao}"
+
+
+class RascunhoCodigo(models.Model):
+    """O código que o aluno está escrevendo no editor e ainda não entregou."""
+
+    atividade = models.ForeignKey(Atividade, on_delete=models.CASCADE, related_name="rascunhos")
+    aluno = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="rascunhos")
+    codigo = models.TextField(blank=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "rascunho de código"
+        verbose_name_plural = "rascunhos de código"
+        constraints = [
+            models.UniqueConstraint(fields=["atividade", "aluno"], name="uq_rascunho_atividade_aluno")
+        ]
+
+    def __str__(self):
+        return f"Rascunho de {self.aluno} em {self.atividade}"

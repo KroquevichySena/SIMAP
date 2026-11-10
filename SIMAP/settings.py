@@ -172,6 +172,11 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # Chaves das APIs externas: o Gemini, que analisa as respostas, e o Mailgun, dos e-mails.
+# Editor de código das atividades práticas: o Python roda no navegador do
+# aluno (Pyodide), nunca no servidor. Dá para apontar para uma cópia própria.
+SIMAP_PYODIDE_URL = env("SIMAP_PYODIDE_URL", default="https://cdn.jsdelivr.net/npm/pyodide@0.29.5/")
+EDITOR_TAMANHO_MAXIMO_CODIGO = 50_000  # caracteres
+
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
 GEMINI_API_URL = env(
     "GEMINI_API_URL", default="https://generativelanguage.googleapis.com"

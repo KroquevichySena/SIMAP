@@ -10,6 +10,8 @@ from django.utils import timezone
 
 from comunicacao.models import ArquivoSeguro
 
+from . import youtube
+
 
 TIPO_TEORICA = 'TEORICA'
 TIPO_PRATICA = 'PRATICA'  # Reservado para versões futuras (exige sandbox)
@@ -84,6 +86,11 @@ class Atividade(models.Model):
     )
     publicada = models.BooleanField("Visível aos discentes", default=True)
     data_criacao = models.DateTimeField("Criada em", auto_now_add=True)
+    codigo_inicial = models.TextField(
+        "Código inicial", blank=True,
+        help_text="Só para atividades práticas: o código que já aparece no editor do aluno "
+        "(por exemplo, o esqueleto de uma função para ele completar).",
+    )
 
     class Meta:
         verbose_name = "Atividade"
@@ -107,6 +114,10 @@ class Atividade(models.Model):
     @property
     def prazo_expirado(self) -> bool:
         return bool(self.prazo and self.prazo < timezone.now())
+
+    @property
+    def eh_pratica(self) -> bool:
+        return self.tipo == TIPO_PRATICA
 
 
 class ConclusaoAtividade(models.Model):
@@ -184,3 +195,70 @@ class MaterialDeApoio(ArquivoSeguro):
     @property
     def turma(self):
         return self.trilha.turma if self.trilha_id else self.atividade.trilha.turma
+
+
+class VideoDeApoio(models.Model):
+    """
+    Vídeo do YouTube indicado pelo professor numa trilha ou numa atividade.
+
+    Guardamos o código do vídeo, não o link colado: o endereço do player é
+    sempre montado pelo SIMAP (ver core/youtube.py).
+    """
+
+    trilha = models.ForeignKey(
+        TrilhaAprendizagem, on_delete=models.CASCADE, null=True, blank=True, related_name="videos"
+    )
+    atividade = models.ForeignKey(
+        Atividade, on_delete=models.CASCADE, null=True, blank=True, related_name="videos"
+    )
+    codigo = models.CharField("código do vídeo", max_length=11)
+    ordem = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["ordem", "id"]
+        verbose_name = "vídeo de apoio"
+        verbose_name_plural = "vídeos de apoio"
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(trilha__isnull=False, atividade__isnull=True)
+                    | models.Q(trilha__isnull=True, atividade__isnull=False)
+                ),
+                name="ck_video_um_unico_dono",
+            )
+        ]
+
+    def __str__(self):
+        return self.endereco_para_assistir
+
+    @property
+    def endereco_do_player(self):
+        return youtube.endereco_do_player(self.codigo)
+
+    @property
+    def endereco_para_assistir(self):
+        return youtube.endereco_para_assistir(self.codigo)
+
+
+class CasoDeTeste(models.Model):
+    """
+    Exemplo de entrada e saída esperada de uma atividade prática.
+
+    O aluno roda os casos no editor e vê se o programa dele acerta. Serve só
+    como retorno para o aluno: quem dá a nota continua sendo o professor.
+    """
+
+    atividade = models.ForeignKey(Atividade, on_delete=models.CASCADE, related_name="casos_de_teste")
+    entrada = models.TextField(
+        "Entrada", blank=True, help_text="Uma linha para cada input() do programa."
+    )
+    saida_esperada = models.TextField("Saída esperada")
+    ordem = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["ordem", "id"]
+        verbose_name = "caso de teste"
+        verbose_name_plural = "casos de teste"
+
+    def __str__(self):
+        return f"Caso {self.ordem + 1} de {self.atividade}"

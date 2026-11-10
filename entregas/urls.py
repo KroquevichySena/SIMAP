@@ -10,6 +10,8 @@ urlpatterns = [
     path("docente/submissoes/<int:pk>/analise/tentar-novamente/", views.RetentarAnaliseView.as_view(), name="retentar_analise"),
     path("docente/atividades/<int:pk>/notificar-pendentes/", views.NotificarPendentesView.as_view(), name="notificar_pendentes"),
     path("atividades/<int:pk>/submeter/", views.SubmeterAtividadeView.as_view(), name="submeter"),
+    path("atividades/<int:pk>/resolver/", views.ResolverAtividadeView.as_view(), name="resolver"),
+    path("atividades/<int:pk>/rascunho/", views.SalvarRascunhoView.as_view(), name="salvar_rascunho"),
     path("anexos/<int:pk>/", views.BaixarAnexoSubmissaoView.as_view(), name="baixar_anexo"),
 
 ]

@@ -46,6 +46,8 @@ MODELOS_PADRAO = [
     "comunicacao.Resposta",
     "comunicacao.Anexo",
     "core.MaterialDeApoio",
+    "core.VideoDeApoio",
+    "core.CasoDeTeste",
     "entregas.AnexoSubmissao",
 ]
 

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load comunicacao_tags %}
+{% load comunicacao_tags videos_tags %}
 
 {% block title %}Minhas Trilhas - SIMAP{% endblock %}
 
@@ -29,6 +29,9 @@
         {% endif %}
         {% if trilha.materiais.all %}
             {% include "core/_materiais.html" with materiais=trilha.materiais.all %}
+        {% endif %}
+        {% if trilha.videos.all %}
+            {% include "core/_videos.html" with codigos=trilha.videos.all|codigos_dos_videos %}
         {% endif %}
 
         <div class="progress mb-3" role="progressbar" style="height: 6px;">
@@ -61,6 +64,9 @@
                     {% if atividade.materiais.all %}
                         {% include "core/_materiais.html" with materiais=atividade.materiais.all %}
                     {% endif %}
+                    {% if atividade.videos.all %}
+                        {% include "core/_videos.html" with codigos=atividade.videos.all|codigos_dos_videos %}
+                    {% endif %}
 
                     <a href="{% url 'comunicacao:atividade' atividade.pk %}" class="btn btn-sm btn-link px-0">💬 Comentários e dúvidas</a>
 
@@ -74,6 +80,11 @@
                                 <div><a href="{% url 'entregas:baixar_anexo' anexo.pk %}">📎 {{ anexo.nome_original }}</a> <span class="text-muted">({{ anexo.tamanho_legivel }})</span></div>
                             {% endfor %}
                         </div>
+                        {% if atividade.eh_pratica %}
+                            <a href="{% url 'entregas:resolver' atividade.pk %}" class="btn btn-sm btn-outline-dark mt-2">💻 Ver minha resposta no editor</a>
+                        {% endif %}
+                    {% elif atividade.eh_pratica %}
+                        <a href="{% url 'entregas:resolver' atividade.pk %}" class="btn btn-sm btn-dark mt-2">💻 Abrir editor de código</a>
                     {% else %}
                         <form method="POST" action="{% url 'entregas:submeter' atividade.pk %}" class="mt-2" enctype="multipart/form-data">
                             {% csrf_token %}
