@@ -598,6 +598,79 @@ body.simap-app {
     border-top: 1px solid var(--border);
 }
 
+.simap-titulo-turma {
+    overflow-wrap: anywhere;
+}
+
+.simap-resumo-turma {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+}
+
+.simap-resumo-item {
+    padding: 20px;
+    overflow-wrap: anywhere;
+}
+
+.simap-resumo-item dt {
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.simap-resumo-item dd {
+    margin: 0;
+    color: var(--foreground);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.simap-orientacao-matriculas {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background-color: #eff6ff;
+    color: #1e40af;
+    line-height: 1.6;
+}
+
+.simap-orientacao-matriculas .simap-icone {
+    margin-top: 2px;
+}
+
+.simap-orientacao-matriculas p {
+    margin: 0;
+}
+
+.simap-rgm {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.simap-botao-compacto {
+    min-height: 44px;
+    padding: 8px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.simap-botao-aviso {
+    border-color: #fcd34d;
+    background-color: #fffbeb;
+    color: #92400e;
+}
+
+.simap-botao-aviso:hover {
+    background-color: #fef3c7;
+    color: #78350f;
+}
+
 @media (max-width: 959.98px) {
     .simap-layout {
         flex-direction: column;
@@ -645,6 +718,10 @@ body.simap-app {
 
     .simap-principal {
         padding-top: 24px;
+    }
+
+    .simap-resumo-turma {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
