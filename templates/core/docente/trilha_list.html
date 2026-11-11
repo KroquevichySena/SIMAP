@@ -1,74 +1,34 @@
 {% extends 'base.html' %}
-
-{% block title %}Minhas Trilhas - SIMAP{% endblock %}
-
+{% block title %}Trilhas - SIMAP{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Trilhas de Aprendizagem</h2>
-    <a href="{% url 'core:trilha_create' %}" class="btn btn-success">+ Nova Trilha</a>
+<div class="simap-pagina">
+    <header class="simap-cabecalho">
+        <div><h1>Trilhas de Aprendizagem</h1><p class="simap-subtitulo">Organize os conteúdos e as atividades de cada turma.</p></div>
+        <div class="simap-acoes"><a href="{% url 'core:trilha_create' %}" class="simap-botao simap-botao-primario">+ Nova trilha</a></div>
+    </header>
+    <section class="simap-cartao" aria-labelledby="titulo-trilhas">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-trilhas">Suas trilhas</h2><span class="simap-contagem">{{ paginator.count }} trilha{{ paginator.count|pluralize }}</span></div>
+        {% if trilhas %}
+        <div class="simap-tabela-rolagem" role="region" aria-labelledby="titulo-trilhas" tabindex="0">
+            <table class="simap-tabela">
+                <caption class="visually-hidden">Trilhas das suas turmas e ações disponíveis.</caption>
+                <thead><tr><th scope="col">Título</th><th scope="col">Turma</th><th scope="col">Ordem</th><th scope="col">Atividades</th><th scope="col">Publicação</th><th scope="col">Ações</th></tr></thead>
+                <tbody>{% for trilha in trilhas %}
+                    <tr>
+                        <th scope="row" class="simap-turma-nome">{{ trilha.titulo }}</th>
+                        <td>{{ trilha.turma }}</td><td>{{ trilha.ordem }}</td>
+                        <td><div class="simap-acoes-linha"><a href="{% url 'core:atividade_list' %}?trilha={{ trilha.id }}">{{ trilha.qtd_atividades }} atividade{{ trilha.qtd_atividades|pluralize }}</a><a href="{% url 'core:atividade_create' %}?trilha={{ trilha.id }}" class="simap-botao simap-botao-compacto simap-botao-secundario">+ Atividade<span class="visually-hidden"> em {{ trilha.titulo }}</span></a></div></td>
+                        <td>{% include 'core/_estado_publicacao.html' with publicada=trilha.publicada %}</td>
+                        <td><div class="simap-acoes-linha">
+                            <a href="{% url 'core:trilha_update' trilha.pk %}" class="simap-botao simap-botao-compacto simap-botao-secundario">Editar<span class="visually-hidden"> {{ trilha.titulo }}</span></a>
+                            <a href="{% url 'core:trilha_delete' trilha.pk %}" class="simap-botao simap-botao-compacto simap-botao-perigo">Excluir<span class="visually-hidden"> {{ trilha.titulo }}</span></a>
+                        </div></td>
+                    </tr>
+                {% endfor %}</tbody>
+            </table>
+        </div>
+        {% else %}<div class="simap-vazio"><h3>Nenhuma trilha cadastrada ainda</h3><p>Crie uma trilha para organizar os conteúdos de uma das suas turmas.</p></div>{% endif %}
+    </section>
+    {% include 'partials/_paginacao.html' %}
 </div>
-
-<div class="table-responsive">
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Turma</th>
-                <th>Ordem</th>
-                <th>Atividades</th>
-                <th>Publicada</th>
-                <th class="text-end">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for trilha in trilhas %}
-            <tr>
-                <td>{{ trilha.titulo }}</td>
-                <td>{{ trilha.turma }}</td>
-                <td>{{ trilha.ordem }}</td>
-                <td>
-                    <div class="d-flex align-items-center gap-3">
-                    <a href="{% url 'core:atividade_list' %}?trilha={{ trilha.id }}">
-                        {{ trilha.qtd_atividades }}
-                    </a>
-
-                    <a href="{% url 'core:atividade_create' %}?trilha={{ trilha.id }}" class="btn btn-sm btn-outline-success">
-                        + Atividade</a>
-                    </div>
-                </td>
-                <td>
-                    {% if trilha.publicada %}
-                        <span class="badge bg-success">Sim</span>
-                    
-                    {% else %}
-                        <span class="badge bg-secondary">Não</span>
-                    {% endif %}
-                </td>
-                <td class="text-end">
-                    <a href="{% url 'core:trilha_update' trilha.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
-                    <a href="{% url 'core:trilha_delete' trilha.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" class="text-center text-muted">Nenhuma trilha cadastrada ainda.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-{% if is_paginated %}
-<nav aria-label="Paginação">
-    <ul class="pagination">
-        {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
-        {% endif %}
-        <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
-        {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
 {% endblock %}

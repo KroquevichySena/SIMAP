@@ -373,6 +373,7 @@ body.simap-app {
 }
 
 .simap-situacao {
+    white-space: nowrap;
     display: inline-flex;
     align-items: center;
     min-height: 26px;
@@ -671,6 +672,148 @@ body.simap-app {
     color: #78350f;
 }
 
+.simap-acoes-linha,
+.simap-paginacao {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.simap-acoes-linha {
+    min-width: 190px;
+}
+
+.simap-paginacao {
+    justify-content: center;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.simap-botao-perigo {
+    border-color: #fecaca;
+    background-color: #fff;
+    color: #b91c1c;
+}
+
+.simap-botao-perigo:hover {
+    background-color: #fef2f2;
+    color: #991b1b;
+}
+
+.simap-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 20px 24px;
+}
+
+.simap-filtros .simap-campo {
+    flex: 1 1 260px;
+}
+
+.simap-corpo-cartao {
+    padding: 24px;
+    overflow-wrap: anywhere;
+}
+
+.simap-titulo-confirmacao {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.simap-formulario-conteudo .form-control,
+.simap-formulario-conteudo .form-select {
+    min-height: 44px;
+    border-color: #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.simap-campo[hidden] {
+    display: none;
+}
+
+.simap-formulario-conteudo .form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.simap-campo-invalido .form-control,
+.simap-campo-invalido .form-select {
+    border-color: #dc2626;
+    background-color: #fef2f2;
+}
+
+.simap-opcoes {
+    min-width: 0;
+}
+
+.simap-opcoes legend {
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.simap-secao-casos {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+}
+
+.simap-atividades-aluno {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.simap-atividade-aluno {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+}
+
+.simap-atividade-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.simap-atividade-cabecalho > span {
+    flex: 1 1 220px;
+    min-width: 0;
+    font-weight: 600;
+}
+
+.simap-botao-concluido {
+    border-color: #a7f3d0;
+    background-color: #ecfdf5;
+    color: #047857;
+}
+
+.simap-botao-concluido:hover {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.simap-aprendizagem .progress-bar {
+    background-color: var(--primary);
+}
+
 @media (max-width: 959.98px) {
     .simap-layout {
         flex-direction: column;
@@ -726,6 +869,12 @@ body.simap-app {
 }
 
 @media (max-width: 575.98px) {
+    .simap-corpo-cartao,
+    .simap-filtros,
+    .simap-atividade-aluno {
+        padding: 16px;
+    }
+
     .simap-acoes {
         width: 100%;
     }

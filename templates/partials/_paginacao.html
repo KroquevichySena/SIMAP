@@ -1,0 +1,7 @@
+{% if is_paginated %}
+<nav class="simap-paginacao" aria-label="Paginação">
+    {% if page_obj.has_previous %}<a class="simap-botao simap-botao-secundario" href="?page={{ page_obj.previous_page_number }}{% if trilha_selecionada %}&amp;trilha={{ trilha_selecionada|urlencode }}{% endif %}">Anterior</a>{% endif %}
+    <span aria-current="page">Página {{ page_obj.number }} de {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="simap-botao simap-botao-secundario" href="?page={{ page_obj.next_page_number }}{% if trilha_selecionada %}&amp;trilha={{ trilha_selecionada|urlencode }}{% endif %}">Próxima</a>{% endif %}
+</nav>
+{% endif %}

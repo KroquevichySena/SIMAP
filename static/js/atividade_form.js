@@ -4,7 +4,7 @@
   const tipo = document.getElementById("id_tipo");
   const codigoInicial = document.getElementById("id_codigo_inicial");
   const secaoCasos = document.getElementById("secao-casos");
-  const blocoCodigo = codigoInicial ? codigoInicial.closest("p") : null;
+  const blocoCodigo = codigoInicial ? codigoInicial.closest(".simap-campo") : null;
 
   function atualizar() {
     const pratica = tipo && tipo.value === "PRATICA";

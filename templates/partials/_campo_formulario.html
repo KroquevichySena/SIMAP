@@ -1,0 +1,17 @@
+<div class="simap-campo{% if campo.errors %} simap-campo-invalido{% endif %}">
+    {% if campo.is_hidden %}
+        {{ campo }}
+    {% elif campo.field.widget.input_type == 'checkbox' and not campo.field.widget.allow_multiple_selected %}
+        <div class="simap-campo-checkbox">{{ campo }}<label for="{{ campo.id_for_label }}">{{ campo.label }}</label></div>
+    {% elif campo.field.widget.input_type == 'checkbox' and campo.field.widget.allow_multiple_selected %}
+        <fieldset class="simap-opcoes">
+            <legend>{{ campo.label }}</legend>
+            {{ campo }}
+        </fieldset>
+    {% else %}
+        <label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %}<span class="simap-obrigatorio" aria-hidden="true"> *</span>{% endif %}</label>
+        {{ campo }}
+    {% endif %}
+    {% if campo.help_text %}<p class="simap-ajuda-campo" id="{{ campo.auto_id }}_helptext">{{ campo.help_text }}</p>{% endif %}
+    {% if campo.errors %}<ul class="simap-erros-campo" id="{{ campo.auto_id }}_error">{% for erro in campo.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
+</div>

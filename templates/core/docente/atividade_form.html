@@ -1,29 +1,18 @@
 {% extends 'base.html' %}
-
-{% block title %}{% if object %}Editar Atividade{% else %}Nova Atividade{% endif %} - SIMAP{% endblock %}
-
+{% block title %}{% if object %}Editar atividade{% else %}Nova atividade{% endif %} - SIMAP{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-7">
-        <div class="card shadow">
-            <div class="card-header bg-dark text-white">
-                <h4 class="mb-0">{% if object %}Editar Atividade{% else %}Nova Atividade{% endif %}</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    {% if object and object.materiais.all %}
-                    <div class="border rounded p-2 mb-3 small">
-                        <div class="fw-semibold mb-1">Material já publicado</div>
-                        {% for material in object.materiais.all %}
-                        <div><a href="{% url 'core:baixar_material' material.pk %}">📎 {{ material.nome_original }}</a> <span class="text-muted">({{ material.tamanho_legivel }})</span></div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
+<div class="simap-pagina simap-formulario-pagina">
+    <a class="simap-voltar" href="{% url 'core:atividade_list' %}">← Voltar para atividades</a>
+    <header class="simap-cabecalho"><div><h1>{% if object %}Editar atividade{% else %}Nova atividade{% endif %}</h1><p class="simap-subtitulo">Prepare o enunciado, os materiais e as opções de entrega da atividade.</p></div></header>
+    <section class="simap-cartao" aria-labelledby="titulo-formulario">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-formulario">Dados da atividade</h2><span class="simap-contagem">* Campos obrigatórios</span></div>
+        <form method="post" enctype="multipart/form-data" class="simap-formulario simap-formulario-conteudo">
+            {% csrf_token %}
+            {% include 'turmas/_erros_formulario.html' %}
+            {% for campo in form %}{% include 'partials/_campo_formulario.html' %}{% endfor %}
+            {% include 'core/_materiais_existentes.html' %}
                     {% with casos=form.casos %}
-                    <div id="secao-casos" class="border rounded p-3 mb-3 bg-light">
+                    <div id="secao-casos" class="simap-secao-casos">
                         <div class="fw-semibold">Casos de teste (opcional)</div>
                         <p class="small text-muted mb-2">
                             O aluno roda estes casos no editor e vê ✔ ou ✘ antes de entregar. Em "Entrada",
@@ -37,11 +26,11 @@
                             <div class="caso-de-teste row g-2 mb-2 align-items-start">
                                 {{ caso.id }}
                                 <div class="col-md-5">
-                                    <label class="form-label small mb-0">Entrada</label>{{ caso.entrada }}
+                                    <label class="form-label small mb-0" for="{{ caso.entrada.id_for_label }}">Entrada</label>{{ caso.entrada }}
                                     {% for erro in caso.entrada.errors %}<div class="text-danger small">{{ erro }}</div>{% endfor %}
                                 </div>
                                 <div class="col-md-5">
-                                    <label class="form-label small mb-0">Saída esperada</label>{{ caso.saida_esperada }}
+                                    <label class="form-label small mb-0" for="{{ caso.saida_esperada.id_for_label }}">Saída esperada</label>{{ caso.saida_esperada }}
                                     {% for erro in caso.saida_esperada.errors %}<div class="text-danger small">{{ erro }}</div>{% endfor %}
                                 </div>
                                 <div class="col-md-2 small pt-4">
@@ -53,25 +42,21 @@
                         <template id="modelo-caso">
                             <div class="caso-de-teste row g-2 mb-2 align-items-start">
                                 {{ casos.empty_form.id }}
-                                <div class="col-md-5"><label class="form-label small mb-0">Entrada</label>{{ casos.empty_form.entrada }}</div>
-                                <div class="col-md-5"><label class="form-label small mb-0">Saída esperada</label>{{ casos.empty_form.saida_esperada }}</div>
+                                <div class="col-md-5"><label class="form-label small mb-0" for="{{ casos.empty_form.entrada.id_for_label }}">Entrada</label>{{ casos.empty_form.entrada }}</div>
+                                <div class="col-md-5"><label class="form-label small mb-0" for="{{ casos.empty_form.saida_esperada.id_for_label }}">Saída esperada</label>{{ casos.empty_form.saida_esperada }}</div>
                             </div>
                         </template>
-                        <button type="button" id="adicionar-caso" class="btn btn-sm btn-outline-secondary">+ Adicionar caso</button>
+                        <button type="button" id="adicionar-caso" class="simap-botao simap-botao-secundario simap-botao-compacto">+ Adicionar caso</button>
                     </div>
                     {% endwith %}
-
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'core:atividade_list' %}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-success">Salvar</button>
-                    </div>
-                </form>
+            <div class="simap-formulario-acoes">
+                <button type="submit" class="simap-botao simap-botao-primario">Salvar atividade</button>
+                <a href="{% url 'core:atividade_list' %}" class="simap-botao simap-botao-secundario">Cancelar</a>
             </div>
-        </div>
-    </div>
+        </form>
+    </section>
 </div>
 {% endblock %}
-
 {% block scripts %}
 {% load static %}
 <script src="{% static 'js/atividade_form.js' %}"></script>

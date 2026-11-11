@@ -1,33 +1,22 @@
 {% extends 'base.html' %}
-
 {% block title %}{% if object %}Editar Trilha{% else %}Nova Trilha{% endif %} - SIMAP{% endblock %}
-
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-dark text-white">
-                <h4 class="mb-0">{% if object %}Editar Trilha{% else %}Nova Trilha{% endif %}</h4>
+<div class="simap-pagina simap-formulario-pagina">
+    <a class="simap-voltar" href="{% url 'core:trilha_list' %}">← Voltar para trilhas</a>
+    <header class="simap-cabecalho"><div><h1>{% if object %}Editar Trilha{% else %}Nova Trilha{% endif %}</h1><p class="simap-subtitulo">Organize os conteúdos de uma turma e escolha quando disponibilizá-los aos alunos.</p></div></header>
+    <section class="simap-cartao" aria-labelledby="titulo-formulario">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-formulario">Dados da trilha</h2><span class="simap-contagem">* Campos obrigatórios</span></div>
+        <form method="post" enctype="multipart/form-data" class="simap-formulario simap-formulario-conteudo">
+            {% csrf_token %}
+            {% include 'turmas/_erros_formulario.html' %}
+            {% for campo in form %}{% include 'partials/_campo_formulario.html' %}{% endfor %}
+            {% include 'core/_materiais_existentes.html' %}
+
+            <div class="simap-formulario-acoes">
+                <button type="submit" class="simap-botao simap-botao-primario">Salvar trilha</button>
+                <a href="{% url 'core:trilha_list' %}" class="simap-botao simap-botao-secundario">Cancelar</a>
             </div>
-            <div class="card-body">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    {% if object and object.materiais.all %}
-                    <div class="border rounded p-2 mb-3 small">
-                        <div class="fw-semibold mb-1">Material já publicado</div>
-                        {% for material in object.materiais.all %}
-                        <div><a href="{% url 'core:baixar_material' material.pk %}">📎 {{ material.nome_original }}</a> <span class="text-muted">({{ material.tamanho_legivel }})</span></div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'core:trilha_list' %}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-success">Salvar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+        </form>
+    </section>
 </div>
 {% endblock %}
