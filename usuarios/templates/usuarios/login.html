@@ -41,13 +41,20 @@
 
             <div class="form-check mb-3 mt-1">
                 <input class="form-check-input {% if form.aceite_termos.errors %}is-invalid{% endif %}"
-                       type="checkbox" name="aceite_termos" id="aceite_termos">
+                       type="checkbox" name="aceite_termos" id="aceite_termos"
+                       aria-describedby="aceite-termos-ajuda{% if form.aceite_termos.errors %} aceite-termos-erro{% endif %}"
+                       {% if form.aceite_termos.value %}checked{% endif %}
+                       {% if form.aceite_termos.errors %}aria-invalid="true"{% endif %}>
                 <label class="form-check-label small" for="aceite_termos">
                     Li e aceito os
-                    <a href="{% url 'termos_de_uso' %}" target="_blank">Termos de Uso e a Política de Privacidade</a>
+                    <a href="{% url 'termos_de_uso' %}" target="_blank" rel="noopener noreferrer">Termos de Uso e a Política de Privacidade</a>
                 </label>
+                <p class="form-text mb-0" id="aceite-termos-ajuda">
+                    O aceite é obrigatório no primeiro acesso e quando os termos forem atualizados.
+                    Se você já aceitou a versão atual, pode entrar sem marcar novamente.
+                </p>
                 {% if form.aceite_termos.errors %}
-                    <div class="text-danger small mt-1">{{ form.aceite_termos.errors.0 }}</div>
+                    <div class="text-danger small mt-1" id="aceite-termos-erro">{{ form.aceite_termos.errors.0 }}</div>
                 {% endif %}
             </div>
 
