@@ -1218,6 +1218,81 @@ body.simap-app {
     overflow-wrap: anywhere;
 }
 
+.simap-auditoria-filtros {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.simap-tabela-auditoria {
+    min-width: 1000px;
+    font-size: 13px;
+}
+
+.simap-auditoria-usuario {
+    min-width: 130px;
+    color: var(--foreground);
+    font-weight: 600;
+}
+
+.simap-auditoria-objeto {
+    min-width: 160px;
+}
+
+.simap-auditoria-descricao {
+    min-width: 230px;
+}
+
+.simap-auditoria-critica {
+    border-color: #fecaca;
+    background-color: #fef2f2;
+    color: #b91c1c;
+}
+
+.simap-auditoria-aviso {
+    border-color: #fde68a;
+    background-color: #fffbeb;
+    color: #92400e;
+}
+
+.simap-auditoria-detalhes {
+    margin-top: 8px;
+}
+
+.simap-auditoria-detalhes summary {
+    width: fit-content;
+    padding: 10px 0;
+    color: var(--primary);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.simap-auditoria-detalhes summary:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.simap-auditoria-detalhes pre {
+    max-width: 360px;
+    max-height: 280px;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: 12px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 767.98px) {
+    .simap-auditoria-filtros {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+    }
+}
+
 @media (min-width: 1200px) {
     .simap-correcao-colunas {
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
