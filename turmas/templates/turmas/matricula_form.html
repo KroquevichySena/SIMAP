@@ -1,13 +1,40 @@
 {% extends 'base.html' %}
 
-{% block title %}Nova Matricula - SIMAP{% endblock %}
+{% block title %}Matricular aluno - SIMAP{% endblock %}
 
 {% block content %}
-    <h2>Nova Matricula</h2>
+    <div class="simap-pagina simap-formulario-pagina">
+        <a class="simap-voltar" href="{% url 'lista_turmas' %}">
+            <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+            Voltar para turmas
+        </a>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Salvar</button>
-    </form>
+        <header class="simap-cabecalho">
+            <div>
+                <h1>Matricular aluno</h1>
+                <p class="simap-subtitulo">Vincule um discente a uma das suas turmas ativas.</p>
+            </div>
+        </header>
+
+        <section class="simap-cartao" aria-labelledby="titulo-dados-matricula">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-dados-matricula">Dados da matrícula</h2>
+                <span class="simap-contagem">* Campos obrigatórios</span>
+            </div>
+
+            <form method="post" class="simap-formulario">
+                {% csrf_token %}
+                {% include 'turmas/_erros_formulario.html' %}
+
+                {% include 'turmas/_campo_formulario.html' with campo=form.turma %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.discente %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.status %}
+
+                <div class="simap-formulario-acoes">
+                    <button type="submit" class="simap-botao simap-botao-primario">Confirmar matrícula</button>
+                    <a href="{% url 'lista_turmas' %}" class="simap-botao simap-botao-secundario">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </div>
 {% endblock %}

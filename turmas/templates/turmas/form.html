@@ -1,13 +1,46 @@
 {% extends 'base.html' %}
 
-{% block title %}Nova Turma - SIMAP{% endblock %}
+{% block title %}Nova turma - SIMAP{% endblock %}
 
 {% block content %}
-    <h2>Nova Turma</h2>
+    <div class="simap-pagina simap-formulario-pagina">
+        <a class="simap-voltar" href="{% url 'lista_turmas' %}">
+            <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+            Voltar para turmas
+        </a>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Salvar</button>
-    </form>
+        <header class="simap-cabecalho">
+            <div>
+                <h1>Nova turma</h1>
+                <p class="simap-subtitulo">Cadastre uma turma para organizar os alunos e as atividades.</p>
+            </div>
+        </header>
+
+        <section class="simap-cartao" aria-labelledby="titulo-dados-turma">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-dados-turma">Dados da turma</h2>
+                <span class="simap-contagem">* Campos obrigatórios</span>
+            </div>
+
+            <form method="post" class="simap-formulario">
+                {% csrf_token %}
+                {% include 'turmas/_erros_formulario.html' %}
+
+                <div class="simap-nota-formulario">
+                    <strong>Docente responsável</strong>
+                    <span>{{ user.get_full_name|default:user.username }}</span>
+                    <p>A turma será vinculada automaticamente à sua conta.</p>
+                </div>
+
+                {% include 'turmas/_campo_formulario.html' with campo=form.nome %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.periodo %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.ativa %}
+
+                <div class="simap-formulario-acoes">
+                    <button type="submit" class="simap-botao simap-botao-primario">Salvar turma</button>
+                    <a href="{% url 'lista_turmas' %}" class="simap-botao simap-botao-secundario">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </div>
 {% endblock %}

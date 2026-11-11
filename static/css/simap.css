@@ -440,6 +440,164 @@ body.simap-app {
     line-height: 1.6;
 }
 
+.simap-formulario-pagina {
+    max-width: 720px;
+    margin-inline: auto;
+    gap: 24px;
+}
+
+.simap-voltar {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 8px;
+    min-height: 44px;
+    color: #475569;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.simap-voltar:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.simap-voltar:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.simap-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 4px 24px 24px;
+}
+
+.simap-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.simap-campo label {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.simap-obrigatorio {
+    color: var(--muted);
+}
+
+.simap-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: var(--card);
+    color: var(--foreground);
+    font: inherit;
+}
+
+.simap-input::placeholder {
+    color: var(--muted);
+}
+
+.simap-input:focus {
+    outline: 2px solid #93c5fd;
+    outline-offset: 2px;
+    border-color: var(--primary);
+}
+
+.simap-campo-invalido .simap-input {
+    border-color: #dc2626;
+    background-color: #fef2f2;
+}
+
+.simap-ajuda-campo {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.simap-campo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.simap-checkbox {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+}
+
+.simap-checkbox:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.simap-erros-campo {
+    margin: 0;
+    padding-left: 18px;
+    color: #b91c1c;
+    font-size: 12px;
+}
+
+.simap-aviso-erro {
+    padding: 16px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background-color: #fef2f2;
+    color: #991b1b;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.simap-aviso-erro p,
+.simap-aviso-erro ul {
+    margin: 8px 0 0;
+}
+
+.simap-nota-formulario {
+    padding: 16px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background-color: #eff6ff;
+    overflow-wrap: anywhere;
+}
+
+.simap-nota-formulario strong,
+.simap-nota-formulario span {
+    display: block;
+}
+
+.simap-nota-formulario strong {
+    margin-bottom: 4px;
+    color: #1d4ed8;
+    font-size: 12px;
+}
+
+.simap-nota-formulario p {
+    margin: 6px 0 0;
+    color: #475569;
+    font-size: 12px;
+}
+
+.simap-formulario-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
 @media (max-width: 959.98px) {
     .simap-layout {
         flex-direction: column;
@@ -505,5 +663,13 @@ body.simap-app {
 
     .simap-tabela-rolagem {
         margin: 0 16px 16px;
+    }
+
+    .simap-formulario {
+        padding-inline: 16px;
+    }
+
+    .simap-formulario-acoes .simap-botao {
+        flex: 1 1 160px;
     }
 }
