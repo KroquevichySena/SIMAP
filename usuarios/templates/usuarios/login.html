@@ -18,6 +18,7 @@
 
         <form method="post">
             {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
 
             <div class="mb-3">
                 <label for="id_username" class="form-label fw-semibold">Usuário ou RGM</label>
@@ -63,11 +64,10 @@
 
         <hr class="my-4">
 
-        <p class="text-center text-muted small mb-1">É aluno e possui código de chamada?</p>
-        <p class="text-center mb-0">
-            <a href="{% url 'chamada:confirmar_presenca' %}" class="fw-semibold">
-                Acessar Entrada Direta por Token →
-            </a>
+        <p class="text-center fw-semibold small mb-1">Possui um código de chamada?</p>
+        <p class="text-center text-muted small mb-0">
+            Entre com sua conta de aluno e acesse <strong>Chamadas</strong> no menu para informar o código.
+            O código confirma sua presença; ele não substitui seu usuário e senha.
         </p>
 
     </div>
