@@ -814,6 +814,247 @@ body.simap-app {
     background-color: var(--primary);
 }
 
+.simap-lista-comunicacao {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.simap-pagina-comunicacao .simap-cabecalho h1,
+.simap-pagina-comunicacao .simap-voltar {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.simap-pagina-comunicacao input[type="file"] {
+    padding: 0;
+    font-size: 13px;
+}
+
+.simap-pagina-comunicacao input[type="file"]::file-selector-button {
+    min-height: 44px;
+    margin-right: 10px;
+    padding: 10px 12px;
+    border: 0;
+    border-right: 1px solid #cbd5e1;
+    background-color: var(--background);
+    color: #334155;
+    cursor: pointer;
+}
+
+.simap-lista-comunicacao > li + li {
+    border-top: 1px solid var(--border);
+}
+
+.simap-turma-mural,
+.simap-notificacao {
+    display: block;
+    padding: 20px 24px;
+    color: var(--foreground);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.simap-turma-mural {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.simap-turma-mural > div {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.simap-turma-mural:hover,
+.simap-notificacao:hover {
+    background-color: #f1f5f9;
+    color: var(--foreground);
+}
+
+.simap-turma-mural:focus-visible,
+.simap-notificacao:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -3px;
+}
+
+.simap-metadados {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.simap-link-acao {
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.simap-conversa {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+.simap-cabecalho-secao,
+.simap-publicacao-cabecalho,
+.simap-publicacao-acoes,
+.simap-notificacao-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.simap-cabecalho-secao h2 {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.simap-publicacao-cabecalho {
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.simap-publicacao-cabecalho > div {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.simap-publicacao-privada {
+    border-left: 3px solid #f59e0b;
+}
+
+.simap-etiqueta {
+    display: inline-block;
+    max-width: 100%;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.simap-etiqueta-azul {
+    border-color: #bfdbfe;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+}
+
+.simap-etiqueta-privada {
+    border-color: #fde68a;
+    background-color: #fffbeb;
+    color: #92400e;
+}
+
+.simap-mensagem-texto {
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.simap-publicacao-acoes {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.simap-filtros-mural {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.simap-filtros-mural a {
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.simap-filtros-mural a:hover {
+    background-color: #e2e8f0;
+}
+
+.simap-filtros-mural a[aria-current="page"] {
+    background-color: var(--primary);
+    color: #fff;
+}
+
+.simap-anexos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.simap-anexos li {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.simap-anexo-imagem,
+.simap-anexo-arquivo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--primary);
+    font-size: 13px;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.simap-anexo-imagem {
+    width: 200px;
+}
+
+.simap-anexo-imagem img {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+}
+
+.simap-anexo-imagem:hover,
+.simap-anexo-arquivo:hover {
+    border-color: #93c5fd;
+    background-color: #eff6ff;
+}
+
+.simap-notificacao strong {
+    display: block;
+    margin-top: 10px;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+.simap-notificacao-nao-lida {
+    border-left: 3px solid var(--primary);
+    background-color: #eff6ff;
+}
+
+.simap-notificacao-nao-lida strong {
+    font-weight: 700;
+}
+
 @media (max-width: 959.98px) {
     .simap-layout {
         flex-direction: column;
@@ -870,6 +1111,8 @@ body.simap-app {
 
 @media (max-width: 575.98px) {
     .simap-corpo-cartao,
+    .simap-turma-mural,
+    .simap-notificacao,
     .simap-filtros,
     .simap-atividade-aluno {
         padding: 16px;

@@ -1,17 +1,23 @@
 {% extends 'base.html' %}
 {% block title %}Comunicação - SIMAP{% endblock %}
 {% block content %}
-<h2 class="mb-1">Comunicação</h2>
-<p class="text-muted">Escolha a turma para ver o mural, publicar ou mandar uma mensagem privada.</p>
-
-<div class="list-group shadow-sm">
-  {% for turma in turmas %}
-    <a href="{% url 'comunicacao:mural' turma.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-      <span><strong>{{ turma.nome }}</strong> <span class="text-muted">· {{ turma.periodo }}</span></span>
-      <span class="small text-muted">Prof. {{ turma.docente.get_full_name|default:turma.docente.username }}</span>
-    </a>
-  {% empty %}
-    <div class="list-group-item text-muted">Você ainda não participa de nenhuma turma ativa.</div>
-  {% endfor %}
+<div class="simap-pagina simap-pagina-comunicacao">
+    <header class="simap-cabecalho">
+        <div><h1>Comunicação</h1><p class="simap-subtitulo">Acesse o mural da sua turma para acompanhar avisos e conversar com professores e alunos.</p></div>
+        <div class="simap-acoes"><a href="{% url 'comunicacao:notificacoes' %}" class="simap-botao simap-botao-secundario">Notificações{% if notificacoes_nao_lidas %} ({{ notificacoes_nao_lidas }} não lida{{ notificacoes_nao_lidas|pluralize }}){% endif %}</a></div>
+    </header>
+    <section class="simap-cartao" aria-labelledby="titulo-murais">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-murais">Murais das turmas</h2><span class="simap-contagem">{{ turmas|length }} turma{{ turmas|length|pluralize }}</span></div>
+        {% if turmas %}
+        <ul class="simap-lista-comunicacao">
+            {% for turma in turmas %}
+            <li><a class="simap-turma-mural" href="{% url 'comunicacao:mural' turma.pk %}">
+                <div><strong>{{ turma.nome }}</strong><span class="simap-metadados">{{ turma.periodo }} · Prof. {{ turma.docente.get_full_name|default:turma.docente.username }}</span></div>
+                <span class="simap-link-acao">Abrir mural <span aria-hidden="true">→</span></span>
+            </a></li>
+            {% endfor %}
+        </ul>
+        {% else %}<div class="simap-vazio"><h3>Nenhuma turma disponível</h3><p>Você ainda não participa de nenhuma turma ativa. Os murais das suas turmas aparecerão aqui.</p></div>{% endif %}
+    </section>
 </div>
 {% endblock %}

@@ -1,15 +1,18 @@
 {% if anexos %}
-<div class="d-flex flex-wrap align-items-start gap-2 mt-2">
-  {% for anexo in anexos %}
-    {% if anexo.eh_imagem %}
-      <a href="{% url 'comunicacao:anexo' anexo.pk %}?ver=1" target="_blank" rel="noopener" class="d-block border rounded p-1 bg-white" title="{{ anexo.nome_original }}">
-        <img src="{% url 'comunicacao:anexo' anexo.pk %}?ver=1" alt="{{ anexo.nome_original }}" style="max-height:120px;max-width:180px;object-fit:cover">
-      </a>
-    {% else %}
-      <a href="{% url 'comunicacao:anexo' anexo.pk %}" class="btn btn-sm btn-outline-secondary text-start">
-        📎 {{ anexo.nome_original }} <span class="text-muted small">({{ anexo.tamanho_legivel }})</span>
-      </a>
-    {% endif %}
-  {% endfor %}
-</div>
+<ul class="simap-anexos" aria-label="Anexos da mensagem">
+    {% for anexo in anexos %}
+    <li>
+        {% if anexo.eh_imagem %}
+        <a href="{% url 'comunicacao:anexo' anexo.pk %}?ver=1" target="_blank" rel="noopener" class="simap-anexo-imagem">
+            <img src="{% url 'comunicacao:anexo' anexo.pk %}?ver=1" alt="{{ anexo.nome_original }}" loading="lazy">
+            <span>{{ anexo.nome_original }}</span><span class="visually-hidden"> (abre em nova aba)</span>
+        </a>
+        {% else %}
+        <a href="{% url 'comunicacao:anexo' anexo.pk %}" class="simap-anexo-arquivo">
+            <span>{{ anexo.nome_original }}</span><span class="simap-metadados">{{ anexo.tamanho_legivel }}</span>
+        </a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
 {% endif %}
