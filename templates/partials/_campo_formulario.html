@@ -12,6 +12,6 @@
         <label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %}<span class="simap-obrigatorio" aria-hidden="true"> *</span>{% endif %}</label>
         {{ campo }}
     {% endif %}
-    {% if campo.help_text %}<p class="simap-ajuda-campo" id="{{ campo.auto_id }}_helptext">{{ campo.help_text }}</p>{% endif %}
+    {% if campo.help_text %}<div class="simap-ajuda-campo" id="{{ campo.auto_id }}_helptext">{{ campo.help_text }}</div>{% endif %}
     {% if campo.errors %}<ul class="simap-erros-campo" id="{{ campo.auto_id }}_error">{% for erro in campo.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
 </div>

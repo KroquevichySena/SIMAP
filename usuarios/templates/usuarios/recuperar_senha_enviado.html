@@ -1,8 +1,12 @@
-{% extends 'base.html' %}
-
+{% extends 'base_publico.html' %}
 {% block title %}E-mail enviado - SIMAP{% endblock %}
-
 {% block content %}
-    <h2>Verifique seu e-mail</h2>
-    <p>Se o endereço informado estiver cadastrado em nosso sistema, você receberá um e-mail com instruções para redefinir sua senha em instantes.</p>
+<section class="simap-cartao simap-auth" aria-label="Instruções de recuperação">
+    {% include 'usuarios/_cabecalho_acesso.html' with situacao="Solicitação recebida" titulo="Verifique seu e-mail" descricao="Se o endereço informado estiver cadastrado em nosso sistema, você receberá um e-mail com instruções para redefinir sua senha em instantes." %}
+    <div class="simap-auth-form">
+        <p class="simap-ajuda-campo">Confira também a pasta de spam ou lixo eletrônico.</p>
+        <a href="{% url 'login' %}" class="simap-botao simap-botao-primario">Voltar para o login</a>
+        <a href="{% url 'password_reset' %}" class="simap-auth-link">Informar outro e-mail</a>
+    </div>
+</section>
 {% endblock %}

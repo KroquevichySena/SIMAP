@@ -1,29 +1,26 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SIMAP{% endblock %}</title>
-
-    {% load static %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/simap.css' %}">
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 </head>
-<body>
-
-    <div class="min-vh-100 d-flex align-items-center justify-content-center px-3">
+<body class="simap-app simap-publico">
+    <a class="simap-pular-conteudo" href="#conteudo-principal">Ir para o conteúdo</a>
+    <main id="conteudo-principal" class="simap-publico-conteudo" tabindex="-1">
         {% if messages %}
-            <div class="position-absolute top-0 start-50 translate-middle-x mt-3" style="max-width: 420px; width: 100%;">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-            </div>
+        <div class="simap-publico-mensagens">
+            {% for message in messages %}<div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>{% endfor %}
+        </div>
         {% endif %}
-
-        {% block content %}
-        {% endblock %}
-    </div>
-
+        {% block content %}{% endblock %}
+    </main>
+    {% include 'partials/_footer.html' %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

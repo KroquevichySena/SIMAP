@@ -1,0 +1,5 @@
+{% if form.errors %}
+<div class="simap-aviso-erro" role="alert">
+    {% if form.non_field_errors %}<ul>{% for erro in form.non_field_errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% else %}Revise os campos indicados para continuar.{% endif %}
+</div>
+{% endif %}
