@@ -11,6 +11,8 @@ import shutil
 import tempfile
 import zipfile
 
+from usuarios.test_helpers import registrar_aceites_atuais
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -198,6 +200,8 @@ class ComunicacaoBase(TestCase):
         trilha = TrilhaAprendizagem.objects.create(turma=cls.turma, titulo="Módulo 1")
         cls.atividade = Atividade.objects.create(trilha=trilha, titulo="Laços", enunciado="Faça um for")
         cls.rascunho = Atividade.objects.create(trilha=trilha, titulo="Rascunho", enunciado="x", publicada=False)
+
+        registrar_aceites_atuais(Usuario.objects.all())
 
     def mural(self, turma=None):
         return reverse("comunicacao:mural", args=[(turma or self.turma).pk])

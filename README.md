@@ -44,6 +44,28 @@ Para garantir que não teremos conflitos de versão e mantermos o alinhamento co
    ```
    *Acesse `http://127.0.0.1:8000/` no navegador para confirmar que está rodando.*
 
+## Cadastro e primeiro acesso
+
+A coordenação utiliza uma conta administrativa ativa (superusuário, sem perfil
+discente). Após o login e o aceite dos termos, pode acessar **Usuários** no menu
+para cadastrar docentes e discentes em `/contas/usuarios/`.
+
+O cadastro exige nome, sobrenome, usuário de acesso, e-mail, perfil e senha
+inicial; o RGM é obrigatório para discentes. As contas criadas nessa tela não
+recebem privilégios administrativos. A coordenação informa as credenciais à
+pessoa por um canal privado; ela pode redefinir a senha pelo e-mail cadastrado.
+O professor continua responsável pelas matrículas nas próprias turmas.
+
+O login pede apenas usuário e senha. Quem ainda não aceitou a versão vigente é
+encaminhado a `/contas/primeiro-acesso/`, onde lê os termos e confirma o próprio
+aceite. Até isso acontecer, o sistema bloqueia também URLs diretas e operações.
+O aceite registra usuário, versão, data/hora e IP e gera registro na auditoria.
+Uma nova versão dos termos exige novo aceite, inclusive em sessões existentes.
+
+Para criar a primeira conta de coordenação, use `python manage.py createsuperuser`.
+Não atribua perfil DISCENTE à conta administrativa. Não houve alteração de
+estrutura de banco para este fluxo.
+
 ## 🤖 Como Configurar a IA (Google Gemini)
 
 Para que as funcionalidades de inteligência artificial do projeto funcionem perfeitamente na sua máquina local, é obrigatório configurar a chave de acesso da API:

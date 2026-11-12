@@ -18,6 +18,7 @@ import csv
 import io
 import time
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -52,6 +53,10 @@ class AuditoriaIntegracaoTest(TestCase):
             {"username": usuario.username, "password": SENHA, "aceite_termos": "on"},
         )
         self.assertEqual(resposta.status_code, 302, "o login deveria ter funcionado")
+        aceite = client.post(reverse("primeiro_acesso"), {
+            "aceite_termos": "on", "versao": settings.TERMOS_DE_USO_VERSAO,
+        })
+        self.assertEqual(aceite.status_code, 302)
 
     def errar_login(self, login_digitado):
         """Gera um registro LOGIN_FALHA pela própria tela de login."""

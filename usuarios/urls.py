@@ -3,7 +3,10 @@ from django.contrib.auth import views as auth_views
 from.import views
 
 urlpatterns = [
-    path('login/', views.LoginComTermosView.as_view(template_name='usuarios/login.html'), name='login'),
+    path('login/', views.LoginView.as_view(template_name='usuarios/login.html'), name='login'),
+    path('primeiro-acesso/', views.PrimeiroAcessoView.as_view(), name='primeiro_acesso'),
+    path('usuarios/', views.UsuarioListView.as_view(), name='usuarios_lista'),
+    path('usuarios/novo/', views.UsuarioCreateView.as_view(), name='usuario_criar'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('termos-de-uso/', views.TermosDeUsoView.as_view(), name='termos_de_uso'),
     path('recuperar-senha/', 

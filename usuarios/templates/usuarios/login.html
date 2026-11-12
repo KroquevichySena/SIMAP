@@ -8,8 +8,8 @@
         <input type="hidden" name="next" value="{{ next }}">
         {% include 'usuarios/_erros_acesso.html' %}
         <div class="simap-campo{% if form.username.errors %} simap-campo-invalido{% endif %}">
-            <label for="id_username">Usuário ou RGM</label>
-            <input type="text" name="username" id="id_username" value="{{ form.username.value|default_if_none:'' }}" placeholder="Digite seu usuário ou RGM" autocomplete="username" required autofocus{% if form.username.errors %} aria-invalid="true" aria-describedby="id_username_error"{% endif %}>
+            <label for="id_username">Usuário de acesso</label>
+            <input type="text" name="username" id="id_username" value="{{ form.username.value|default_if_none:'' }}" placeholder="Digite seu usuário" autocomplete="username" required autofocus{% if form.username.errors %} aria-invalid="true" aria-describedby="id_username_error"{% endif %}>
             {% if form.username.errors %}<ul class="simap-erros-campo" id="id_username_error">{% for erro in form.username.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
         </div>
         <div class="simap-campo{% if form.password.errors %} simap-campo-invalido{% endif %}">
@@ -18,14 +18,6 @@
             {% if form.password.errors %}<ul class="simap-erros-campo" id="id_password_error">{% for erro in form.password.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
         </div>
         <a href="{% url 'password_reset' %}" class="simap-auth-link">Esqueceu a senha?</a>
-        <div class="simap-campo{% if form.aceite_termos.errors %} simap-campo-invalido{% endif %}">
-            <div class="simap-campo-checkbox">
-                <input class="simap-checkbox" type="checkbox" name="aceite_termos" id="aceite_termos" aria-describedby="aceite-termos-ajuda{% if form.aceite_termos.errors %} aceite-termos-erro{% endif %}"{% if form.aceite_termos.value %} checked{% endif %}{% if form.aceite_termos.errors %} aria-invalid="true"{% endif %}>
-                <label for="aceite_termos">Li e aceito os <a href="{% url 'termos_de_uso' %}" target="_blank" rel="noopener noreferrer">Termos de Uso e a Política de Privacidade<span class="visually-hidden"> (abre em nova aba)</span></a></label>
-            </div>
-            <p class="simap-ajuda-campo" id="aceite-termos-ajuda">O aceite é obrigatório no primeiro acesso e quando os termos forem atualizados. Se você já aceitou a versão atual, pode entrar sem marcar novamente.</p>
-            {% if form.aceite_termos.errors %}<ul class="simap-erros-campo" id="aceite-termos-erro">{% for erro in form.aceite_termos.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
-        </div>
         <button type="submit" class="simap-botao simap-botao-primario">Entrar no sistema</button>
     </form>
     <aside class="simap-auth-orientacao" aria-label="Presença por código">

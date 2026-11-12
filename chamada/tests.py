@@ -6,6 +6,8 @@ para quem está logado, e só discentes entram na tela.
 """
 from datetime import timedelta
 
+from usuarios.test_helpers import registrar_aceites_atuais
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import resolve_url
@@ -46,6 +48,8 @@ class ConfirmarPresencaViewTests(TestCase):
             limite_uso=30,
         )
         cls.url = reverse("chamada:confirmar_presenca")
+
+        registrar_aceites_atuais(Usuario.objects.all())
 
     def test_usuario_anonimo_e_redirecionado_para_login(self):
         resposta = self.client.get(self.url)

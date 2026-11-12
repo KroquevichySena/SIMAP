@@ -1,4 +1,6 @@
 """Discente não pode consultar a auditoria, mesmo com privilégios inconsistentes."""
+from usuarios.test_helpers import registrar_aceites_atuais
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -27,6 +29,8 @@ class PermissoesAuditoriaTest(TestCase):
         cls.registro = RegistroAuditoria.objects.create(
             acao=Acao.ACESSO, descricao="DADO-RESTRITO-DA-AUDITORIA"
         )
+
+        registrar_aceites_atuais(Usuario.objects.all())
 
     def test_discente_nao_abre_pagina_nem_exporta_csv(self):
         for usuario in self.discentes:

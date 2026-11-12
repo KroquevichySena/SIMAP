@@ -20,9 +20,13 @@ class Usuario(AbstractUser):
         return self.perfil == 'DISCENTE'
 
     @property
-    def pode_consultar_auditoria(self) -> bool:
-        """Discente nunca consulta auditoria, mesmo se marcado como superusuário."""
+    def is_coordenacao(self) -> bool:
+        """Coordenação é uma conta administrativa ativa, nunca um discente."""
         return self.is_active and self.is_superuser and not self.is_discente
+
+    @property
+    def pode_consultar_auditoria(self) -> bool:
+        return self.is_coordenacao
 
 
 class AceiteTermos(models.Model):

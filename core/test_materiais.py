@@ -7,6 +7,8 @@ import shutil
 import tempfile
 from datetime import timedelta
 
+from usuarios.test_helpers import registrar_aceites_atuais
+
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
@@ -59,6 +61,8 @@ class TrilhasBase(TestCase):
             turma=cls.turma, titulo="Módulo 1", ordem=1, publicada=True,
             descricao="Leia https://docs.python.org/3/ antes da aula.",
         )
+
+        registrar_aceites_atuais(Usuario.objects.all())
 
     def entrar(self, usuario):
         self.client.force_login(usuario)
