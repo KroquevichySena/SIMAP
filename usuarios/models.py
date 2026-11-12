@@ -19,6 +19,11 @@ class Usuario(AbstractUser):
     def is_discente(self) -> bool:
         return self.perfil == 'DISCENTE'
 
+    @property
+    def pode_consultar_auditoria(self) -> bool:
+        """Discente nunca consulta auditoria, mesmo se marcado como superusuário."""
+        return self.is_active and self.is_superuser and not self.is_discente
+
 
 class AceiteTermos(models.Model):
     """Registro de auditoria: uma linha por usuário e por versão dos Termos aceita."""

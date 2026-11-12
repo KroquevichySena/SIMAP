@@ -24,7 +24,7 @@ LIMITE_EXPORTACAO = 50_000
 
 class SuperusuarioRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
-        return self.request.user.is_superuser
+        return self.request.user.pode_consultar_auditoria
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:

@@ -45,7 +45,7 @@
           </li>
         {% endif %}
 
-        {% if user.is_superuser %}
+        {% if user.pode_consultar_auditoria %}
           <li class="nav-item">
             <a class="nav-link{% if namespace == 'auditoria' %} active{% endif %}" href="{% url 'auditoria:registro_list' %}"{% if namespace == 'auditoria' %} aria-current="page"{% endif %}>Auditoria</a>
           </li>
