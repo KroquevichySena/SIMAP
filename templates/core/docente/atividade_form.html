@@ -16,7 +16,10 @@
                         <div class="fw-semibold">Casos de teste (opcional)</div>
                         <p class="small text-muted mb-2">
                             O aluno roda estes casos no editor e vê ✔ ou ✘ antes de entregar. Em "Entrada",
-                            coloque uma linha para cada <code>input()</code>. A saída é comparada linha a linha,
+                            coloque uma linha para cada <code>input()</code>. Em "Saída esperada", informe apenas
+                            o que o programa imprime, incluindo mensagens escritas dentro de <code>input("mensagem")</code>.
+                            Os valores fornecidos na entrada só fazem parte da saída se o programa os imprimir.
+                            A saída é comparada linha a linha,
                             ignorando espaços no fim. Serve só de retorno para o aluno: a nota continua sendo sua.
                         </p>
                         {{ casos.management_form }}
