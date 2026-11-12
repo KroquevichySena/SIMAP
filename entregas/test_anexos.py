@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from core.models import Atividade
 from core.test_materiais import PDF_OK, TrilhasBase
+from comunicacao.arquivos_teste import PNG_OK
 
 from .models import AnexoSubmissao, Submissao
 
@@ -49,6 +50,25 @@ class EntregaComAnexoTest(TrilhasBase):
         gerar_analise.assert_not_called()
         mensagens = [str(m) for m in resposta.wsgi_request._messages]
         self.assertTrue(any("não é permitido" in m for m in mensagens))
+
+    def test_arquivo_falso_barra_todo_o_envio_inclusive_anexo_valido(self, gerar_analise):
+        self.entrar(self.aluno)
+        for nome, conteudo in (("falso.pdf", b"%PDF-1.7\nnao e um documento\n%%EOF"),
+                               ("falso.png", b"\x89PNG\r\n\x1a\n" + b"falso")):
+            with self.subTest(nome=nome):
+                resposta = self.enviar(SimpleUploadedFile("valido.pdf", PDF_OK), SimpleUploadedFile(nome, conteudo))
+                self.assertEqual(resposta.status_code, 302)
+                self.assertFalse(Submissao.objects.exists())
+                self.assertFalse(AnexoSubmissao.objects.exists())
+                gerar_analise.assert_not_called()
+
+    def test_imagem_da_entrega_e_salva_reconstruida(self, gerar_analise):
+        self.entrar(self.aluno)
+        marcador = b"NAO-DEVE-SER-SALVO"
+        self.enviar(SimpleUploadedFile("foto.png", PNG_OK + marcador))
+        anexo = AnexoSubmissao.objects.get()
+        with anexo.arquivo.open("rb") as arquivo:
+            self.assertNotIn(marcador, arquivo.read())
 
     def test_exe_disfarcado_de_pdf_e_barrado(self, gerar_analise):
         self.entrar(self.aluno)

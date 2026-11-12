@@ -4,6 +4,7 @@ trilhas e entregas): validar uma lista, gravar e entregar no download.
 """
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.http import FileResponse, Http404
 
 from .seguranca import nome_para_download, validar_anexo
@@ -44,8 +45,10 @@ def salvar_arquivos(modelo, pares, **dono):
             sha256=dados.sha256,
             **dono,
         )
+        # Imagens e pacotes Office passam a usar os bytes reconstruídos.
         arquivo.seek(0)
-        registro.arquivo.save(dados.nome_original, arquivo, save=False)
+        conteudo = ContentFile(dados.conteudo_seguro) if dados.conteudo_seguro is not None else arquivo
+        registro.arquivo.save(dados.nome_original, conteudo, save=False)
         registro.save()
         criados.append(registro)
     return criados
