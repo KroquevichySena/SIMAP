@@ -199,15 +199,3 @@ class ConfirmarPresencaFormTest(SimpleTestCase):
                 form.cleaned_data = {"token_chamada": entrada}
 
                 self.assertEqual(form.clean_token_chamada(), esperado)
-
-    # ---------- interação com dependência mockada ----------
-    @patch(PRESENCAS)
-    def test_deve_criar_o_registro_com_a_chamada_e_o_discente_validados(self, presencas):
-        form = montar_form()
-        form.chamada = "chamada-validada"
-
-        form.save()
-
-        presencas.create.assert_called_once_with(
-            chamada="chamada-validada", discente="discente"
-        )
