@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from painel.servicos import historico_do_aluno
 from turmas.models import Instituicao, Matricula, Turma
+from usuarios.test_helpers import registrar_aceites_atuais
 
 from .models import Chamada, Registro_de_Presenca
 from .servicos import PresencaRecusada, distancia_metros, registrar_presenca
@@ -34,6 +35,7 @@ class BaseChamadaQR(TestCase):
         cls.turma = Turma.objects.create(nome="Algoritmos I", periodo="2026.2", docente=cls.docente)
         Matricula.objects.create(turma=cls.turma, discente=cls.carla)
         Matricula.objects.create(turma=cls.turma, discente=cls.diego)
+        registrar_aceites_atuais(Usuario.objects.all())
 
     def abrir(self, limite=30, segundos=30):
         chamada = Chamada(turma=self.turma, limite_uso=limite, ciclo_segundos=segundos)
@@ -200,7 +202,8 @@ class FluxoDoProfessorTest(BaseChamadaQR):
         self.assertTrue(dados["aberto"])
 
     def test_outro_professor_nao_ve_a_chamada(self):
-        Usuario.objects.create_user(username="prof.bia", password=SENHA, perfil="DOCENTE")
+        bia = Usuario.objects.create_user(username="prof.bia", password=SENHA, perfil="DOCENTE")
+        registrar_aceites_atuais([bia])
         chamada = self.abrir()
         self.client.login(username="prof.bia", password=SENHA)
 
