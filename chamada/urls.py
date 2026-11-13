@@ -16,5 +16,4 @@ urlpatterns = [
     path('<int:pk>/renovar/', views.renovar_chamada, name='renovar'),
     path('<int:pk>/finalizar/', views.finalizar_chamada, name='finalizar'),
     path('presenca/<int:pk>/decidir/', views.decidir_presenca, name='decidir_presenca'),
-
 ]

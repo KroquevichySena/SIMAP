@@ -1,5 +1,4 @@
 from django import forms
-from django.utils import timezone
 
 from .models import Chamada, Registro_de_Presenca
 from turmas.models import Matricula, Turma
@@ -98,6 +97,3 @@ class ConfirmarPresencaForm(forms.Form):
 
         self.chamada = chamada
         return cleaned_data
-
-    def save(self):
-        return Registro_de_Presenca.objects.create(chamada=self.chamada, discente=self.discente)

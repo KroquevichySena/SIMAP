@@ -40,7 +40,6 @@ def _dados_da_turma(turma):
             Registro_de_Presenca.objects.filter(
                 chamada__turma=turma, situacao=Registro_de_Presenca.CONFIRMADA
             ).values_list("discente_id", "chamada_id")
-
         ),
         "atividades": list(
             Atividade.objects.filter(
@@ -239,7 +238,6 @@ def historico_do_aluno(turma, discente):
     presencas = set(
         Registro_de_Presenca.objects.filter(
             chamada__turma=turma, discente=discente, situacao=Registro_de_Presenca.CONFIRMADA
-
         ).values_list("chamada_id", flat=True)
     )
     chamadas = [
