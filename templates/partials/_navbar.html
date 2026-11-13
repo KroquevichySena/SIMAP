@@ -45,6 +45,12 @@
           </li>
         {% endif %}
 
+        {% if user.is_coordenacao %}
+          <li class="nav-item">
+            <a class="nav-link{% if rota == 'usuarios_lista' or rota == 'usuario_criar' %} active{% endif %}" href="{% url 'usuarios_lista' %}"{% if rota == 'usuarios_lista' or rota == 'usuario_criar' %} aria-current="page"{% endif %}>Usuários</a>
+          </li>
+        {% endif %}
+
         {% if user.pode_consultar_auditoria %}
           <li class="nav-item">
             <a class="nav-link{% if namespace == 'auditoria' %} active{% endif %}" href="{% url 'auditoria:registro_list' %}"{% if namespace == 'auditoria' %} aria-current="page"{% endif %}>Auditoria</a>
@@ -99,7 +105,7 @@
 
           <div class="simap-usuario-info">
             <strong>{{ user.get_full_name|default:user.username }}</strong>
-            <span>{% if user.perfil %}{{ user.get_perfil_display }}{% elif user.is_superuser %}Administrador{% else %}Usuário{% endif %}</span>
+            <span>{% if user.is_coordenacao %}Coordenação{% elif user.perfil %}{{ user.get_perfil_display }}{% else %}Usuário{% endif %}</span>
           </div>
 
           <form method="post" action="{% url 'logout' %}" class="m-0">

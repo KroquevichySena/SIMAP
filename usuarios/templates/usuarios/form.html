@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Cadastrar usuário - SIMAP{% endblock %}
+{% block content %}
+<div class="simap-pagina simap-formulario-pagina">
+    <a class="simap-voltar" href="{% url 'usuarios_lista' %}">← Voltar para usuários</a>
+    <header class="simap-cabecalho"><div><h1>Cadastrar usuário</h1><p class="simap-subtitulo">Crie uma conta de docente ou discente. O professor cuidará das matrículas nas turmas.</p></div></header>
+    <section class="simap-cartao" aria-labelledby="titulo-cadastro">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-cadastro">Dados da conta</h2><span class="simap-contagem">* Campos obrigatórios</span></div>
+        <form method="post" class="simap-formulario" novalidate>
+            {% csrf_token %}
+            {% include 'turmas/_erros_formulario.html' %}
+            <div class="simap-nota-formulario"><strong>Conta sem privilégios administrativos</strong><p>A pessoa cadastrada fará o próprio aceite no primeiro acesso. Defina uma senha inicial e compartilhe os dados de acesso por um canal privado; a recuperação de senha estará disponível pelo e-mail informado.</p></div>
+            {% for campo in form %}{% include 'partials/_campo_formulario.html' %}{% endfor %}
+            <div class="simap-formulario-acoes">
+                <button type="submit" class="simap-botao simap-botao-primario">Cadastrar usuário</button>
+                <a href="{% url 'usuarios_lista' %}" class="simap-botao simap-botao-secundario">Cancelar</a>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

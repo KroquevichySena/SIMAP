@@ -91,12 +91,12 @@ class DashboardRedirectView(LoginRequiredMixin, TemplateView):
     """Manda cada perfil para o seu painel de desempenho."""
 
     def get(self, request, *args, **kwargs):
+        if request.user.is_coordenacao:
+            return redirect("usuarios_lista")
         if request.user.is_docente:
             return redirect("painel:docente")
         if request.user.is_discente:
             return redirect("painel:discente")
-        if request.user.is_superuser:
-            return redirect("auditoria:registro_list")
         raise PermissionDenied("Seu usuário não possui um perfil definido.")
 
 

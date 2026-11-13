@@ -1,0 +1,30 @@
+{% extends 'base_publico.html' %}
+{% block title %}Primeiro acesso - SIMAP{% endblock %}
+{% block content %}
+<section class="simap-cartao simap-auth" aria-label="Aceite dos termos">
+    {% include 'usuarios/_cabecalho_acesso.html' with titulo="Antes de continuar" descricao="Leia e aceite a versão vigente dos termos para usar o SIMAP. Esse aceite será registrado na sua conta." %}
+    <p class="simap-ajuda-campo mb-3">Conta: <strong>{{ user.get_full_name|default:user.username }}</strong> · Versão {{ versao_atual }}</p>
+    <a class="simap-auth-link" href="{% url 'termos_de_uso' %}" target="_blank" rel="noopener noreferrer">Ler Termos de Uso e Política de Privacidade<span class="visually-hidden"> (abre em nova aba)</span></a>
+    <form method="post" class="simap-auth-form mt-3" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {{ form.versao }}
+        {% include 'usuarios/_erros_acesso.html' %}
+        {% if form.versao.errors %}
+            <div class="simap-aviso-erro" role="alert">{{ form.versao.errors }}<a href="{% url 'primeiro_acesso' %}?next={{ next|urlencode }}">Recarregar os termos</a></div>
+        {% endif %}
+        <div class="simap-campo">
+            <div class="simap-campo-checkbox">
+                <input type="checkbox" class="simap-checkbox" name="aceite_termos" id="id_aceite_termos" required aria-describedby="ajuda-aceite{% if form.aceite_termos.errors %} erro-aceite{% endif %}"{% if form.aceite_termos.value %} checked{% endif %}{% if form.aceite_termos.errors %} aria-invalid="true"{% endif %}>
+                <label for="id_aceite_termos">{{ form.aceite_termos.label }}</label>
+            </div>
+            {% if form.aceite_termos.errors %}<ul id="erro-aceite" class="simap-erros-campo">{% for erro in form.aceite_termos.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <p id="ajuda-aceite" class="simap-ajuda-campo">Você só precisará aceitar novamente quando houver uma nova versão. Nos próximos acessos, entrará apenas com usuário e senha.</p>
+        <button type="submit" class="simap-botao simap-botao-primario">Aceitar e continuar</button>
+    </form>
+    <form method="post" action="{% url 'logout' %}" class="mt-3">
+        {% csrf_token %}<button type="submit" class="simap-botao simap-botao-secundario">Sair sem aceitar</button>
+    </form>
+</section>
+{% endblock %}
