@@ -2,52 +2,45 @@
 {% load comunicacao_tags videos_tags %}
 {% block title %}Publicação - SIMAP{% endblock %}
 {% block content %}
-<nav aria-label="breadcrumb"><ol class="breadcrumb small">
-  <li class="breadcrumb-item"><a href="{% url 'comunicacao:inicio' %}">Comunicação</a></li>
-  <li class="breadcrumb-item"><a href="{% url 'comunicacao:mural' publicacao.turma_id %}">{{ publicacao.turma.nome }}</a></li>
-  {% if publicacao.atividade_id %}
-  <li class="breadcrumb-item"><a href="{% url 'comunicacao:atividade' publicacao.atividade_id %}">{{ publicacao.atividade.titulo }}</a></li>
-  {% endif %}
-  <li class="breadcrumb-item active">{{ publicacao.get_tipo_display }}</li>
-</ol></nav>
-
-{% include 'comunicacao/_publicacao_card.html' with mostrar_atividade=True %}
-
-<div class="d-flex justify-content-between align-items-center mb-2">
-  <h5 class="mb-0">Respostas ({{ publicacao.respostas.all|length }})</h5>
-  {% if publicacao|pode_apagar:user %}
-  <form method="post" action="{% url 'comunicacao:publicacao_apagar' publicacao.pk %}" onsubmit="return confirm('Apagar esta publicação e todas as respostas?');" class="m-0">
-    {% csrf_token %}<button class="btn btn-sm btn-outline-danger">Apagar publicação</button>
-  </form>
-  {% endif %}
-</div>
-
-<div class="ms-md-4">
-{% for resposta in publicacao.respostas.all %}
-  <div class="card mb-2" id="resposta-{{ resposta.pk }}">
-    <div class="card-body py-2">
-      <div class="d-flex justify-content-between">
-        <div>
-          <strong>{{ resposta.autor.get_full_name|default:resposta.autor.username }}</strong>
-          {% if resposta.autor_id == publicacao.turma.docente_id %}<span class="badge bg-primary ms-1">Professor</span>{% endif %}
-          <span class="small text-muted ms-2">{{ resposta.criada_em|date:"d/m/Y H:i" }}</span>
+<div class="simap-pagina simap-pagina-comunicacao">
+    {% if publicacao.atividade_id %}
+    <a class="simap-voltar" href="{% url 'comunicacao:atividade' publicacao.atividade_id %}">← Voltar para os comentários de {{ publicacao.atividade.titulo }}</a>
+    {% else %}
+    <a class="simap-voltar" href="{% url 'comunicacao:mural' publicacao.turma_id %}">← Voltar para o mural de {{ publicacao.turma.nome }}</a>
+    {% endif %}
+    <header class="simap-cabecalho"><div><h1>{{ publicacao.get_tipo_display }}</h1><p class="simap-subtitulo">{{ publicacao.turma.nome }} · {{ publicacao.turma.periodo }}</p></div></header>
+    {% include 'comunicacao/_publicacao_card.html' with mostrar_atividade=True %}
+    <section class="simap-conversa" aria-labelledby="titulo-respostas">
+        <div class="simap-cabecalho-secao">
+            <h2 id="titulo-respostas">Respostas ({{ publicacao.respostas.all|length }})</h2>
+            {% if publicacao|pode_apagar:user %}
+            <form method="post" action="{% url 'comunicacao:publicacao_apagar' publicacao.pk %}" onsubmit="return confirm('Apagar esta publicação e todas as respostas?');" class="m-0">
+                {% csrf_token %}<button type="submit" class="simap-botao simap-botao-compacto simap-botao-perigo">Apagar publicação</button>
+            </form>
+            {% endif %}
         </div>
-        {% if resposta|pode_apagar:user %}
-        <form method="post" action="{% url 'comunicacao:resposta_apagar' resposta.pk %}" onsubmit="return confirm('Apagar esta resposta?');" class="m-0">
-          {% csrf_token %}<button class="btn btn-sm btn-link text-danger p-0">Apagar</button>
-        </form>
-        {% endif %}
-      </div>
-      <div class="mt-1" style="overflow-wrap:anywhere">{{ resposta.texto|texto_com_links }}</div>
-      {% with codigos=resposta.texto|videos_do_youtube %}{% if codigos %}{% include "core/_videos.html" %}{% endif %}{% endwith %}
-      {% include 'comunicacao/_anexos.html' with anexos=resposta.anexos.all %}
-    </div>
-  </div>
-{% empty %}
-  <p class="text-muted">Ninguém respondeu ainda.</p>
-{% endfor %}
-
-<h6 class="mt-4">Responder</h6>
-{% include 'comunicacao/_form_mensagem.html' with texto_botao="Enviar resposta" titulo_texto="Sua resposta" %}
+        {% for resposta in publicacao.respostas.all %}
+        <article class="simap-cartao simap-resposta" id="resposta-{{ resposta.pk }}">
+            <div class="simap-corpo-cartao">
+                <header class="simap-publicacao-cabecalho">
+                    <div>
+                        <strong>{{ resposta.autor.get_full_name|default:resposta.autor.username }}</strong>
+                        {% if resposta.autor_id == publicacao.turma.docente_id %}<span class="simap-etiqueta simap-etiqueta-azul">Professor</span>{% endif %}
+                        <time class="simap-metadados" datetime="{{ resposta.criada_em|date:'c' }}">{{ resposta.criada_em|date:"d/m/Y H:i" }}</time>
+                    </div>
+                    {% if resposta|pode_apagar:user %}
+                    <form method="post" action="{% url 'comunicacao:resposta_apagar' resposta.pk %}" onsubmit="return confirm('Apagar esta resposta?');" class="m-0">
+                        {% csrf_token %}<button type="submit" class="simap-botao simap-botao-compacto simap-botao-perigo">Apagar<span class="visually-hidden"> resposta de {{ resposta.autor.get_full_name|default:resposta.autor.username }}</span></button>
+                    </form>
+                    {% endif %}
+                </header>
+                <div class="simap-mensagem-texto">{{ resposta.texto|texto_com_links }}</div>
+                {% with codigos=resposta.texto|videos_do_youtube %}{% if codigos %}{% include "core/_videos.html" %}{% endif %}{% endwith %}
+                {% include 'comunicacao/_anexos.html' with anexos=resposta.anexos.all %}
+            </div>
+        </article>
+        {% empty %}<div class="simap-cartao simap-vazio"><h3>Ninguém respondeu ainda</h3><p>Use o formulário abaixo para continuar esta conversa.</p></div>{% endfor %}
+    </section>
+    {% include 'comunicacao/_form_mensagem.html' with texto_botao="Enviar resposta" titulo_texto="Sua resposta" titulo_formulario="Responder" %}
 </div>
 {% endblock %}

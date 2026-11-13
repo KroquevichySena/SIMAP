@@ -1,0 +1,7 @@
+{% if anexos %}
+<ul class="simap-anexos" aria-label="Arquivos da entrega">
+    {% for anexo in anexos %}
+    <li><a href="{% url 'entregas:baixar_anexo' anexo.pk %}" class="simap-anexo-arquivo"><span>{{ anexo.nome_original }}</span><span class="simap-metadados">{{ anexo.tamanho_legivel }}</span></a></li>
+    {% endfor %}
+</ul>
+{% endif %}

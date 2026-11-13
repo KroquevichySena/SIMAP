@@ -1,34 +1,33 @@
 {% extends 'base.html' %}
 {% block title %}Notificações - SIMAP{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="mb-0">Notificações</h2>
-  {% if notificacoes_nao_lidas %}
-  <form method="post" action="{% url 'comunicacao:notificacoes_marcar_todas' %}" class="m-0">
-    {% csrf_token %}<button class="btn btn-sm btn-outline-secondary">Marcar todas como lidas</button>
-  </form>
-  {% endif %}
+<div class="simap-pagina simap-pagina-comunicacao">
+    <a class="simap-voltar" href="{% url 'comunicacao:inicio' %}">← Voltar para Comunicação</a>
+    <header class="simap-cabecalho">
+        <div><h1>Notificações</h1><p class="simap-subtitulo">Acompanhe avisos de publicações, respostas e atividades. Abra uma notificação para acessar o conteúdo.</p></div>
+        {% if notificacoes_nao_lidas %}
+        <div class="simap-acoes"><form method="post" action="{% url 'comunicacao:notificacoes_marcar_todas' %}" class="m-0">
+            {% csrf_token %}<button type="submit" class="simap-botao simap-botao-secundario">Marcar todas como lidas</button>
+        </form></div>
+        {% endif %}
+    </header>
+    <section class="simap-cartao" aria-labelledby="titulo-notificacoes">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-notificacoes">Seus avisos</h2><span class="simap-contagem">{{ paginator.count }} no total · {{ notificacoes_nao_lidas|default:0 }} não lida{{ notificacoes_nao_lidas|pluralize }}</span></div>
+        {% if notificacoes %}
+        <ul class="simap-lista-comunicacao">
+            {% for notificacao in notificacoes %}
+            <li><a href="{% url 'comunicacao:notificacao_abrir' notificacao.pk %}" class="simap-notificacao{% if not notificacao.lida %} simap-notificacao-nao-lida{% endif %}">
+                <div class="simap-notificacao-cabecalho">
+                    <span class="simap-etiqueta {% if not notificacao.lida %}simap-etiqueta-azul{% endif %}">{% if notificacao.lida %}Lida{% else %}Não lida{% endif %}</span>
+                    <time class="simap-metadados" datetime="{{ notificacao.criada_em|date:'c' }}">{{ notificacao.criada_em|date:"d/m/Y H:i" }}</time>
+                </div>
+                <strong>{{ notificacao.mensagem }}</strong>
+                <span class="simap-metadados">{{ notificacao.get_tipo_display }}</span>
+            </a></li>
+            {% endfor %}
+        </ul>
+        {% else %}<div class="simap-vazio"><h3>Você não tem notificações</h3><p>Novos avisos das suas turmas e atividades aparecerão aqui.</p></div>{% endif %}
+    </section>
+    {% include 'partials/_paginacao.html' %}
 </div>
-
-<div class="list-group shadow-sm">
-  {% for notificacao in notificacoes %}
-    <a href="{% url 'comunicacao:notificacao_abrir' notificacao.pk %}" class="list-group-item list-group-item-action{% if not notificacao.lida %} list-group-item-primary{% endif %}">
-      <div class="d-flex justify-content-between">
-        <span>{% if not notificacao.lida %}<strong>{% endif %}{{ notificacao.mensagem }}{% if not notificacao.lida %}</strong>{% endif %}</span>
-        <small class="text-muted text-nowrap ms-3">{{ notificacao.criada_em|date:"d/m H:i" }}</small>
-      </div>
-      <small class="text-muted">{{ notificacao.get_tipo_display }}</small>
-    </a>
-  {% empty %}
-    <div class="list-group-item text-muted">Você não tem notificações.</div>
-  {% endfor %}
-</div>
-
-{% if is_paginated %}
-<nav class="mt-3"><ul class="pagination pagination-sm">
-  {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>{% endif %}
-  <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
-  {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>{% endif %}
-</ul></nav>
-{% endif %}
 {% endblock %}

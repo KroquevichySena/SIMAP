@@ -1,157 +1,114 @@
 {% extends 'base.html' %}
-{% load comunicacao_tags %}
-
+{% load comunicacao_tags l10n %}
 {% block title %}Corrigir: {{ atividade.titulo }} - SIMAP{% endblock %}
-
 {% block extra_head %}{% if atividade.eh_pratica %}{% include "entregas/_editor_assets.html" %}{% endif %}{% endblock %}
-
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="mb-1">Correção de Atividades</h2>
-        <p class="text-muted mb-0">Trilha: {{ atividade.trilha.titulo }} | Atividade: {{ atividade.titulo }}</p>
-    </div>
-    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalPendentes">
-        Ver Pendentes ({{ pendentes|length }})
-    </button>
-</div>
-
-<div class="card border-0 shadow-sm p-4">
-    <h5 class="fw-bold text-success mb-4">Entregas ({{ submissoes|length }})</h5>
-
-    <div class="accordion" id="accordionEntregas">
-        {% for submissao in submissoes %}
-        <div class="accordion-item border mb-3 rounded border-start border-4 {% if submissao.is_atrasado %}border-danger{% else %}border-success{% endif %}">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ submissao.pk }}">
-                    <div class="d-flex justify-content-between w-100 pe-3 align-items-center">
-                        <span>{{ submissao.aluno }}</span>
-                        <div>
-                            {% if submissao.is_atrasado %}
-                                <span class="badge bg-danger me-2">Entregue com atraso</span>
-                            {% endif %}
-                            {% if submissao.avaliacao_oficial %}
-                                <span class="badge bg-success">Nota: {{ submissao.avaliacao_oficial.nota }}</span>
-                            {% else %}
-                                <span class="badge bg-warning text-dark">Aguardando sua nota</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </button>
-            </h2>
-            <div id="collapse{{ submissao.pk }}" class="accordion-collapse collapse" data-bs-parent="#accordionEntregas">
-                <div class="accordion-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="fw-bold text-muted small text-uppercase">O que foi pedido</h6>
-                            <div class="bg-light p-3 rounded border mb-3" style="overflow-wrap:anywhere">{{ atividade.enunciado|texto_com_links }}</div>
-
-                            <h6 class="fw-bold text-muted small text-uppercase">Resposta do aluno</h6>
-                            {% if atividade.eh_pratica %}
-                                {% include "entregas/_editor_codigo.html" with sufixo=submissao.pk codigo=submissao.resposta_texto somente_leitura="1" casos=casos %}
-                            {% else %}
-                            <div class="bg-dark text-light p-3 rounded" style="font-family: monospace;">
-                                <pre class="mb-0">{{ submissao.resposta_texto }}</pre>
-                            </div>
-                            {% endif %}
-                            {% if submissao.anexos.all %}
-                                <h6 class="fw-bold text-muted small text-uppercase mt-3">Arquivos enviados</h6>
-                                <ul class="list-unstyled small mb-0">
-                                    {% for anexo in submissao.anexos.all %}
-                                        <li><a href="{% url 'entregas:baixar_anexo' anexo.pk %}">📎 {{ anexo.nome_original }}</a> <span class="text-muted">({{ anexo.tamanho_legivel }})</span></li>
-                                    {% endfor %}
-                                </ul>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="fw-bold text-muted small text-uppercase">Parecer do sistema</h6>
-                            {% if submissao.analise_ia.status == 'CONCLUIDO' %}
-                                <div class="p-3 rounded mb-3" style="background:#f0f4ff; border:1px solid #c7d2fe; border-left:4px solid #4f46e5;">
-                                    <span class="badge mb-2" style="background:#4f46e5;">Análise Gemini AI</span>
-                                    <p class="mb-0">{{ submissao.analise_ia.parecer_texto }}</p>
-                                </div>
-                            {% elif submissao.analise_ia.status == 'ERRO' %}
-                                <div class="p-3 rounded mb-3 bg-light border border-danger-subtle">
-                                    <p class="text-danger mb-2">Falha ao gerar a análise de IA.</p>
-                                    <form method="post" action="{% url 'entregas:retentar_analise' submissao.pk %}">
+<div class="simap-pagina simap-pagina-entregas">
+    <a class="simap-voltar" href="{% url 'core:atividade_list' %}?trilha={{ atividade.trilha_id }}">← Voltar para atividades</a>
+    <header class="simap-cabecalho">
+        <div><h1>Correção de atividades</h1><p class="simap-subtitulo">{{ atividade.trilha.turma.nome }} · {{ atividade.trilha.titulo }}</p></div>
+        <div class="simap-acoes"><button type="button" class="simap-botao simap-botao-secundario" data-bs-toggle="modal" data-bs-target="#modalPendentes">Ver pendentes ({{ pendentes|length }})</button></div>
+    </header>
+    <section class="simap-cartao" aria-labelledby="titulo-atividade">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-atividade">{{ atividade.titulo }}</h2><span class="simap-contagem">{% if atividade.prazo %}Prazo: {{ atividade.prazo|date:"d/m/Y H:i" }}{% else %}Sem prazo de entrega{% endif %}</span></div>
+        <div class="simap-corpo-cartao">{{ atividade.enunciado|texto_com_links }}</div>
+    </section>
+    <section class="simap-conversa" aria-labelledby="titulo-entregas">
+        <div class="simap-cabecalho-secao"><h2 id="titulo-entregas">Entregas ({{ submissoes|length }})</h2><span class="simap-contagem">Abra uma entrega para consultar e avaliar.</span></div>
+        <div class="accordion simap-lista-entregas" id="accordionEntregas">
+            {% for submissao in submissoes %}
+            <article class="accordion-item simap-cartao simap-entrega{% if submissao.is_atrasado %} simap-entrega-atrasada{% endif %}">
+                <h3 class="accordion-header">
+                    <button class="accordion-button collapsed simap-entrega-abrir" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ submissao.pk }}" aria-expanded="false" aria-controls="collapse{{ submissao.pk }}">
+                        <span class="simap-entrega-aluno">
+                            <strong>{{ submissao.aluno.get_full_name|default:submissao.aluno.username }}</strong>
+                            <span class="simap-metadados">{{ submissao.aluno.username }} · {{ submissao.data_envio|date:"d/m/Y H:i" }}</span>
+                        </span>
+                        <span class="simap-entrega-situacao">
+                            {% if submissao.is_atrasado %}<span class="simap-etiqueta simap-etiqueta-atraso">Entregue com atraso</span>{% else %}<span class="simap-etiqueta">No prazo</span>{% endif %}
+                            {% if submissao.avaliacao_oficial %}<span class="simap-situacao simap-situacao-ativa">Nota: {{ submissao.avaliacao_oficial.nota }}</span>{% else %}<span class="simap-etiqueta simap-etiqueta-privada">Aguardando sua nota</span>{% endif %}
+                        </span>
+                    </button>
+                </h3>
+                <div id="collapse{{ submissao.pk }}" class="accordion-collapse collapse" data-bs-parent="#accordionEntregas">
+                    <div class="accordion-body simap-corpo-cartao">
+                        <div class="simap-correcao-colunas">
+                            <section class="simap-correcao-bloco" aria-labelledby="titulo-resposta-{{ submissao.pk }}">
+                                <h4 id="titulo-resposta-{{ submissao.pk }}">Resposta do aluno</h4>
+                                {% if atividade.eh_pratica %}
+                                    {% include "entregas/_editor_codigo.html" with sufixo=submissao.pk codigo=submissao.resposta_texto somente_leitura="1" casos=casos %}
+                                {% else %}
+                                    <pre class="simap-resposta-texto">{{ submissao.resposta_texto }}</pre>
+                                {% endif %}
+                                {% include "entregas/_anexos.html" with anexos=submissao.anexos.all %}
+                            </section>
+                            <div class="simap-correcao-bloco">
+                                <section aria-labelledby="titulo-parecer-{{ submissao.pk }}">
+                                    <h4 id="titulo-parecer-{{ submissao.pk }}">Parecer do sistema</h4>
+                                    {% if submissao.analise_ia.status == 'CONCLUIDO' %}
+                                    <div class="simap-parecer">
+                                        <span class="simap-etiqueta simap-etiqueta-azul">Análise Gemini AI</span>
+                                        <p>{{ submissao.analise_ia.parecer_texto }}</p>
+                                    </div>
+                                    {% elif submissao.analise_ia.status == 'ERRO' %}
+                                    <div class="simap-parecer simap-parecer-erro">
+                                        <p>Falha ao gerar a análise de IA.</p>
+                                        <form method="post" action="{% url 'entregas:retentar_analise' submissao.pk %}">
+                                            {% csrf_token %}<button type="submit" class="simap-botao simap-botao-compacto simap-botao-perigo">Tentar gerar IA novamente</button>
+                                        </form>
+                                    </div>
+                                    {% else %}<p class="simap-nota-editor">Análise ainda não processada.</p>{% endif %}
+                                </section>
+                                <section class="simap-avaliacao" aria-labelledby="titulo-avaliacao-{{ submissao.pk }}">
+                                    <h4 id="titulo-avaliacao-{{ submissao.pk }}">Sua avaliação oficial</h4>
+                                    <form method="post" action="{% url 'entregas:avaliar' submissao.pk %}" class="simap-form-entrega">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Tentar Gerar IA Novamente</button>
-                                    </form>
-                                </div>
-                            {% else %}
-                                <div class="p-3 rounded mb-3 bg-light border text-muted">
-                                    Análise ainda não processada.
-                                </div>
-                            {% endif %}
-
-                            <div class="card bg-light border-secondary">
-                                <div class="card-body">
-                                    <h6 class="fw-bold mb-3">Sua avaliação oficial</h6>
-                                    <form method="post" action="{% url 'entregas:avaliar' submissao.pk %}">
-                                        {% csrf_token %}
-                                        <div class="row g-2">
-                                            <div class="col-md-3">
-                                                <input type="number" name="nota" class="form-control" min="0" max="10" step="0.1"
-                                                       value="{{ submissao.avaliacao_oficial.nota|default_if_none:'' }}" placeholder="Nota 0-10" required>
-                                            </div>
-                                            <div class="col-md-9">
-                                                <input type="text" name="feedback_professor" class="form-control"
-                                                       value="{{ submissao.avaliacao_oficial.feedback_professor|default:'' }}" placeholder="Feedback opcional...">
-                                            </div>
+                                        <div class="simap-campo">
+                                            <label for="nota-{{ submissao.pk }}">Nota (0 a 10)</label>
+                                            <input type="number" name="nota" id="nota-{{ submissao.pk }}" class="simap-input" min="0" max="10" step="0.1" value="{{ submissao.avaliacao_oficial.nota|default_if_none:''|unlocalize }}" placeholder="Ex.: 8,5" required>
                                         </div>
-                                        <div class="text-end mt-3">
-                                            <button type="submit" class="btn btn-success">Gravar Nota</button>
+                                        <div class="simap-campo">
+                                            <label for="feedback-{{ submissao.pk }}">Feedback para o aluno (opcional)</label>
+                                            <textarea name="feedback_professor" id="feedback-{{ submissao.pk }}" class="simap-input" rows="3" placeholder="Comente os pontos de melhoria...">{{ submissao.avaliacao_oficial.feedback_professor|default:'' }}</textarea>
                                         </div>
+                                        <button type="submit" class="simap-botao simap-botao-primario">Gravar nota</button>
                                     </form>
-                                </div>
+                                </section>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </article>
+            {% empty %}<div class="simap-cartao simap-vazio"><h3>Nenhuma entrega recebida ainda</h3><p>As respostas dos alunos aparecerão aqui para consulta e avaliação.</p></div>{% endfor %}
         </div>
-        {% empty %}
-        <p class="text-muted">Nenhuma entrega recebida ainda.</p>
-        {% endfor %}
-    </div>
+    </section>
 </div>
-
-<div class="modal fade" id="modalPendentes" tabindex="-1">
+<div class="modal fade simap-modal-pendentes" id="modalPendentes" tabindex="-1" aria-labelledby="titulo-pendentes" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Alunos Pendentes ({{ pendentes|length }})</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h2 class="modal-title" id="titulo-pendentes">Alunos pendentes ({{ pendentes|length }})</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
-            <div class="modal-body p-0">
-                <div class="p-3 bg-light border-bottom">
-                    <button class="btn btn-sm btn-warning fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#areaNotificacao">
-                        Notificar Todos
-                    </button>
-                </div>
+            <div class="modal-body">
+                {% if pendentes %}
+                <p class="simap-ajuda-campo mb-3">Alunos com matrícula ativa que ainda não enviaram uma resposta.</p>
+                <button class="simap-botao simap-botao-secundario" type="button" data-bs-toggle="collapse" data-bs-target="#areaNotificacao" aria-expanded="false" aria-controls="areaNotificacao">Notificar todos</button>
                 <div class="collapse" id="areaNotificacao">
-                    <div class="p-3" style="background:#fffaf0;">
-                        <form method="post" action="{% url 'entregas:notificar_pendentes' atividade.pk %}">
-                            {% csrf_token %}
-                            <label class="form-label fw-bold small">Mensagem para os {{ pendentes|length }} pendentes:</label>
-                            <textarea name="mensagem" class="form-control mb-3" rows="4" placeholder="Prezados, a atividade encerra em breve..."></textarea>
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-sm btn-primary">Enviar via E-mail</button>
-                            </div>
-                        </form>
-                    </div>
+                    <form method="post" action="{% url 'entregas:notificar_pendentes' atividade.pk %}" class="simap-form-entrega mt-3">
+                        {% csrf_token %}
+                        <div class="simap-campo">
+                            <label for="mensagem-pendentes">Mensagem para os alunos pendentes</label>
+                            <textarea name="mensagem" id="mensagem-pendentes" class="simap-input" rows="4" placeholder="Prezados, a atividade encerra em breve..." required></textarea>
+                        </div>
+                        <button type="submit" class="simap-botao simap-botao-primario">Enviar via e-mail</button>
+                    </form>
                 </div>
-                <ul class="list-group list-group-flush">
-                    {% for matricula in pendentes %}
-                    <li class="list-group-item">{{ matricula.discente }}</li>
-                    {% empty %}
-                    <li class="list-group-item text-muted">Todos entregaram.</li>
-                    {% endfor %}
-                </ul>
+                <ul class="simap-pendentes-lista">{% for matricula in pendentes %}<li><strong>{{ matricula.discente.get_full_name|default:matricula.discente.username }}</strong><span class="simap-metadados">{{ matricula.discente.username }}</span></li>{% endfor %}</ul>
+                {% else %}<div class="simap-vazio"><h3>Nenhum aluno pendente</h3><p>Todos os alunos com matrícula ativa já entregaram.</p></div>{% endif %}
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-
 {% block scripts %}{% if atividade.eh_pratica %}{% include "entregas/_editor_scripts.html" %}{% endif %}{% endblock %}

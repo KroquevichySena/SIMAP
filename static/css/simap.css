@@ -1,3 +1,1458 @@
+:root {
+    --background: #f8fafc;
+    --card: #ffffff;
+    --foreground: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --sidebar: #0f172a;
+    --sidebar-hover: #1e293b;
+}
+
+body.simap-app {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.simap-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.simap-conteudo {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.simap-principal {
+    flex: 1;
+    width: 100%;
+    max-width: 1500px;
+    margin-inline: auto;
+    padding: 32px clamp(16px, 3vw, 40px);
+}
+
+.simap-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    background-color: var(--sidebar);
+    color: white;
+}
+
+.simap-sidebar-interno {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.simap-marca {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 32px 32px 24px;
+    color: white;
+    text-decoration: none;
+}
+
+.simap-marca:hover {
+    color: white;
+}
+
+.simap-marca strong {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.simap-marca span {
+    font-size: 12px;
+    color: #cbd5e1;
+}
+
+.simap-menu {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.simap-menu-links {
+    list-style: none;
+    margin: 0;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.simap-menu-links .nav-link {
+    display: block;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: #cbd5e1;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.simap-menu-links .nav-link:hover,
+.simap-menu-links .nav-link:focus-visible {
+    background-color: var(--sidebar-hover);
+    color: white;
+}
+
+.simap-menu-links .nav-link.active {
+    background-color: var(--primary);
+    color: white;
+}
+
+.simap-sidebar a:focus-visible,
+.simap-sidebar button:focus-visible {
+    outline: 2px solid #93c5fd;
+    outline-offset: 3px;
+}
+
+.simap-usuario {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: auto;
+    padding: 20px 16px;
+    border-top: 1px solid var(--sidebar-hover);
+}
+
+.simap-usuario-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-wrap: anywhere;
+}
+
+.simap-usuario-info span {
+    color: #cbd5e1;
+    font-size: 12px;
+}
+
+.simap-notificacoes {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+}
+
+.simap-notificacoes-lista {
+    --bs-dropdown-min-width: 0;
+    position: static !important;
+    transform: none !important;
+    width: 100%;
+    max-height: 360px;
+    overflow-y: auto;
+    margin-top: 8px !important;
+    border-color: var(--border);
+}
+
+.simap-sair {
+    width: 100%;
+}
+
+.simap-pular-conteudo {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1100;
+    padding: 12px 16px;
+    transform: translateY(-200%);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--primary);
+}
+
+.simap-pular-conteudo:focus {
+    transform: translateY(0);
+}
+
+/* Componentes compartilhados das páginas internas. */
+.simap-pagina {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.simap-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.simap-cabecalho > div:first-child {
+    flex: 1 1 300px;
+    min-width: 0;
+}
+
+.simap-cabecalho h1 {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+}
+
+.simap-subtitulo {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.simap-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.simap-icone {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.simap-botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 20px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.simap-botao-primario {
+    background-color: var(--primary);
+    color: white;
+}
+
+.simap-botao-primario:hover {
+    background-color: var(--primary-hover);
+    color: white;
+}
+
+.simap-botao-secundario {
+    border-color: var(--border);
+    background-color: var(--card);
+    color: #334155;
+}
+
+.simap-botao-secundario:hover {
+    border-color: #cbd5e1;
+    background-color: #f1f5f9;
+    color: var(--foreground);
+}
+
+.simap-botao:focus-visible,
+.simap-link-acao:focus-visible,
+.simap-tabela-rolagem:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.simap-cartao {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background-color: var(--card);
+}
+
+.simap-cartao-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 24px;
+}
+
+.simap-cartao-cabecalho h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.simap-contagem {
+    color: var(--muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.simap-tabela-rolagem {
+    position: relative;
+    overflow-x: auto;
+    margin: 0 24px 24px;
+    border-radius: 8px;
+}
+
+.simap-tabela {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    color: #475569;
+    text-align: left;
+}
+
+.simap-tabela thead th {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--background);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.simap-tabela tbody th,
+.simap-tabela tbody td {
+    padding: 18px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+.simap-tabela tbody tr:last-child > * {
+    border-bottom: 0;
+}
+
+.simap-tabela tbody tr:hover > * {
+    background-color: var(--background);
+}
+
+.simap-turma-nome {
+    min-width: 220px;
+    color: var(--foreground);
+    font-weight: 600;
+}
+
+.simap-turma-data {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.simap-periodo {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.simap-situacao {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 3px 10px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.simap-situacao-ativa {
+    border-color: #a7f3d0;
+    background-color: #ecfdf5;
+    color: #047857;
+}
+
+.simap-situacao-inativa {
+    border-color: var(--border);
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.simap-tabela-acoes {
+    text-align: right;
+}
+
+.simap-link-acao {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.simap-link-acao:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+.simap-vazio {
+    padding: 36px 24px 48px;
+    text-align: center;
+}
+
+.simap-vazio-icone {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 20px;
+    color: var(--muted);
+}
+
+.simap-vazio h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.simap-vazio p {
+    max-width: 460px;
+    margin: 0 auto;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.simap-formulario-pagina {
+    max-width: 720px;
+    margin-inline: auto;
+    gap: 24px;
+}
+
+.simap-voltar {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 8px;
+    min-height: 44px;
+    color: #475569;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.simap-voltar:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.simap-voltar:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.simap-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 4px 24px 24px;
+}
+
+.simap-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.simap-campo label {
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.simap-obrigatorio {
+    color: var(--muted);
+}
+
+.simap-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: var(--card);
+    color: var(--foreground);
+    font: inherit;
+}
+
+.simap-input::placeholder {
+    color: var(--muted);
+}
+
+.simap-input:focus {
+    outline: 2px solid #93c5fd;
+    outline-offset: 2px;
+    border-color: var(--primary);
+}
+
+.simap-campo-invalido .simap-input {
+    border-color: #dc2626;
+    background-color: #fef2f2;
+}
+
+.simap-ajuda-campo {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.simap-campo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.simap-checkbox {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+}
+
+.simap-checkbox:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.simap-erros-campo {
+    margin: 0;
+    padding-left: 18px;
+    color: #b91c1c;
+    font-size: 12px;
+}
+
+.simap-aviso-erro {
+    padding: 16px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background-color: #fef2f2;
+    color: #991b1b;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.simap-aviso-erro p,
+.simap-aviso-erro ul {
+    margin: 8px 0 0;
+}
+
+.simap-nota-formulario {
+    padding: 16px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background-color: #eff6ff;
+    overflow-wrap: anywhere;
+}
+
+.simap-nota-formulario strong,
+.simap-nota-formulario span {
+    display: block;
+}
+
+.simap-nota-formulario strong {
+    margin-bottom: 4px;
+    color: #1d4ed8;
+    font-size: 12px;
+}
+
+.simap-nota-formulario p {
+    margin: 6px 0 0;
+    color: #475569;
+    font-size: 12px;
+}
+
+.simap-formulario-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.simap-titulo-turma {
+    overflow-wrap: anywhere;
+}
+
+.simap-resumo-turma {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+}
+
+.simap-resumo-item {
+    padding: 20px;
+    overflow-wrap: anywhere;
+}
+
+.simap-resumo-item dt {
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.simap-resumo-item dd {
+    margin: 0;
+    color: var(--foreground);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.simap-orientacao-matriculas {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background-color: #eff6ff;
+    color: #1e40af;
+    line-height: 1.6;
+}
+
+.simap-orientacao-matriculas .simap-icone {
+    margin-top: 2px;
+}
+
+.simap-orientacao-matriculas p {
+    margin: 0;
+}
+
+.simap-rgm {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.simap-botao-compacto {
+    min-height: 44px;
+    padding: 8px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.simap-botao-aviso {
+    border-color: #fcd34d;
+    background-color: #fffbeb;
+    color: #92400e;
+}
+
+.simap-botao-aviso:hover {
+    background-color: #fef3c7;
+    color: #78350f;
+}
+
+.simap-acoes-linha,
+.simap-paginacao {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.simap-acoes-linha {
+    min-width: 190px;
+}
+
+.simap-paginacao {
+    justify-content: center;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.simap-botao-perigo {
+    border-color: #fecaca;
+    background-color: #fff;
+    color: #b91c1c;
+}
+
+.simap-botao-perigo:hover {
+    background-color: #fef2f2;
+    color: #991b1b;
+}
+
+.simap-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 20px 24px;
+}
+
+.simap-filtros .simap-campo {
+    flex: 1 1 260px;
+}
+
+.simap-corpo-cartao {
+    padding: 24px;
+    overflow-wrap: anywhere;
+}
+
+.simap-titulo-confirmacao {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.simap-formulario-conteudo .form-control,
+.simap-formulario-conteudo .form-select {
+    min-height: 44px;
+    border-color: #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.simap-campo[hidden] {
+    display: none;
+}
+
+.simap-formulario-conteudo .form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.simap-campo-invalido .form-control,
+.simap-campo-invalido .form-select {
+    border-color: #dc2626;
+    background-color: #fef2f2;
+}
+
+.simap-opcoes {
+    min-width: 0;
+}
+
+.simap-opcoes legend {
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.simap-secao-casos {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+}
+
+.simap-atividades-aluno {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.simap-atividade-aluno {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+}
+
+.simap-atividade-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.simap-atividade-cabecalho > span {
+    flex: 1 1 220px;
+    min-width: 0;
+    font-weight: 600;
+}
+
+.simap-botao-concluido {
+    border-color: #a7f3d0;
+    background-color: #ecfdf5;
+    color: #047857;
+}
+
+.simap-botao-concluido:hover {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.simap-aprendizagem .progress-bar {
+    background-color: var(--primary);
+}
+
+.simap-lista-comunicacao {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.simap-pagina-comunicacao .simap-cabecalho h1,
+.simap-pagina-comunicacao .simap-voltar {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.simap-pagina-comunicacao input[type="file"] {
+    padding: 0;
+    font-size: 13px;
+}
+
+.simap-pagina-comunicacao input[type="file"]::file-selector-button {
+    min-height: 44px;
+    margin-right: 10px;
+    padding: 10px 12px;
+    border: 0;
+    border-right: 1px solid #cbd5e1;
+    background-color: var(--background);
+    color: #334155;
+    cursor: pointer;
+}
+
+.simap-lista-comunicacao > li + li {
+    border-top: 1px solid var(--border);
+}
+
+.simap-turma-mural,
+.simap-notificacao {
+    display: block;
+    padding: 20px 24px;
+    color: var(--foreground);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.simap-turma-mural {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.simap-turma-mural > div {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.simap-turma-mural:hover,
+.simap-notificacao:hover {
+    background-color: #f1f5f9;
+    color: var(--foreground);
+}
+
+.simap-turma-mural:focus-visible,
+.simap-notificacao:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -3px;
+}
+
+.simap-metadados {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.simap-link-acao {
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.simap-conversa {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+.simap-cabecalho-secao,
+.simap-publicacao-cabecalho,
+.simap-publicacao-acoes,
+.simap-notificacao-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.simap-cabecalho-secao h2 {
+    margin: 0;
+    color: var(--foreground);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.simap-publicacao-cabecalho {
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.simap-publicacao-cabecalho > div {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.simap-publicacao-privada {
+    border-left: 3px solid #f59e0b;
+}
+
+.simap-etiqueta {
+    display: inline-block;
+    max-width: 100%;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.simap-etiqueta-azul {
+    border-color: #bfdbfe;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+}
+
+.simap-etiqueta-privada {
+    border-color: #fde68a;
+    background-color: #fffbeb;
+    color: #92400e;
+}
+
+.simap-mensagem-texto {
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.simap-publicacao-acoes {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.simap-filtros-mural {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.simap-filtros-mural a {
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.simap-filtros-mural a:hover {
+    background-color: #e2e8f0;
+}
+
+.simap-filtros-mural a[aria-current="page"] {
+    background-color: var(--primary);
+    color: #fff;
+}
+
+.simap-anexos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.simap-anexos li {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.simap-anexo-imagem,
+.simap-anexo-arquivo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--primary);
+    font-size: 13px;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.simap-anexo-imagem {
+    width: 200px;
+}
+
+.simap-anexo-imagem img {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+}
+
+.simap-anexo-imagem:hover,
+.simap-anexo-arquivo:hover {
+    border-color: #93c5fd;
+    background-color: #eff6ff;
+}
+
+.simap-notificacao strong {
+    display: block;
+    margin-top: 10px;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+.simap-notificacao-nao-lida {
+    border-left: 3px solid var(--primary);
+    background-color: #eff6ff;
+}
+
+.simap-notificacao-nao-lida strong {
+    font-weight: 700;
+}
+
+.simap-pagina-entregas .simap-cabecalho h1,
+.simap-pagina-entregas .simap-cartao-cabecalho h2,
+.simap-pagina-entregas .simap-voltar {
+    overflow-wrap: anywhere;
+}
+
+.simap-entrega-situacao {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.simap-form-entrega,
+.simap-correcao-bloco {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+.simap-nota-editor {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.simap-form-entrega > .simap-nota-editor {
+    margin: 0;
+}
+
+.simap-lista-entregas {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.simap-lista-entregas .simap-entrega {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.simap-lista-entregas .simap-entrega-atrasada {
+    border-left: 3px solid #dc2626;
+}
+
+.simap-lista-entregas .simap-entrega-abrir {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px 24px;
+    border-radius: 12px;
+    color: var(--foreground);
+    font: inherit;
+    font-size: 14px;
+}
+
+.simap-lista-entregas .simap-entrega-abrir:not(.collapsed) {
+    border-radius: 12px 12px 0 0;
+    background-color: #eff6ff;
+    box-shadow: inset 0 -1px 0 var(--border);
+}
+
+.simap-lista-entregas .accordion-button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -3px;
+    box-shadow: none;
+}
+
+.simap-entrega-aluno {
+    flex: 1 1 240px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.simap-etiqueta-atraso {
+    border-color: #fecaca;
+    background-color: #fef2f2;
+    color: #b91c1c;
+}
+
+.simap-correcao-colunas {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+}
+
+.simap-correcao-bloco h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.simap-resposta-texto {
+    max-height: 32rem;
+    margin: 0;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: 13px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.simap-parecer,
+.simap-avaliacao {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+}
+
+.simap-parecer {
+    border-color: #bfdbfe;
+    background-color: #eff6ff;
+}
+
+.simap-parecer p {
+    margin: 12px 0 0;
+    white-space: pre-wrap;
+    line-height: 1.7;
+}
+
+.simap-parecer-erro {
+    border-color: #fecaca;
+    background-color: #fef2f2;
+}
+
+.simap-parecer-erro p {
+    margin: 0 0 12px;
+    color: #b91c1c;
+}
+
+.simap-modal-pendentes .modal-content {
+    border-color: var(--border);
+    border-radius: 12px;
+}
+
+.simap-modal-pendentes .modal-title {
+    color: var(--foreground);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.simap-pendentes-lista {
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.simap-pendentes-lista li {
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    overflow-wrap: anywhere;
+}
+
+.simap-termos {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 900px;
+    margin-inline: auto;
+    padding: 32px clamp(20px, 4vw, 48px);
+    color: #334155;
+    font-size: 14px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.simap-termos h1 {
+    margin: 0;
+    color: var(--foreground);
+    font-size: clamp(24px, 4vw, 30px);
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -.025em;
+}
+
+.simap-termos-versao {
+    margin: 12px 0 28px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.simap-termos-indice {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+}
+
+.simap-termos-indice h2 {
+    margin: 0 0 12px;
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.simap-termos-indice a {
+    display: block;
+    padding-block: 8px;
+    color: var(--primary);
+}
+
+.simap-termos-clausula {
+    margin: 36px 0 20px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--foreground);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.5;
+    scroll-margin-top: 24px;
+}
+
+.simap-termos-subtitulo {
+    margin: 24px 0 12px;
+    color: var(--foreground);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.simap-auditoria-filtros {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.simap-tabela-auditoria {
+    min-width: 1000px;
+    font-size: 13px;
+}
+
+.simap-auditoria-usuario {
+    min-width: 130px;
+    color: var(--foreground);
+    font-weight: 600;
+}
+
+.simap-auditoria-objeto {
+    min-width: 160px;
+}
+
+.simap-auditoria-descricao {
+    min-width: 230px;
+}
+
+.simap-auditoria-critica {
+    border-color: #fecaca;
+    background-color: #fef2f2;
+    color: #b91c1c;
+}
+
+.simap-auditoria-aviso {
+    border-color: #fde68a;
+    background-color: #fffbeb;
+    color: #92400e;
+}
+
+.simap-auditoria-detalhes {
+    margin-top: 8px;
+}
+
+.simap-auditoria-detalhes summary {
+    width: fit-content;
+    padding: 10px 0;
+    color: var(--primary);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.simap-auditoria-detalhes summary:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.simap-auditoria-detalhes pre {
+    max-width: 360px;
+    max-height: 280px;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: 12px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 767.98px) {
+    .simap-auditoria-filtros {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .simap-correcao-colunas {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 959.98px) {
+    .simap-layout {
+        flex-direction: column;
+    }
+
+    .simap-sidebar {
+        position: static;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .simap-sidebar-interno {
+        min-height: 0;
+    }
+
+    .simap-marca {
+        padding: 16px;
+    }
+
+    .simap-marca strong {
+        font-size: 22px;
+    }
+
+    .simap-menu-links {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-top: 0;
+    }
+
+    .simap-menu-links .nav-link {
+        white-space: nowrap;
+    }
+
+    .simap-usuario {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        padding: 16px;
+    }
+
+    .simap-usuario > .dropdown {
+        grid-column: 1 / -1;
+    }
+
+    .simap-principal {
+        padding-top: 24px;
+    }
+
+    .simap-resumo-turma {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 575.98px) {
+    .simap-corpo-cartao,
+    .simap-lista-entregas .simap-entrega-abrir,
+    .simap-turma-mural,
+    .simap-notificacao,
+    .simap-filtros,
+    .simap-atividade-aluno {
+        padding: 16px;
+    }
+
+    .simap-acoes {
+        width: 100%;
+    }
+
+    .simap-acoes .simap-botao {
+        flex: 1 1 180px;
+    }
+
+    .simap-cartao-cabecalho {
+        padding: 20px 16px;
+    }
+
+    .simap-tabela-rolagem {
+        margin: 0 16px 16px;
+    }
+
+    .simap-formulario {
+        padding-inline: 16px;
+    }
+
+    .simap-formulario-acoes .simap-botao {
+        flex: 1 1 160px;
+    }
+}
+
 /* Padrão visual do SIMAP. Vale só dentro de um elemento com a classe .sm */
 .sm {
     --sm-fundo: #f8fafc;

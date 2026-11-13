@@ -1,78 +1,110 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'core:dashboard' %}">SIMAP Acadêmico</a>
+<nav class="simap-sidebar" aria-label="Navegação principal">
+  {% with rota=request.resolver_match.url_name namespace=request.resolver_match.namespace %}
+  <div class="simap-sidebar-interno">
+    <a class="simap-marca" href="{% url 'core:dashboard' %}" aria-label="SIMAP — página inicial">
+      <strong>SIMAP</strong>
+      <span>Acadêmico</span>
+    </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false" aria-label="Alternar navegação">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarMenu">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    <div class="simap-menu">
+      <ul class="simap-menu-links">
         {% if user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'core:dashboard' %}">Início</a>
+            <a class="nav-link{% if namespace == 'painel' or rota == 'dashboard' %} active{% endif %}" href="{% url 'core:dashboard' %}"{% if namespace == 'painel' or rota == 'dashboard' %} aria-current="page"{% endif %}>Painel</a>
           </li>
         {% endif %}
 
         {% if user.perfil == 'DOCENTE' %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'lista_turmas' %}">Turmas</a>
+            <a class="nav-link{% if rota == 'lista_turmas' or rota == 'criar_turma' or rota == 'criar_matricula' or rota == 'matriculas_turma' %} active{% endif %}" href="{% url 'lista_turmas' %}"{% if rota == 'lista_turmas' or rota == 'criar_turma' or rota == 'criar_matricula' or rota == 'matriculas_turma' %} aria-current="page"{% endif %}>Turmas</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'core:trilha_list' %}">Trilhas</a>
+            <a class="nav-link{% if namespace == 'core' and rota|slice:':7' == 'trilha_' %} active{% endif %}" href="{% url 'core:trilha_list' %}"{% if namespace == 'core' and rota|slice:':7' == 'trilha_' %} aria-current="page"{% endif %}>Trilhas</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'core:atividade_list' %}">Atividades</a>
+            <a class="nav-link{% if namespace == 'core' and rota|slice:':10' == 'atividade_' or namespace == 'entregas' %} active{% endif %}" href="{% url 'core:atividade_list' %}"{% if namespace == 'core' and rota|slice:':10' == 'atividade_' or namespace == 'entregas' %} aria-current="page"{% endif %}>Atividades</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'chamada:abrir_chamada' %}">Chamada</a>
+            <a class="nav-link{% if namespace == 'chamada' %} active{% endif %}" href="{% url 'chamada:abrir_chamada' %}"{% if namespace == 'chamada' %} aria-current="page"{% endif %}>Chamadas</a>
           </li>
         {% elif user.perfil == 'DISCENTE' %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'core:minhas_trilhas' %}">Minhas trilhas</a>
+            <a class="nav-link{% if rota == 'lista_turmas' %} active{% endif %}" href="{% url 'lista_turmas' %}"{% if rota == 'lista_turmas' %} aria-current="page"{% endif %}>Minhas turmas</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'chamada:confirmar_presenca' %}">Chamada</a>
+            <a class="nav-link{% if rota == 'minhas_trilhas' or namespace == 'entregas' %} active{% endif %}" href="{% url 'core:minhas_trilhas' %}"{% if rota == 'minhas_trilhas' or namespace == 'entregas' %} aria-current="page"{% endif %}>Minhas trilhas</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link{% if namespace == 'chamada' %} active{% endif %}" href="{% url 'chamada:confirmar_presenca' %}"{% if namespace == 'chamada' %} aria-current="page"{% endif %}>Confirmar presença</a>
           </li>
         {% endif %}
+
         {% if user.perfil == 'DOCENTE' or user.perfil == 'DISCENTE' %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'comunicacao:inicio' %}">Comunicação</a>
+            <a class="nav-link{% if namespace == 'comunicacao' %} active{% endif %}" href="{% url 'comunicacao:inicio' %}"{% if namespace == 'comunicacao' %} aria-current="page"{% endif %}>Comunicação</a>
           </li>
         {% endif %}
-        {% if user.is_superuser %}
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'auditoria:registro_list' %}">Auditoria</a>
-        </li>
-        {% endif %}
 
+        {% if user.pode_consultar_auditoria %}
+          <li class="nav-item">
+            <a class="nav-link{% if namespace == 'auditoria' %} active{% endif %}" href="{% url 'auditoria:registro_list' %}"{% if namespace == 'auditoria' %} aria-current="page"{% endif %}>Auditoria</a>
+          </li>
+        {% endif %}
       </ul>
 
-      <div class="d-flex align-items-center gap-2">
+      <div class="simap-usuario">
         {% if user.is_authenticated %}
           <div class="dropdown">
-            <a class="btn btn-sm btn-outline-light position-relative" href="{% url 'comunicacao:notificacoes' %}" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificações">
-              🔔
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-light simap-notificacoes"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Notificações
               {% if notificacoes_nao_lidas %}
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ notificacoes_nao_lidas }}</span>
+                <span class="badge bg-danger">
+                  {{ notificacoes_nao_lidas }}
+                  <span class="visually-hidden">não lidas</span>
+                </span>
               {% endif %}
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+            </button>
+
+            <ul class="dropdown-menu simap-notificacoes-lista">
               {% for notificacao in notificacoes_recentes %}
-                <li><a class="dropdown-item small text-wrap" href="{% url 'comunicacao:notificacao_abrir' notificacao.pk %}">{{ notificacao.mensagem }}</a></li>
+                <li>
+                  <a
+                    class="dropdown-item small text-wrap"
+                    href="{% url 'comunicacao:notificacao_abrir' notificacao.pk %}"
+                  >
+                    {{ notificacao.mensagem }}
+                  </a>
+                </li>
               {% empty %}
-                <li><span class="dropdown-item-text small text-muted">Nenhuma notificação nova.</span></li>
+                <li>
+                  <span class="dropdown-item-text small text-muted">
+                    Nenhuma notificação nova.
+                  </span>
+                </li>
               {% endfor %}
+
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item small" href="{% url 'comunicacao:notificacoes' %}">Ver todas as notificações</a></li>
+              <li>
+                <a class="dropdown-item small" href="{% url 'comunicacao:notificacoes' %}">
+                  Ver todas as notificações
+                </a>
+              </li>
             </ul>
           </div>
-          <span class="navbar-text text-white">
-            Logado como: {{ user.first_name }} ({{ user.perfil }})
-          </span>
+
+          <div class="simap-usuario-info">
+            <strong>{{ user.get_full_name|default:user.username }}</strong>
+            <span>{% if user.perfil %}{{ user.get_perfil_display }}{% elif user.is_superuser %}Administrador{% else %}Usuário{% endif %}</span>
+          </div>
+
           <form method="post" action="{% url 'logout' %}" class="m-0">
             {% csrf_token %}
-            <button type="submit" class="btn btn-sm btn-outline-light">Sair</button>
+            <button type="submit" class="btn btn-sm btn-outline-light simap-sair">Sair</button>
           </form>
         {% else %}
           <a href="{% url 'login' %}" class="btn btn-sm btn-outline-light">Entrar</a>
@@ -80,4 +112,5 @@
       </div>
     </div>
   </div>
+  {% endwith %}
 </nav>

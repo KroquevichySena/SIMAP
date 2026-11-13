@@ -1,0 +1,6 @@
+<div class="simap-auth-marca"><strong>SIMAP</strong><span>Acadêmico</span></div>
+<header class="simap-auth-cabecalho">
+    {% if situacao %}<span class="simap-auth-status{% if concluido %} simap-auth-status-concluido{% elif invalido %} simap-auth-status-invalido{% endif %}">{{ situacao }}</span>{% endif %}
+    <h1>{{ titulo }}</h1>
+    <p>{{ descricao }}</p>
+</header>

@@ -1,18 +1,22 @@
-{% extends 'base.html' %}
-
+{% extends 'base_publico.html' %}
 {% block title %}Nova senha - SIMAP{% endblock %}
-
 {% block content %}
+<section class="simap-cartao simap-auth" aria-label="Redefinição de senha">
     {% if validlink %}
-        <h2>Defina sua nova senha</h2>
-        <form method="post">
+        {% include 'usuarios/_cabecalho_acesso.html' with titulo="Defina sua nova senha" descricao="Escolha uma senha segura e repita-a para confirmar." %}
+        <form method="post" class="simap-auth-form" novalidate>
             {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Redefinir senha</button>
+            {% include 'usuarios/_erros_acesso.html' %}
+            {% for campo in form %}{% include 'partials/_campo_formulario.html' %}{% endfor %}
+            <button type="submit" class="simap-botao simap-botao-primario">Redefinir senha</button>
+            <a href="{% url 'login' %}" class="simap-botao simap-botao-secundario">Voltar para o login</a>
         </form>
     {% else %}
-        <h2>Link inválido</h2>
-        <p>Este link de redefinição de senha é inválido, possivelmente porque já foi utilizado. Solicite uma nova recuperação.</p>
-        <a href="{% url 'password_reset' %}" class="btn btn-secondary">Solicitar novo link</a>
+        {% include 'usuarios/_cabecalho_acesso.html' with situacao="Link indisponível" invalido=True titulo="Link inválido" descricao="Este link de redefinição de senha é inválido, possivelmente porque já foi utilizado. Solicite uma nova recuperação." %}
+        <div class="simap-auth-form">
+            <a href="{% url 'password_reset' %}" class="simap-botao simap-botao-primario">Solicitar novo link</a>
+            <a href="{% url 'login' %}" class="simap-botao simap-botao-secundario">Voltar para o login</a>
+        </div>
     {% endif %}
+</section>
 {% endblock %}

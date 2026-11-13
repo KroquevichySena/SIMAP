@@ -3,19 +3,20 @@
 {% block title %}Confirmar exclusão - SIMAP{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow border-danger">
-            <div class="card-header bg-danger text-white">
-                <h4 class="mb-0">Confirmar exclusão</h4>
+<div class="simap-pagina simap-formulario-pagina">
+    <a href="{{ view.success_url }}" class="simap-voltar">← Voltar para a listagem</a>
+    <div>
+        <div class="simap-cartao">
+            <div class="simap-cartao-cabecalho">
+                <h1 class="simap-titulo-confirmacao">Confirmar exclusão</h1>
             </div>
-            <div class="card-body">
+            <div class="simap-corpo-cartao">
                 <p>Tem certeza que deseja excluir "<strong>{{ object }}</strong>"? Essa ação não pode ser desfeita.</p>
                 <form method="POST">
                     {% csrf_token %}
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{{ view.success_url }}" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-danger">Excluir</button>
+                    <div class="simap-formulario-acoes">
+                        <a href="{{ view.success_url }}" class="simap-botao simap-botao-secundario">Cancelar</a>
+                        <button type="submit" class="simap-botao simap-botao-perigo">Excluir</button>
                     </div>
                 </form>
             </div>

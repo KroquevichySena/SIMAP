@@ -1,0 +1,12 @@
+{% if form.errors %}
+    <div class="simap-aviso-erro" role="alert">
+        <strong>Não foi possível salvar. Revise os dados informados.</strong>
+        {% if form.non_field_errors %}
+            <ul>
+                {% for erro in form.non_field_errors %}<li>{{ erro }}</li>{% endfor %}
+            </ul>
+        {% else %}
+            <p>Confira os campos indicados abaixo e tente novamente.</p>
+        {% endif %}
+    </div>
+{% endif %}

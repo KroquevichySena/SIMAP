@@ -1,9 +1,8 @@
-{% extends 'base.html' %}
-
+{% extends 'base_publico.html' %}
 {% block title %}Senha alterada - SIMAP{% endblock %}
-
 {% block content %}
-    <h2>Senha alterada com sucesso</h2>
-    <p>Sua senha foi redefinida. Você já pode entrar no sistema com a nova senha.</p>
-    <a href="{% url 'login' %}" class="btn btn-primary">Ir para o login</a>
+<section class="simap-cartao simap-auth" aria-label="Redefinição concluída">
+    {% include 'usuarios/_cabecalho_acesso.html' with situacao="Concluído" concluido=True titulo="Senha alterada com sucesso" descricao="Sua senha foi redefinida. Você já pode entrar no sistema com a nova senha." %}
+    <a href="{% url 'login' %}" class="simap-botao simap-botao-primario">Ir para o login</a>
+</section>
 {% endblock %}
