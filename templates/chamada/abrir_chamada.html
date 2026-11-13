@@ -2,97 +2,110 @@
 
 {% block title %}{{ titulo_pagina }} - SIMAP{% endblock %}
 
-{% block content %}
-<div class="row">
-    <!-- COLUNA DA ESQUERDA: Formulário para Abrir a Chamada -->
-    <div class="col-lg-4 mb-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0">Abrir Nova Chamada</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                    {% csrf_token %}
-                    
-                    {{ form.as_p }}
-                    
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-success">
-                            Gerar Token e Abrir
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
-    <!-- COLUNA DA DIREITA: Histórico e Alunos Presentes (Salvo no Banco) -->
-    <div class="col-lg-8">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Histórico e Chamadas Ativas</h5>
-            </div>
-            <div class="card-body">
-                {% if chamadas_recentes %}
-                    <div class="accordion" id="accordionChamadas">
-                        {% for chamada in chamadas_recentes %}
-                            <div class="accordion-item mb-3 border">
-                                <h2 class="accordion-header" id="heading{{ chamada.id }}">
-                                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ chamada.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ chamada.id }}">
-                                        <div class="w-100 d-flex justify-content-between pe-3">
-                                            <span><strong>Token: {{ chamada.token_chamada }}</strong> ({{ chamada.turma.nome }})</span>
-                                            <span class="badge bg-secondary align-self-center">
-                                                {{ chamada.presencas.count }} presente(s)
-                                            </span>
-                                        </div>
-                                    </button>
-                                </h2>
-                                <div id="collapse{{ chamada.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ chamada.id }}" data-bs-parent="#accordionChamadas">
-                                    <div class="card-body bg-light">
-                                        <p class="small text-muted mb-2">
-                                            Criada em: {{ chamada.data_criacao|date:"d/m/Y H:i" }} | 
-                                            Expira em: {{ chamada.data_expiracao|date:"d/m/Y H:i" }}
-                                        </p>
-                                        
-                                        <h6 class="fw-bold mt-3">Alunos que registraram presença:</h6>
-                                        <ul class="list-group">
-                                            {% for presenca in chamada.presencas.all %}
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    <span>
-                                                        <strong>{{ presenca.discente.first_name|default:presenca.discente.username }}</strong> 
-                                                        (RGM: {{ presenca.discente.rgm|default:"N/A" }})
-                                                    </span>
-                                                    <span class="text-muted small">{{ presenca.data_registro|date:"H:i:s" }}</span>
-                                                </li>
-                                            {% empty %}
-                                                <li class="list-group-item text-muted small text-center py-2">
-                                                    Nenhum aluno registrou presença com este token ainda.
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
+{% block content %}
+<div class="sm">
+    <header class="sm-cabecalho">
+        <div>
+            <h1 class="sm-titulo">Chamadas</h1>
+            <p class="sm-subtitulo">Abra chamadas por token e acompanhe as presenças das suas turmas.</p>
+        </div>
+    </header>
+
+    <div class="sm-grid-chamada">
+        <section class="sm-card sm-card-elevado sm-pad">
+            <h2 class="sm-titulo-card">Abrir nova chamada</h2>
+            <p class="sm-texto-apoio">Defina a turma, o token e até quando ele vale.</p>
+
+            <form method="post" class="sm-form" style="margin-top: 20px;" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="sm-alerta sm-alerta-erro">
+                        <p><strong>Não foi possível abrir a chamada</strong>{{ form.non_field_errors|join:" " }}</p>
                     </div>
-                    {% if chamadas_recentes.has_other_pages %}
-                        <nav class="mt-3">
-                            <ul class="pagination justify-content-center mb-0">
-                                {% if chamadas_recentes.has_previous %}
-                                    <li class="page-item"><a class="page-link" href="?pagina={{ chamadas_recentes.previous_page_number }}">Anterior</a></li>
-                                {% endif %}
-                                <li class="page-item disabled"><span class="page-link">Página {{ chamadas_recentes.number }} de {{ chamadas_recentes.paginator.num_pages }}</span></li>
-                                {% if chamadas_recentes.has_next %}
-                                    <li class="page-item"><a class="page-link" href="?pagina={{ chamadas_recentes.next_page_number }}">Próxima</a></li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    {% endif %}
-                {% else %}
-                    <p class="text-muted text-center py-4">Você ainda não abriu nenhuma chamada.</p>
+                {% endif %}
+                {% for campo in form %}
+                    {% include 'partials/_campo.html' %}
+                {% endfor %}
+                <button type="submit" class="sm-btn sm-btn-primario sm-btn-bloco">Gerar token e abrir</button>
+            </form>
+        </section>
+
+        <section class="sm-card sm-card-elevado">
+            <div class="sm-card-topo">
+                <h2 class="sm-titulo-card">Histórico de chamadas</h2>
+                {% if chamadas_recentes %}
+                    <span class="sm-dica">{{ chamadas_recentes.paginator.count }} chamada{{ chamadas_recentes.paginator.count|pluralize }} · 10 por página</span>
                 {% endif %}
             </div>
-        </div>
+
+            {% if chamadas_recentes %}
+                <div class="sm-lista-chamadas">
+                    {% for chamada in chamadas_recentes %}
+                        {% with total=chamada.presencas.count %}
+                        <article class="sm-chamada{% if chamada.esta_valida %} sm-chamada-aberta{% endif %}">
+                            <button class="sm-chamada-topo" type="button" data-bs-toggle="collapse" data-bs-target="#chamada-{{ chamada.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="chamada-{{ chamada.id }}">
+                                <span class="sm-token">{{ chamada.token_chamada }}</span>
+                                <span class="sm-chamada-info">
+                                    <strong>{{ chamada.turma.nome }}</strong>
+                                    <small>Expira em {{ chamada.data_expiracao|date:"d/m/Y \à\s H:i" }}</small>
+                                </span>
+                                <span class="sm-chamada-presencas sm-num">{{ total }} / {{ chamada.limite_uso }}</span>
+                                {% if chamada.esta_valida %}
+                                    <span class="sm-selo sm-selo-info"><span class="sm-pulso"></span>Aberta</span>
+                                {% elif chamada.esta_expirada %}
+                                    <span class="sm-selo sm-selo-neutro">Encerrada</span>
+                                {% else %}
+                                    <span class="sm-selo sm-selo-atencao">Limite atingido</span>
+                                {% endif %}
+                            </button>
+
+                            <div id="chamada-{{ chamada.id }}" class="collapse{% if forloop.first %} show{% endif %}">
+                                <div class="sm-chamada-corpo">
+                                    <div class="sm-progresso sm-progresso-verde" role="img" aria-label="{{ total }} de {{ chamada.limite_uso }} presenças">
+                                        <div style="width: {% widthratio total chamada.limite_uso 100 %}%;"></div>
+                                    </div>
+                                    <p class="sm-texto-apoio">Criada em {{ chamada.data_criacao|date:"d/m/Y H:i" }} · expira em {{ chamada.data_expiracao|date:"d/m/Y H:i" }}</p>
+                                    <ul class="sm-presencas">
+                                        {% for presenca in chamada.presencas.all %}
+                                            <li>
+                                                <span class="sm-avatar">{{ presenca.discente.first_name|slice:":1" }}{{ presenca.discente.last_name|slice:":1" }}</span>
+                                                <span class="sm-nome">
+                                                    {{ presenca.discente.get_full_name|default:presenca.discente.username }}
+                                                    <small>RGM {{ presenca.discente.rgm|default:"não informado" }}</small>
+                                                </span>
+                                                <span class="sm-hora sm-num">{{ presenca.data_registro|date:"H:i:s" }}</span>
+                                            </li>
+                                        {% empty %}
+                                            <li class="sm-vazio">Nenhum aluno registrou presença com este token ainda.</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </article>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+
+                {% if chamadas_recentes.has_other_pages %}
+                    <nav class="sm-paginacao" aria-label="Páginas do histórico">
+                        {% if chamadas_recentes.has_previous %}
+                            <a class="sm-btn sm-btn-contorno sm-btn-pequeno" href="?pagina={{ chamadas_recentes.previous_page_number }}">Anterior</a>
+                        {% else %}
+                            <span class="sm-btn sm-btn-contorno sm-btn-pequeno" aria-disabled="true">Anterior</span>
+                        {% endif %}
+                        <span>Página {{ chamadas_recentes.number }} de {{ chamadas_recentes.paginator.num_pages }}</span>
+                        {% if chamadas_recentes.has_next %}
+                            <a class="sm-btn sm-btn-contorno sm-btn-pequeno" href="?pagina={{ chamadas_recentes.next_page_number }}">Próxima</a>
+                        {% else %}
+                            <span class="sm-btn sm-btn-contorno sm-btn-pequeno" aria-disabled="true">Próxima</span>
+                        {% endif %}
+                    </nav>
+                {% endif %}
+            {% else %}
+                <p class="sm-vazio">Você ainda não abriu nenhuma chamada.</p>
+            {% endif %}
+        </section>
     </div>
 </div>
 {% endblock %}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>SIMAP</title>
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="#ffffff" stroke="#dbeafe" stroke-width="2"/>
+  <polygon points="32,5 55,14.5 32,24 9,14.5" fill="#0f172a"/>
+  <path d="M51 15.5v9" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="51" cy="26" r="2.6" fill="#38bdf8"/>
+  <path d="M44.5 32.5c-2.2-3.6-6.3-5.6-11.2-5.6-6.3 0-10.8 3.2-10.8 8.2 0 11 22.3 5.6 22.3 16.7 0 5.2-4.6 8.6-11.2 8.6-5.6 0-9.8-2.3-12.2-6.2" fill="none" stroke="#2563eb" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
