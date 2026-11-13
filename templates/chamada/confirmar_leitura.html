@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}{% include 'partials/_simap_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="sm sm-celular">
+    <section class="sm-card sm-card-elevado sm-pad">
+        <span class="sm-selo sm-selo-info">Leitura guardada por 3 minutos</span>
+        <h1 class="sm-titulo-card" style="margin-top: 16px;">Confirmar presença</h1>
+        <p class="sm-texto-apoio">{{ chamada.turma }}</p>
+
+        <form method="post" id="form-confirmar" style="margin-top: 24px;">
+            {% csrf_token %}
+            <input type="hidden" name="latitude" id="latitude">
+            <input type="hidden" name="longitude" id="longitude">
+            <input type="hidden" name="precisao" id="precisao">
+            {% if pedir_localizacao %}
+                <p class="sm-dica" style="margin-bottom: 16px;">O navegador vai pedir sua localização. Ela serve só para conferir se você está na instituição e não fica guardada.</p>
+            {% endif %}
+            <button type="submit" class="sm-btn sm-btn-primario sm-btn-bloco" id="btn-confirmar">Confirmar presença</button>
+        </form>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if pedir_localizacao %}
+<script>
+    const form = document.getElementById("form-confirmar");
+    const botao = document.getElementById("btn-confirmar");
+    let localizacaoPedida = false;
+
+    form.addEventListener("submit", (evento) => {
+        if (localizacaoPedida || !navigator.geolocation) return;
+        evento.preventDefault();
+        localizacaoPedida = true;
+        botao.disabled = true;
+        botao.textContent = "Conferindo localização…";
+
+        navigator.geolocation.getCurrentPosition(
+            (posicao) => {
+                document.getElementById("latitude").value = posicao.coords.latitude;
+                document.getElementById("longitude").value = posicao.coords.longitude;
+                document.getElementById("precisao").value = posicao.coords.accuracy;
+                form.submit();
+            },
+            () => form.submit(),
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    });
+</script>
+{% endif %}
+{% endblock %}

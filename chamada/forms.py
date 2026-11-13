@@ -1,45 +1,47 @@
 from django import forms
-from django.utils import timezone
 
 from .models import Chamada, Registro_de_Presenca
 from turmas.models import Matricula, Turma
 
 
 class AbrirChamadaForm(forms.ModelForm):
+    limite_uso = forms.IntegerField(
+        label="Limite de presenças",
+        required=False,
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'placeholder': 'Automático'}),
+        help_text="Deixe em branco para usar o total de alunos com matrícula ativa. "
+        "Em dias com poucos alunos, informe quantos estão na sala.",
+    )
+
     class Meta:
         model = Chamada
-        fields = ['turma', 'token_chamada', 'data_expiracao', 'limite_uso']
+        fields = ['turma', 'ciclo_segundos', 'limite_uso']
         widgets = {
-            'data_expiracao': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-            'token_chamada': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: AULA01 (Máx 6 letras)'}),
-            'turma': forms.Select(attrs={'class': 'form-control'}),
-            'limite_uso': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'turma': forms.Select(attrs={'class': 'form-select'}),
+            'ciclo_segundos': forms.Select(attrs={'class': 'form-select'}),
         }
-      
+        help_texts = {
+            'ciclo_segundos': "Quando o tempo acaba, a chamada fecha. Você pode renovar se alguém chegou atrasado.",
+        }
+
     def __init__(self, *args, **kwargs):
         professor = kwargs.pop('professor', None)
         super().__init__(*args, **kwargs)
-        
+
         if professor:
             self.fields['turma'].queryset = Turma.objects.filter(docente=professor, ativa=True)
-            
-    def clean_token_chamada(self):
-        token = self.cleaned_data.get('token_chamada')
-        if token:
-            return token.upper()
-        return token
 
-    def clean_data_expiracao(self):
-        data = self.cleaned_data.get('data_expiracao')
-        if data and data <= timezone.now():
-            raise forms.ValidationError("A data de expiração precisa ser no futuro.")
-        return data
+    def save(self, commit=True):
+        chamada = super().save(commit=False)
+        if not self.cleaned_data.get('limite_uso'):
+            ativos = Matricula.objects.filter(turma=chamada.turma, status='ATIVA').count()
+            chamada.limite_uso = max(ativos, 1)
+        chamada.iniciar_ciclo()
+        if commit:
+            chamada.save()
+        return chamada
 
-    def clean_limite_uso(self):
-        limite = self.cleaned_data.get('limite_uso')
-        if limite is not None and limite < 1:
-            raise forms.ValidationError("O limite de uso precisa ser de pelo menos 1 aluno.")
-        return limite
 
 class ConfirmarPresencaForm(forms.Form):
     """Formulário enxuto: usuário, turma da aula e token — pensado pra prazo curto."""
@@ -95,6 +97,3 @@ class ConfirmarPresencaForm(forms.Form):
 
         self.chamada = chamada
         return cleaned_data
-
-    def save(self):
-        return Registro_de_Presenca.objects.create(chamada=self.chamada, discente=self.discente)

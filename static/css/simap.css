@@ -1669,6 +1669,40 @@ body.simap-app {
 .sm .sm-voltar:hover { color: var(--sm-azul); }
 .sm .sm-voltar svg.sm-icone { width: 14px; height: 14px; }
 
+/* chamada por QR code */
+.sm .sm-btn-perigo { background: var(--sm-card); color: var(--sm-vermelho); border-color: var(--sm-vermelho-borda); }
+.sm .sm-btn-perigo:hover { background: var(--sm-vermelho-claro); color: var(--sm-vermelho-texto); }
+.sm .sm-botoes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
+.sm .sm-acoes-chamada { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+.sm .sm-acoes-chamada strong { font-size: 16px; }
+.sm .sm-presencas-chamada { border: 0; border-radius: 0; border-top: 1px solid var(--sm-cinza); }
+.sm .sm-presencas-chamada li { flex-wrap: wrap; padding: 12px 24px; }
+.sm.sm-celular { max-width: 440px; margin: 24px auto 0; }
+.sm .sm-resultado { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.sm .sm-resultado-icone { width: 64px; height: 64px; border-radius: 9999px; display: grid; place-items: center; margin-bottom: 8px; }
+.sm .sm-resultado-icone svg.sm-icone { width: 30px; height: 30px; stroke-width: 2.5; }
+.sm .sm-resultado-ok .sm-resultado-icone { background: var(--sm-verde-claro); color: var(--sm-verde); }
+.sm .sm-resultado-analise .sm-resultado-icone { background: var(--sm-ambar-claro); color: var(--sm-ambar); }
+.sm .sm-resultado-erro .sm-resultado-icone { background: var(--sm-vermelho-claro); color: var(--sm-vermelho); }
+
+/* janela de projeção (compartilhada com a turma) */
+.sm-projecao-pagina { margin: 0; min-height: 100vh; background: #0f172a; display: grid; place-items: center; }
+.sm.sm-projecao { position: relative; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 56px; padding: 40px; color: #fff; }
+.sm .sm-projecao-qr { background: #fff; border-radius: 24px; padding: 20px; }
+.sm .sm-projecao-qr img, .sm .sm-projecao-qr canvas { display: block; }
+.sm .sm-projecao-info { max-width: 520px; display: flex; flex-direction: column; gap: 12px; }
+.sm .sm-projecao-turma { font-size: 32px; font-weight: 800; margin: 0; }
+.sm .sm-projecao-instrucao { font-size: 17px; color: var(--sm-suave); margin: 0; }
+.sm .sm-projecao-instrucao strong { color: #e2e8f0; }
+.sm .sm-projecao-codigo { font-size: 72px; font-weight: 900; letter-spacing: .16em; margin: 8px 0 0; font-variant-numeric: tabular-nums; }
+.sm .sm-projecao-tempo { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 700; color: var(--sm-suave); }
+.sm .sm-projecao-barra { flex: 1; height: 8px; border-radius: 9999px; background: var(--sm-escuro-2); overflow: hidden; }
+.sm .sm-projecao-barra div { height: 100%; width: 100%; background: var(--sm-ciano); transition: width 1s linear; }
+.sm .sm-projecao-contador { font-size: 20px; color: var(--sm-suave); margin: 12px 0 0; }
+.sm .sm-projecao-contador strong { font-size: 64px; font-weight: 800; color: #fff; margin-right: 6px; }
+.sm .sm-projecao-fechada { position: fixed; inset: 0; background: rgba(15, 23, 42, .96); display: grid; place-items: center; text-align: center; padding: 24px; }
+.sm .sm-projecao-fechada[hidden] { display: none; }
+
 @media (max-width: 991px) {
     .sm .sm-grid-chamada, .sm .sm-dupla { grid-template-columns: minmax(0, 1fr); }
 }
