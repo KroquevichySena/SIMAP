@@ -1,128 +1,120 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Painel de Desempenho - SIMAP{% endblock %}
 
+
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <h2 class="mb-0">Painel de Desempenho</h2>
-    {% if turmas %}
-    <div class="d-flex flex-wrap align-items-center gap-3">
-        <form method="GET">
-            <select name="turma" class="form-select" onchange="this.form.submit()">
-                {% for opcao in turmas %}
-                    <option value="{{ opcao.pk }}" {% if opcao.pk == turma.pk %}selected{% endif %}>{{ opcao }}</option>
-                {% endfor %}
-            </select>
-        </form>
-        <form method="POST" action="{% url 'painel:definir_limite' turma.pk %}" class="d-flex align-items-center gap-2">
-            {% csrf_token %}
-            <label for="{{ form_limite.limite_atencao.id_for_label }}" class="small mb-0 text-nowrap">Limite de atenção (%)</label>
-            <div style="width: 90px;">{{ form_limite.limite_atencao }}</div>
-            <button type="submit" class="btn btn-sm btn-outline-primary">Salvar</button>
-        </form>
-    </div>
-    {% endif %}
-</div>
+<div class="sm">
+    <header class="sm-cabecalho">
+        <div>
+            <h1 class="sm-titulo">Painel de desempenho</h1>
+            <p class="sm-subtitulo">Acompanhe os indicadores e identifique alunos que precisam de atenção.</p>
+        </div>
+        {% if turmas %}
+        <div class="sm-cabecalho-acoes">
+            <form method="POST" action="{% url 'painel:definir_limite' turma.pk %}" class="sm-limite">
+                {% csrf_token %}
+                <div class="sm-campo">
+                    <label for="{{ form_limite.limite_atencao.id_for_label }}">Limite de atenção (%)</label>
+                    {{ form_limite.limite_atencao }}
+                </div>
+                <button type="submit" class="sm-btn sm-btn-contorno">{% include 'partials/_icone.html' with nome="salvar" %}Salvar</button>
+            </form>
+            <form method="GET" class="sm-campo">
+                <label for="seletor-turma">Turma</label>
+                <select id="seletor-turma" name="turma" class="form-select" onchange="this.form.submit()">
+                    {% for opcao in turmas %}
+                        <option value="{{ opcao.pk }}" {% if opcao.pk == turma.pk %}selected{% endif %}>{{ opcao }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+        {% endif %}
+    </header>
 
-{% if not turma %}
-    <div class="text-center text-muted py-5">
-        <p>Você ainda não possui turmas ativas.</p>
-        <a href="{% url 'criar_turma' %}" class="btn btn-success">+ Nova Turma</a>
-    </div>
-{% else %}
-    <div class="row row-cols-2 row-cols-lg-5 g-3 mb-4">
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Frequência média</div>
-                    <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=resumo.frequencia %}</div>
-                </div>
-            </div>
+    {% if not turma %}
+        <div class="sm-card sm-vazio">
+            <p>Você ainda não possui turmas ativas.</p>
+            <a href="{% url 'criar_turma' %}" class="sm-btn sm-btn-primario">Nova turma</a>
         </div>
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Taxa de entrega</div>
-                    <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=resumo.entregas %}</div>
-                </div>
+    {% else %}
+        <section class="sm-stats">
+            <div class="sm-card sm-card-elevado sm-stat">
+                <span class="sm-stat-icone sm-tom-azul">{% include 'partials/_icone.html' with nome="calendario" %}</span>
+                <div><p>Frequência média</p><strong>{% include 'painel/_percentual.html' with valor=resumo.frequencia %}</strong></div>
             </div>
-        </div>
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Progresso médio</div>
-                    <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=resumo.progresso %}</div>
-                </div>
+            <div class="sm-card sm-card-elevado sm-stat">
+                <span class="sm-stat-icone sm-tom-teal">{% include 'partials/_icone.html' with nome="entregas" %}</span>
+                <div><p>Taxa de entrega</p><strong>{% include 'painel/_percentual.html' with valor=resumo.entregas %}</strong></div>
             </div>
-        </div>
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Média de notas</div>
-                    <div class="fs-3 fw-bold">{{ resumo.media|default_if_none:"—" }}</div>
-                </div>
+            <div class="sm-card sm-card-elevado sm-stat">
+                <span class="sm-stat-icone sm-tom-violeta">{% include 'partials/_icone.html' with nome="progresso" %}</span>
+                <div><p>Progresso médio</p><strong>{% include 'painel/_percentual.html' with valor=resumo.progresso %}</strong></div>
             </div>
-        </div>
-        <div class="col">
-            <div class="card h-100 {% if resumo.em_atencao %}border-danger{% endif %}">
-                <div class="card-body">
-                    <div class="text-muted small">Alunos em atenção</div>
-                    <div class="fs-3 fw-bold {% if resumo.em_atencao %}text-danger{% endif %}">{{ resumo.em_atencao }} de {{ resumo.total }}</div>
-                </div>
+            <div class="sm-card sm-card-elevado sm-stat">
+                <span class="sm-stat-icone sm-tom-ceu">{% include 'partials/_icone.html' with nome="nota" %}</span>
+                <div><p>Média de notas</p><strong>{{ resumo.media|default_if_none:"—" }}</strong></div>
             </div>
-        </div>
-    </div>
+            <div class="sm-card sm-card-elevado sm-stat{% if resumo.em_atencao %} sm-stat-alerta{% endif %}">
+                <span class="sm-stat-icone sm-tom-ambar">{% include 'partials/_icone.html' with nome="alerta" %}</span>
+                <div><p>Alunos em atenção</p><strong>{{ resumo.em_atencao }} de {{ resumo.total }}</strong><small>abaixo de {{ turma.limite_atencao }}%</small></div>
+            </div>
+        </section>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                <span class="small text-muted me-1">Gráfico</span>
-                <div class="btn-group btn-group-sm" role="group">
+        <section class="sm-card sm-card-elevado sm-pad sm-form">
+            <h2 class="sm-titulo-secao">Comparação de indicadores</h2>
+            <div class="sm-filtros">
+                <span class="sm-rotulo-filtro">Gráfico</span>
+                <div class="sm-chips" role="group" aria-label="Tipo de gráfico">
                     <input type="radio" class="btn-check" name="tipo-grafico" id="tipo-barras" value="barras" checked>
-                    <label class="btn btn-outline-primary" for="tipo-barras">Barras</label>
+                    <label class="sm-chip" for="tipo-barras">Barras</label>
                     <input type="radio" class="btn-check" name="tipo-grafico" id="tipo-dispersao" value="dispersao">
-                    <label class="btn btn-outline-primary" for="tipo-dispersao">Dispersão</label>
+                    <label class="sm-chip" for="tipo-dispersao">Dispersão</label>
                     <input type="radio" class="btn-check" name="tipo-grafico" id="tipo-evolucao" value="evolucao">
-                    <label class="btn btn-outline-primary" for="tipo-evolucao">Evolução</label>
+                    <label class="sm-chip" for="tipo-evolucao">Evolução</label>
                     <input type="radio" class="btn-check" name="tipo-grafico" id="tipo-radar" value="radar">
-                    <label class="btn btn-outline-primary" for="tipo-radar">Radar</label>
+                    <label class="sm-chip" for="tipo-radar">Radar</label>
                 </div>
             </div>
-            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                <span class="small text-muted me-1">Métricas</span>
-                <input type="checkbox" class="btn-check metrica" id="metrica-frequencia" value="frequencia" checked>
-                <label class="btn btn-sm btn-outline-secondary" for="metrica-frequencia">Frequência</label>
-                <input type="checkbox" class="btn-check metrica" id="metrica-entregas" value="entregas" checked>
-                <label class="btn btn-sm btn-outline-secondary" for="metrica-entregas">Entregas</label>
-                <input type="checkbox" class="btn-check metrica" id="metrica-progresso" value="progresso">
-                <label class="btn btn-sm btn-outline-secondary" for="metrica-progresso">Progresso</label>
-                <input type="checkbox" class="btn-check metrica" id="metrica-notas" value="notas">
-                <label class="btn btn-sm btn-outline-secondary" for="metrica-notas">Notas</label>
-                <div class="form-check form-switch ms-lg-3 mb-0">
+            <div class="sm-filtros">
+                <span class="sm-rotulo-filtro">Métricas</span>
+                <div class="sm-chips" role="group" aria-label="Métricas exibidas">
+                    <input type="checkbox" class="btn-check metrica" id="metrica-frequencia" value="frequencia" checked>
+                    <label class="sm-chip" for="metrica-frequencia">Frequência</label>
+                    <input type="checkbox" class="btn-check metrica" id="metrica-entregas" value="entregas" checked>
+                    <label class="sm-chip" for="metrica-entregas">Entregas</label>
+                    <input type="checkbox" class="btn-check metrica" id="metrica-progresso" value="progresso">
+                    <label class="sm-chip" for="metrica-progresso">Progresso</label>
+                    <input type="checkbox" class="btn-check metrica" id="metrica-notas" value="notas">
+                    <label class="sm-chip" for="metrica-notas">Notas</label>
+                </div>
+                <div class="form-check form-switch sm-switch">
                     <input class="form-check-input" type="checkbox" id="somente-atencao">
-                    <label class="form-check-label small" for="somente-atencao">Somente alunos em atenção</label>
+                    <label class="form-check-label" for="somente-atencao">Somente alunos em atenção</label>
                 </div>
             </div>
-            <div id="bloco-radar" class="mb-2 d-none">
-                <label for="alunos-radar" class="small text-muted">Alunos para comparar (até 3, use Ctrl para selecionar)</label>
-                <select id="alunos-radar" class="form-select form-select-sm" multiple size="4">
+            <div id="bloco-radar" class="sm-campo d-none">
+                <label for="alunos-radar">Alunos para comparar (até 3, use Ctrl para selecionar)</label>
+                <select id="alunos-radar" class="form-select" multiple size="4">
                     {% for linha in linhas %}
                         <option value="{{ linha.discente.pk }}" {% if forloop.first %}selected{% endif %}>{{ linha.discente.get_full_name|default:linha.discente.username }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div id="aviso-grafico" class="alert alert-info small mb-0 d-none"></div>
-            <div style="position: relative; height: 380px;">
+            <div id="aviso-grafico" class="sm-aviso d-none"></div>
+            <div class="sm-grafico">
                 <canvas id="grafico"></canvas>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h6 class="card-title">Alunos</h6>
-            <div class="table-responsive">
-                <table class="table table-striped align-middle mb-0">
+        <section class="sm-card sm-card-elevado">
+            <div class="sm-card-topo">
+                <h2 class="sm-titulo-secao">Alunos da turma</h2>
+                <span class="sm-dica">Clique no nome para ver o detalhe do aluno</span>
+            </div>
+            <div class="sm-tabela-wrap">
+                <table class="sm-tabela">
                     <thead>
                         <tr>
                             <th>Aluno</th>
@@ -135,49 +127,51 @@
                     </thead>
                     <tbody>
                         {% for linha in linhas %}
-                        <tr {% if linha.em_atencao %}class="table-danger"{% endif %}>
-                            <td><a href="{% url 'painel:detalhe_aluno' turma.pk linha.discente.pk %}">{{ linha.discente.get_full_name|default:linha.discente.username }}</a></td>
-                            <td class="{% if 'frequencia' in linha.abaixo %}text-danger fw-bold{% endif %}">
+                        <tr {% if linha.em_atencao %}class="sm-linha-atencao"{% endif %}>
+                            <td><a class="sm-link-nome" href="{% url 'painel:detalhe_aluno' turma.pk linha.discente.pk %}">{{ linha.discente.get_full_name|default:linha.discente.username }}</a></td>
+                            <td class="sm-num {% if 'frequencia' in linha.abaixo %}sm-abaixo{% endif %}">
                                 {% include 'painel/_percentual.html' with valor=linha.frequencia %}
-                                <span class="small text-muted fw-normal">({{ linha.faltas }} falta{{ linha.faltas|pluralize }})</span>
+                                <small>({{ linha.faltas }} falta{{ linha.faltas|pluralize }})</small>
                             </td>
-                            <td class="{% if 'entregas' in linha.abaixo %}text-danger fw-bold{% endif %}">{% include 'painel/_percentual.html' with valor=linha.entregas %}</td>
-                            <td class="{% if 'progresso' in linha.abaixo %}text-danger fw-bold{% endif %}">{% include 'painel/_percentual.html' with valor=linha.progresso %}</td>
-                            <td>{{ linha.media|default_if_none:"—" }}</td>
+                            <td class="sm-num {% if 'entregas' in linha.abaixo %}sm-abaixo{% endif %}">{% include 'painel/_percentual.html' with valor=linha.entregas %}</td>
+                            <td class="sm-num {% if 'progresso' in linha.abaixo %}sm-abaixo{% endif %}">{% include 'painel/_percentual.html' with valor=linha.progresso %}</td>
+                            <td class="sm-num">{{ linha.media|default_if_none:"—" }}</td>
                             <td>
                                 {% if linha.em_atencao %}
-                                    <span class="badge bg-danger">Atenção</span>
+                                    <span class="sm-selo sm-selo-atencao">Em atenção</span>
                                 {% else %}
-                                    <span class="badge bg-success">OK</span>
+                                    <span class="sm-selo sm-selo-neutro">Dentro do limite</span>
                                 {% endif %}
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center text-muted">Nenhum aluno com matrícula ativa nesta turma.</td>
+                            <td colspan="6" class="sm-vazio">Nenhum aluno com matrícula ativa nesta turma.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
-{% endif %}
+        </section>
+    {% endif %}
+</div>
 {% endblock %}
 
 {% block scripts %}
 {% if turma %}
 {{ dados_grafico|json_script:"dados-grafico" }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/simap_graficos.js' %}"></script>
 <script>
     const dados = JSON.parse(document.getElementById("dados-grafico").textContent);
     const METRICAS = {
-        frequencia: {rotulo: "Frequência (%)", cor: "#0d6efd", eixo: "y"},
-        entregas: {rotulo: "Entregas (%)", cor: "#198754", eixo: "y"},
-        progresso: {rotulo: "Progresso (%)", cor: "#6f42c1", eixo: "y"},
-        notas: {rotulo: "Média de notas", cor: "#fd7e14", eixo: "y1"},
+        frequencia: {rotulo: "Frequência (%)", cor: "#2563eb", eixo: "y"},
+        entregas: {rotulo: "Entregas (%)", cor: "#14b8a6", eixo: "y"},
+        progresso: {rotulo: "Progresso (%)", cor: "#7c3aed", eixo: "y"},
+        notas: {rotulo: "Média de notas", cor: "#0284c7", eixo: "y1"},
     };
-    const CORES_RADAR = ["#0d6efd", "#fd7e14", "#198754"];
+    const CORES_RADAR = ["#2563eb", "#d97706", "#14b8a6"];
+    const COR_ATENCAO = "#d97706";
     const URL_DETALHE = "{% url 'painel:detalhe_aluno' turma.pk 0 %}";
     const canvas = document.getElementById("grafico");
     const aviso = document.getElementById("aviso-grafico");
@@ -208,7 +202,7 @@
             label: "Limite de atenção",
             type: "line",
             data: rotulos.map(() => dados.limite),
-            borderColor: "#dc3545",
+            borderColor: COR_ATENCAO,
             borderDash: [6, 4],
             pointRadius: 0,
             yAxisID: "y",
@@ -266,7 +260,9 @@
                 datasets: [{
                     label: "Alunos",
                     data: alunos.map((aluno) => ({x: aluno[x], y: aluno[y], nome: aluno.nome})),
-                    backgroundColor: alunos.map((aluno) => (aluno.em_atencao ? "#dc3545" : "#0d6efd")),
+                    backgroundColor: alunos.map((aluno) => (aluno.em_atencao ? COR_ATENCAO : "#2563eb")),
+                    borderColor: "#ffffff",
+                    borderWidth: 2,
                     pointRadius: 7,
                     pointHoverRadius: 9,
                 }],
@@ -326,7 +322,7 @@
         datasets.push({
             label: "Média da turma",
             data: metricas.map(mediaDaTurma),
-            borderColor: "#6c757d",
+            borderColor: "#64748b",
             borderDash: [6, 4],
             backgroundColor: "transparent",
         });
