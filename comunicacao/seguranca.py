@@ -9,9 +9,9 @@ uma lista curta do que é permitido, e cada arquivo passa por quatro filtros:
    em .bat e é recusado. Caracteres de controle e o caractere que inverte o
    texto (usado para disfarçar "fdp.exe" como "exe.pdf") são removidos.
 2. Tamanho: no máximo COMUNICACAO_TAMANHO_MAXIMO_ANEXO (10 MB).
-3. Conteúdo: os primeiros bytes precisam bater com o tipo declarado. Um
+3. Conteúdo: bibliotecas leem a estrutura real; imagens são reconstruídas. Um
    programa .exe renomeado para .pdf começa com "MZ", e não com "%PDF", então
-   é recusado. Documentos do Office com macro e PDFs com JavaScript também.
+   é recusado. Documentos do Office com macro e PDFs com ações ativas também.
 4. Executáveis disfarçados: qualquer arquivo que comece com a assinatura de
    um executável do Windows, Linux ou macOS é recusado, seja qual for o nome.
 
@@ -23,12 +23,13 @@ import hashlib
 import os
 import re
 import unicodedata
-import zipfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.text import get_valid_filename
+
+from .validacao_documentos import conferir_office, conferir_pdf, reconstruir_imagem
 
 # Categorias: define como o arquivo é conferido e como ele é entregue.
 DOCUMENTO = "documento"
@@ -68,16 +69,6 @@ EXTENSOES_PERMITIDAS = {
     ".json": (CODIGO, "text/plain"),
 }
 
-# Assinaturas (primeiros bytes) de cada formato.
-ASSINATURA_PDF = b"%PDF-"
-ASSINATURAS_IMAGEM = {
-    ".png": (b"\x89PNG\r\n\x1a\n",),
-    ".jpg": (b"\xff\xd8\xff",),
-    ".jpeg": (b"\xff\xd8\xff",),
-    ".gif": (b"GIF87a", b"GIF89a"),
-}
-ASSINATURA_ZIP = b"PK\x03\x04"
-
 # Executáveis e instaladores, reconhecidos pelo conteúdo e não pelo nome.
 ASSINATURAS_EXECUTAVEL = (
     b"MZ",                    # .exe, .dll, .scr, .com do Windows
@@ -95,15 +86,6 @@ PARTE_PRINCIPAL_OFFICE = {
     ".pptx": "ppt/presentation.xml",
 }
 
-# Trechos que indicam conteúdo ativo dentro de um PDF.
-# (O /OpenAction sozinho fica de fora: o Word usa ele só para definir o zoom
-# inicial, e bloquear daria falso positivo em quase todo PDF de aluno.)
-ACOES_PERIGOSAS_PDF = (b"/JavaScript", b"/JS", b"/Launch", b"/EmbeddedFile")
-
-# Limites para não aceitar "bomba zip" (arquivo pequeno que explode ao abrir).
-OFFICE_MAX_ARQUIVOS_INTERNOS = 2000
-OFFICE_MAX_TAMANHO_DESCOMPACTADO = 100 * 1024 * 1024  # 100 MB
-
 # Caracteres invisíveis de controle de direção do texto (o truque do "fdp.exe").
 _CARACTERES_DE_DIRECAO = re.compile("[‎‏‪-‮⁦-⁩]")
 
@@ -116,6 +98,7 @@ class ArquivoValidado:
     tipo_conteudo: str
     tamanho: int
     sha256: str
+    conteudo_seguro: bytes | None = field(default=None, repr=False)
 
 
 def limpar_nome(nome):
@@ -133,55 +116,9 @@ def limpar_nome(nome):
 
 def _ler_tudo(arquivo):
     arquivo.seek(0)
-    conteudo = arquivo.read()
+    conteudo = arquivo.read(settings.COMUNICACAO_TAMANHO_MAXIMO_ANEXO + 1)
     arquivo.seek(0)
     return conteudo
-
-
-def _conferir_pdf(conteudo):
-    if not conteudo.startswith(ASSINATURA_PDF):
-        raise ValidationError("O conteúdo não é um PDF de verdade.")
-    for acao in ACOES_PERIGOSAS_PDF:
-        # /JS sozinho, sem pegar /JSON ou outra palavra que comece igual.
-        if re.search(re.escape(acao) + rb"(?![A-Za-z])", conteudo):
-            raise ValidationError(
-                "Este PDF tem conteúdo ativo (JavaScript, arquivo embutido ou comando para abrir programas) e foi bloqueado."
-            )
-
-
-def _conferir_office(conteudo, extensao, arquivo):
-    if not conteudo.startswith(ASSINATURA_ZIP) or not zipfile.is_zipfile(arquivo):
-        raise ValidationError("O conteúdo não é um documento do Office válido.")
-    arquivo.seek(0)
-    try:
-        with zipfile.ZipFile(arquivo) as pacote:
-            itens = pacote.infolist()
-            nomes = {item.filename for item in itens}
-            if len(itens) > OFFICE_MAX_ARQUIVOS_INTERNOS or (
-                sum(item.file_size for item in itens) > OFFICE_MAX_TAMANHO_DESCOMPACTADO
-            ):
-                raise ValidationError("O documento é grande demais depois de descompactado.")
-            if "[Content_Types].xml" not in nomes or PARTE_PRINCIPAL_OFFICE[extensao] not in nomes:
-                raise ValidationError("O conteúdo não corresponde à extensão do arquivo.")
-            for nome in nomes:
-                baixo = nome.lower()
-                if baixo.endswith("vbaproject.bin") or "/activex/" in baixo:
-                    raise ValidationError("Documentos com macros ou controles ActiveX não são aceitos.")
-                if "/embeddings/" in baixo and not baixo.endswith((".png", ".jpg", ".jpeg", ".emf", ".wmf")):
-                    raise ValidationError("Documentos com arquivos embutidos não são aceitos.")
-    except zipfile.BadZipFile:
-        raise ValidationError("O documento está corrompido.")
-    finally:
-        arquivo.seek(0)
-
-
-def _conferir_imagem(conteudo, extensao):
-    if extensao == ".webp":
-        valido = conteudo[:4] == b"RIFF" and conteudo[8:12] == b"WEBP"
-    else:
-        valido = conteudo.startswith(ASSINATURAS_IMAGEM[extensao])
-    if not valido:
-        raise ValidationError("O conteúdo não é uma imagem do tipo informado.")
 
 
 def _conferir_texto(conteudo):
@@ -216,29 +153,36 @@ def validar_anexo(arquivo):
         raise ValidationError(f"O arquivo \"{nome}\" está vazio.")
 
     conteudo = _ler_tudo(arquivo)
+    if len(conteudo) != arquivo.size:
+        raise ValidationError("O tamanho informado não corresponde ao conteúdo recebido.")
+    conteudo_seguro = None
     if conteudo.startswith(ASSINATURAS_EXECUTAVEL):
         raise ValidationError(f"O arquivo \"{nome}\" é um programa executável disfarçado e foi bloqueado.")
 
     categoria, tipo_conteudo = EXTENSOES_PERMITIDAS[extensao]
     try:
         if extensao == ".pdf":
-            _conferir_pdf(conteudo)
+            conferir_pdf(conteudo)
         elif extensao in PARTE_PRINCIPAL_OFFICE:
-            _conferir_office(conteudo, extensao, arquivo)
+            conteudo_seguro = conferir_office(conteudo, extensao)
         elif categoria == IMAGEM:
-            _conferir_imagem(conteudo, extensao)
+            conteudo_seguro = reconstruir_imagem(conteudo, extensao)
         else:
             _conferir_texto(conteudo)
     except ValidationError as erro:
         raise ValidationError(f"O arquivo \"{nome}\" não foi aceito. {erro.messages[0]}")
 
+    conteudo_final = conteudo_seguro if conteudo_seguro is not None else conteudo
+    if len(conteudo_final) > limite:
+        raise ValidationError("O arquivo ultrapassa o limite de tamanho depois da reconstrução segura.")
     return ArquivoValidado(
         nome_original=nome,
         extensao=extensao,
         categoria=categoria,
         tipo_conteudo=tipo_conteudo,
-        tamanho=arquivo.size,
-        sha256=hashlib.sha256(conteudo).hexdigest(),
+        tamanho=len(conteudo_final),
+        sha256=hashlib.sha256(conteudo_final).hexdigest(),
+        conteudo_seguro=conteudo_seguro,
     )
 
 

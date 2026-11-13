@@ -66,6 +66,40 @@ Para criar a primeira conta de coordenação, use `python manage.py createsuperu
 Não atribua perfil DISCENTE à conta administrativa. Não houve alteração de
 estrutura de banco para este fluxo.
 
+## Validação dos arquivos enviados
+
+Materiais de trilhas/atividades, entregas e Comunicação compartilham a mesma
+validação no servidor: até 5 arquivos por envio e 10 MB por arquivo. Depois de
+atualizar o código, instale as dependências com `pip install -r requirements.txt`.
+Não há novas migrações para esta alteração.
+
+- Imagens PNG, JPEG, GIF e WebP são decodificadas e reconstruídas com Pillow,
+  sem metadados e sem conteúdo acrescentado ao final. Limites: 20 milhões de
+  pixels por quadro, 100 quadros e 40 milhões de pixels acumulados por animação.
+- PDFs são lidos com pypdf em modo estrito. Arquivos corrompidos, protegidos
+  por senha, com JavaScript, ações perigosas ou anexos internos são recusados.
+  Links HTTP/HTTPS e mailto e destinos internos normais continuam permitidos.
+  Há limites de páginas, objetos e complexidade; não há renderização do PDF.
+- DOCX, XLSX e PPTX têm o pacote, XML e relacionamentos inspecionados. Macros,
+  ActiveX, arquivos embutidos, campos DDE, fórmulas de conexão externa e recursos
+  externos automáticos são recusados. Links clicáveis comuns são permitidos.
+  Imagens internas também são reconstruídas. Formatos internos não suportados,
+  como imagens vetoriais e fontes embutidas, são recusados; nesse caso, exporte
+  o material como PDF. O ZIP interno tem limites de 2000 partes e 100 MB abertos.
+- Arquivos reconstruídos recebem tamanho e SHA-256 do conteúdo realmente salvo.
+  Downloads continuam sujeitos à permissão de acesso, com nomes aleatórios no
+  disco e cabeçalhos que restringem interpretação de conteúdo pelo navegador.
+
+Isso é defesa em camadas, não uma garantia de ausência de malware nem um
+antivírus. Arquivos antigos não são reprocessados automaticamente. Na implantação,
+configure também limites de requisição, armazenamento e tráfego no servidor;
+o diretório `media` não deve ser publicado diretamente.
+
+Referências: [OWASP — File Upload](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html),
+[Pillow — Image](https://pillow.readthedocs.io/en/stable/reference/Image.html),
+[pypdf — leitura estrita](https://pypdf.readthedocs.io/en/stable/user/robustness.html)
+e [defusedxml](https://pypi.org/project/defusedxml/).
+
 ## 🤖 Como Configurar a IA (Google Gemini)
 
 Para que as funcionalidades de inteligência artificial do projeto funcionem perfeitamente na sua máquina local, é obrigatório configurar a chave de acesso da API:

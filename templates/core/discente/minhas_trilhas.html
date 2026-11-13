@@ -96,6 +96,7 @@
                             <textarea id="resposta-{{ atividade.pk }}" name="resposta_texto" class="form-control form-control-sm mb-2" rows="3" placeholder="Escreva sua resposta ou código aqui..." required></textarea>
                             <label class="form-label small text-muted mb-1" for="anexos-{{ atividade.pk }}">Anexar arquivos (opcional): código-fonte, PDF, Word, imagens…</label>
                             <input type="file" name="anexos" id="anexos-{{ atividade.pk }}" class="form-control form-control-sm mb-2" multiple accept="{{ extensoes_aceitas }}">
+                            <p class="small text-muted">Até 5 arquivos de 10 MB cada. PDF sem senha e documentos sem macros, arquivos embutidos ou conexões externas automáticas.</p>
                             <button type="submit" class="simap-botao simap-botao-compacto simap-botao-primario">Submeter</button>
                         </form>
                     {% endif %}
