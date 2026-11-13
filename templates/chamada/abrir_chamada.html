@@ -9,14 +9,14 @@
     <header class="sm-cabecalho">
         <div>
             <h1 class="sm-titulo">Chamadas</h1>
-            <p class="sm-subtitulo">Abra chamadas por token e acompanhe as presenças das suas turmas.</p>
+            <p class="sm-subtitulo">Abra a chamada por QR code e acompanhe as presenças das suas turmas.</p>
         </div>
     </header>
 
     <div class="sm-grid-chamada">
         <section class="sm-card sm-card-elevado sm-pad">
             <h2 class="sm-titulo-card">Abrir nova chamada</h2>
-            <p class="sm-texto-apoio">Defina a turma, o token e até quando ele vale.</p>
+            <p class="sm-texto-apoio">Defina a turma, o tempo do QR code e o limite de presenças.</p>
 
             <form method="post" class="sm-form" style="margin-top: 20px;" novalidate>
                 {% csrf_token %}
@@ -28,7 +28,7 @@
                 {% for campo in form %}
                     {% include 'partials/_campo.html' %}
                 {% endfor %}
-                <button type="submit" class="sm-btn sm-btn-primario sm-btn-bloco">Gerar token e abrir</button>
+                <button type="submit" class="sm-btn sm-btn-primario sm-btn-bloco">Abrir chamada e gerar QR code</button>
             </form>
         </section>
 
@@ -44,20 +44,20 @@
                 <div class="sm-lista-chamadas">
                     {% for chamada in chamadas_recentes %}
                         {% with total=chamada.presencas.count %}
-                        <article class="sm-chamada{% if chamada.esta_valida %} sm-chamada-aberta{% endif %}">
+                        <article class="sm-chamada{% if chamada.qr_aberto %} sm-chamada-aberta{% endif %}">
                             <button class="sm-chamada-topo" type="button" data-bs-toggle="collapse" data-bs-target="#chamada-{{ chamada.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="chamada-{{ chamada.id }}">
                                 <span class="sm-token">{{ chamada.token_chamada }}</span>
                                 <span class="sm-chamada-info">
                                     <strong>{{ chamada.turma.nome }}</strong>
-                                    <small>Expira em {{ chamada.data_expiracao|date:"d/m/Y \à\s H:i" }}</small>
+                                    <small>Aberta em {{ chamada.data_criacao|date:"d/m/Y \à\s H:i" }}</small>
                                 </span>
                                 <span class="sm-chamada-presencas sm-num">{{ total }} / {{ chamada.limite_uso }}</span>
-                                {% if chamada.esta_valida %}
-                                    <span class="sm-selo sm-selo-info"><span class="sm-pulso"></span>Aberta</span>
-                                {% elif chamada.esta_expirada %}
-                                    <span class="sm-selo sm-selo-neutro">Encerrada</span>
+                                {% if chamada.qr_aberto %}
+                                    <span class="sm-selo sm-selo-info"><span class="sm-pulso"></span>QR ativo</span>
+                                {% elif chamada.finalizada_em %}
+                                    <span class="sm-selo sm-selo-neutro">Finalizada</span>
                                 {% else %}
-                                    <span class="sm-selo sm-selo-atencao">Limite atingido</span>
+                                    <span class="sm-selo sm-selo-atencao">QR expirado</span>
                                 {% endif %}
                             </button>
 
@@ -66,7 +66,10 @@
                                     <div class="sm-progresso sm-progresso-verde" role="img" aria-label="{{ total }} de {{ chamada.limite_uso }} presenças">
                                         <div style="width: {% widthratio total chamada.limite_uso 100 %}%;"></div>
                                     </div>
-                                    <p class="sm-texto-apoio">Criada em {{ chamada.data_criacao|date:"d/m/Y H:i" }} · expira em {{ chamada.data_expiracao|date:"d/m/Y H:i" }}</p>
+                                    <div class="sm-cabecalho">
+                                        <p class="sm-texto-apoio">Criada em {{ chamada.data_criacao|date:"d/m/Y H:i" }}{% if chamada.renovacoes %} · renovada {{ chamada.renovacoes }}x{% endif %}</p>
+                                        <a class="sm-btn sm-btn-contorno sm-btn-pequeno" href="{% url 'chamada:ao_vivo' chamada.pk %}">{% if chamada.finalizada_em %}Ver resumo{% else %}Abrir painel da chamada{% endif %}</a>
+                                    </div>
                                     <ul class="sm-presencas">
                                         {% for presenca in chamada.presencas.all %}
                                             <li>
@@ -78,7 +81,7 @@
                                                 <span class="sm-hora sm-num">{{ presenca.data_registro|date:"H:i:s" }}</span>
                                             </li>
                                         {% empty %}
-                                            <li class="sm-vazio">Nenhum aluno registrou presença com este token ainda.</li>
+                                            <li class="sm-vazio">Nenhum aluno registrou presença nesta chamada ainda.</li>
                                         {% endfor %}
                                     </ul>
                                 </div>
