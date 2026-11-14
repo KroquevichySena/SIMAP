@@ -17,15 +17,18 @@ camadas de proteção:
 """
 import io
 import re
+import time
 import tokenize
 from dataclasses import dataclass
+from datetime import timedelta
 
 from django.conf import settings
-from django.db.models import Max
+from django.db import OperationalError, transaction
+from django.db.models import Max, Q
 from django.utils import timezone
 
 from . import gemini
-from .models import PedidoDeAjuda
+from .models import PedidoDeAjuda, TravaDeAjuda
 
 Tipo = PedidoDeAjuda.Tipo
 Status = PedidoDeAjuda.Status
@@ -132,8 +135,26 @@ class Situacao:
 # Limites
 # ---------------------------------------------------------------------------
 
+# Um pedido "em andamento" conta nos limites enquanto espera a IA. Se o
+# servidor cair no meio da chamada, a reserva fica para trás; depois deste
+# tempo ela deixa de contar (a chamada ao Gemini desiste bem antes disso).
+RESERVA_EXPIRA = timedelta(minutes=2)
+
+
+TENTATIVAS_DE_TRAVA = 20  # ~4 s no total, bem mais que uma reserva leva
+
+
+def _reserva_abandonada():
+    return Q(status=Status.EM_ANDAMENTO, criado_em__lt=timezone.now() - RESERVA_EXPIRA)
+
+
 def _pedidos_validos(aluno, atividade):
-    return PedidoDeAjuda.objects.filter(aluno=aluno, atividade=atividade).exclude(status=Status.ERRO)
+    """Pedidos que contam nos limites: respondidos, barrados e reservas em andamento."""
+    return (
+        PedidoDeAjuda.objects.filter(aluno=aluno, atividade=atividade)
+        .exclude(status=Status.ERRO)
+        .exclude(_reserva_abandonada())
+    )
 
 
 def situacao(aluno, atividade):
@@ -273,28 +294,74 @@ def _limpar_texto(texto):
 # O pedido
 # ---------------------------------------------------------------------------
 
+def _travar(aluno):
+    """
+    Coloca os pedidos do mesmo aluno em fila até o fim da transação.
+
+    O UPDATE segura a linha (lock de linha no PostgreSQL, lock de escrita no
+    SQLite): outro pedido do mesmo aluno fica esperando aqui até o primeiro
+    terminar a reserva.
+    """
+    TravaDeAjuda.objects.get_or_create(aluno=aluno)
+    TravaDeAjuda.objects.filter(aluno=aluno).update(atualizado_em=timezone.now())
+
+
+def reservar(aluno, atividade, tipo, nivel=0, codigo="", erro=""):
+    """
+    Confere os limites e grava o pedido como "em andamento", de forma atômica.
+
+    A reserva já conta nos limites, então um segundo pedido que chegue enquanto
+    a IA ainda está respondendo o primeiro é recusado.
+    """
+    nivel = nivel if tipo == Tipo.DICA else 0
+    for tentativa in range(TENTATIVAS_DE_TRAVA):
+        try:
+            with transaction.atomic():
+                _travar(aluno)
+                conferir_limites(aluno, atividade, tipo, nivel)
+                return PedidoDeAjuda.objects.create(
+                    aluno=aluno, atividade=atividade, tipo=tipo, nivel=nivel, status=Status.EM_ANDAMENTO,
+                    codigo_enviado=(codigo or "")[:LIMITE_CODIGO], erro_enviado=(erro or "")[:LIMITE_ERRO],
+                )
+        except OperationalError as erro:
+            # O PostgreSQL espera a trava sozinho. O SQLite (testes e CI) pode
+            # responder "locked" na hora: aí esperamos um pouco e tentamos de novo.
+            if "locked" not in str(erro).lower() or tentativa == TENTATIVAS_DE_TRAVA - 1:
+                raise
+            time.sleep(0.02 * (tentativa + 1))
+
+
 def pedir_ajuda(aluno, atividade, tipo, nivel=0, codigo="", erro=""):
     """Registra e responde um pedido de ajuda. Levanta PedidoRecusado se não puder."""
-    nivel = nivel if tipo == Tipo.DICA else 0
-    conferir_limites(aluno, atividade, tipo, nivel)
+    pedido = reservar(aluno, atividade, tipo, nivel, codigo, erro)
+    try:
+        _responder(pedido, atividade, codigo, erro)
+    except Exception:
+        # Qualquer falha inesperada libera a vaga: erro não consome a cota.
+        _falhou(pedido)
+        raise
+    return pedido
 
+
+def _falhou(pedido):
+    pedido.status = Status.ERRO
+    pedido.resposta = "A IA não respondeu agora. Tente de novo em alguns instantes."
+    pedido.save(update_fields=["status", "resposta"])
+
+
+def _responder(pedido, atividade, codigo, erro):
+    tipo, nivel = pedido.tipo, pedido.nivel
     anteriores = list(
-        _pedidos_validos(aluno, atividade).filter(tipo=Tipo.DICA, status=Status.RESPONDIDO)
+        _pedidos_validos(pedido.aluno, atividade).filter(tipo=Tipo.DICA, status=Status.RESPONDIDO)
         .values_list("resposta", flat=True)
     ) if tipo == Tipo.DICA else []
     instrucoes, conteudo = montar_pedido(atividade, tipo, nivel, codigo, erro, anteriores)
 
-    pedido = PedidoDeAjuda(
-        aluno=aluno, atividade=atividade, tipo=tipo, nivel=nivel,
-        codigo_enviado=(codigo or "")[:LIMITE_CODIGO], erro_enviado=(erro or "")[:LIMITE_ERRO],
-    )
     try:
         resposta = gemini.perguntar(instrucoes, conteudo, buscar_na_web=(tipo == Tipo.MATERIAL))
     except gemini.IAIndisponivel:
-        pedido.status = Status.ERRO
-        pedido.resposta = "A IA não respondeu agora. Tente de novo em alguns instantes."
-        pedido.save()
-        return pedido
+        _falhou(pedido)
+        return
 
     texto = _limpar_texto(resposta.texto)
     barrar = parece_solucao(texto) or (
@@ -308,8 +375,7 @@ def pedir_ajuda(aluno, atividade, tipo, nivel=0, codigo="", erro=""):
         pedido.resposta = texto
         pedido.fontes = [f for f in resposta.fontes if str(f.get("url", "")).startswith("https://")][:8]
         pedido.sugestoes_de_busca = resposta.sugestoes_html[:20000]
-    pedido.save()
-    return pedido
+    pedido.save(update_fields=["status", "resposta", "fontes", "sugestoes_de_busca"])
 
 
 def resumo_para_o_professor(atividade):
@@ -329,6 +395,7 @@ def resumo_para_o_professor(atividade):
 
 
 def _todos_validos(atividade):
-    return PedidoDeAjuda.objects.filter(atividade=atividade).exclude(status=Status.ERRO).only(
+    # Para o professor, só o que já terminou (reservas em andamento ainda não têm resposta).
+    return PedidoDeAjuda.objects.filter(atividade=atividade, status__in=[Status.RESPONDIDO, Status.BARRADO]).only(
         "aluno_id", "tipo", "nivel", "status"
     )

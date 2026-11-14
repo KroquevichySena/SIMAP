@@ -14,7 +14,9 @@ def painel_de_ajuda(context, atividade, com_codigo=False):
         "atividade": atividade,
         "com_codigo": com_codigo,
         "situacao": servicos.situacao(aluno, atividade),
-        "pedidos": PedidoDeAjuda.objects.filter(aluno=aluno, atividade=atividade).order_by("-criado_em")[:20],
+        "pedidos": PedidoDeAjuda.objects.filter(aluno=aluno, atividade=atividade)
+        .exclude(status=PedidoDeAjuda.Status.EM_ANDAMENTO)
+        .order_by("-criado_em")[:20],
         "csrf_token": context.get("csrf_token"),
     }
 

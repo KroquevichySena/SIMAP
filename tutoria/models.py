@@ -20,6 +20,7 @@ class PedidoDeAjuda(models.Model):
         CODIGO = "CODIGO", "Análise do código"
 
     class Status(models.TextChoices):
+        EM_ANDAMENTO = "EM_ANDAMENTO", "Aguardando a IA"
         RESPONDIDO = "RESPONDIDO", "Respondido"
         BARRADO = "BARRADO", "Resposta barrada (entregava a solução)"
         ERRO = "ERRO", "Falha ao falar com a IA"
@@ -56,3 +57,23 @@ class PedidoDeAjuda(models.Model):
             return f"💡 Dica nível {self.nivel}"
         return {"CONCEITO": "📖 Explicação do conceito", "MATERIAL": "🔎 Material de estudo",
                 "CODIGO": "🐞 Análise do seu código"}[self.tipo]
+
+
+class TravaDeAjuda(models.Model):
+    """
+    Uma linha por aluno, usada só como trava.
+
+    Antes de conferir os limites, o pedido de ajuda atualiza esta linha dentro
+    de uma transação. Isso coloca os pedidos do mesmo aluno em fila: o segundo
+    só confere os limites depois que o primeiro já reservou a vaga dele.
+    """
+
+    aluno = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "trava de pedidos de ajuda"
+        verbose_name_plural = "travas de pedidos de ajuda"
+
+    def __str__(self):
+        return f"Trava de {self.aluno}"
