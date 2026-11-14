@@ -6,6 +6,7 @@ uma trilha como rascunho não avisa ninguém, mas marcar "publicada" depois
 avisa. Editar o texto de algo que já estava publicado também não gera aviso,
 para a turma não receber uma notificação a cada correção de vírgula.
 """
+import os  # QUEBRA PROPOSITAL: import sem uso
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import Truncator

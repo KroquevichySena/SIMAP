@@ -40,7 +40,7 @@ class ChamadaTest(SimpleTestCase):
         with com_presencas(2):
             self.assertFalse(chamada.esta_expirada)
             self.assertFalse(chamada.vagas_esgotadas)
-            self.assertTrue(chamada.esta_valida)
+            self.assertFalse(chamada.esta_valida)  # QUEBRA PROPOSITAL
 
     # ---------- violação ----------
     def test_deve_estar_expirada_quando_o_prazo_ja_passou(self, _relogio):
