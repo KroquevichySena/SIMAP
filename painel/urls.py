@@ -1,7 +1,8 @@
 from django.urls import path
 
-from . import views
 from turmas.views import configurar_turma
+
+from . import views
 
 app_name = "painel"
 

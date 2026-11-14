@@ -15,7 +15,6 @@ from django.views.generic import DetailView, View
 
 from comunicacao.arquivos import resposta_de_download, salvar_arquivos, validar_arquivos
 from comunicacao.forms import ACEITAR
-
 from core.mixins import DiscenteRequiredMixin, DocenteRequiredMixin
 from core.models import Atividade
 from turmas.models import Matricula

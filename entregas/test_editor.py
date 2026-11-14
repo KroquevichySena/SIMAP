@@ -4,7 +4,7 @@ from unittest import mock
 from django.test import override_settings
 from django.urls import reverse
 
-from core.models import Atividade, CasoDeTeste, TIPO_PRATICA, TrilhaAprendizagem
+from core.models import TIPO_PRATICA, Atividade, CasoDeTeste, TrilhaAprendizagem
 from core.test_materiais import TrilhasBase
 
 from .models import RascunhoCodigo, Submissao
@@ -36,7 +36,7 @@ class TelaDoEditorTest(EditorBase):
         self.assertContains(resposta, "numero = int(input())")
         self.assertContains(resposta, '<script id="casos-aluno" type="application/json">')
         self.assertContains(resposta, "7 x 1 = 7")
-        self.assertContains(resposta, 'data-url-rascunho="%s"' % self.url("salvar_rascunho"))
+        self.assertContains(resposta, f'data-url-rascunho="{self.url("salvar_rascunho")}"')
         # A página só carrega o CodeMirror com a checagem de integridade.
         self.assertContains(resposta, 'integrity="sha384-')
 
@@ -61,8 +61,12 @@ class TelaDoEditorTest(EditorBase):
         self.assertIn(self.client.get(self.url("resolver")).status_code, (302, 403))
 
     def test_codigo_com_tag_de_script_nao_quebra_a_pagina(self):
-        RascunhoCodigo.objects.create(atividade=self.pratica, aluno=self.aluno, codigo='print("</textarea><script>alert(1)</script>")')
-        CasoDeTeste.objects.create(atividade=self.pratica, entrada="", saida_esperada="</script><script>alert(2)</script>", ordem=1)
+        RascunhoCodigo.objects.create(
+            atividade=self.pratica, aluno=self.aluno, codigo='print("</textarea><script>alert(1)</script>")'
+        )
+        CasoDeTeste.objects.create(
+            atividade=self.pratica, entrada="", saida_esperada="</script><script>alert(2)</script>", ordem=1
+        )
         self.entrar(self.aluno)
         resposta = self.client.get(self.url("resolver"))
         self.assertNotContains(resposta, "<script>alert(1)</script>")
@@ -72,11 +76,12 @@ class TelaDoEditorTest(EditorBase):
     @override_settings(SIMAP_PYODIDE_URL="https://minha-copia.exemplo.com/pyodide")
     def test_endereco_do_pyodide_e_configuravel(self):
         self.entrar(self.aluno)
-        self.assertContains(self.client.get(self.url("resolver")), 'data-pyodide-url="https://minha-copia.exemplo.com/pyodide/"')
+        self.assertContains(
+            self.client.get(self.url("resolver")), 'data-pyodide-url="https://minha-copia.exemplo.com/pyodide/"'
+        )
 
 
 class RascunhoTest(EditorBase):
-
     def test_rascunho_e_salvo_e_volta_ao_abrir(self):
         self.entrar(self.aluno)
         resposta = self.client.post(self.url("salvar_rascunho"), {"codigo": "print('meu rascunho')"})
@@ -120,12 +125,20 @@ class RascunhoTest(EditorBase):
 
 
 class CasosNoFormularioTest(EditorBase):
-
     def dados(self, **extra):
         dados = self.dados_atividade(titulo="Soma", tipo=TIPO_PRATICA, codigo_inicial="def soma(a, b):\n    pass\n")
-        dados.update({"casos-TOTAL_FORMS": "2", "casos-INITIAL_FORMS": "0", "casos-MIN_NUM_FORMS": "0", "casos-MAX_NUM_FORMS": "10",
-                      "casos-0-entrada": "1\n2", "casos-0-saida_esperada": "3",
-                      "casos-1-entrada": "", "casos-1-saida_esperada": ""})
+        dados.update(
+            {
+                "casos-TOTAL_FORMS": "2",
+                "casos-INITIAL_FORMS": "0",
+                "casos-MIN_NUM_FORMS": "0",
+                "casos-MAX_NUM_FORMS": "10",
+                "casos-0-entrada": "1\n2",
+                "casos-0-saida_esperada": "3",
+                "casos-1-entrada": "",
+                "casos-1-saida_esperada": "",
+            }
+        )
         dados.update(extra)
         return dados
 
@@ -147,23 +160,33 @@ class CasosNoFormularioTest(EditorBase):
         caso = self.pratica.casos_de_teste.get()
         self.entrar(self.prof)
         dados = self.dados_atividade(titulo="Tabuada", tipo=TIPO_PRATICA)
-        dados.update({"casos-TOTAL_FORMS": "1", "casos-INITIAL_FORMS": "1", "casos-MIN_NUM_FORMS": "0", "casos-MAX_NUM_FORMS": "10",
-                      "casos-0-id": str(caso.pk), "casos-0-entrada": caso.entrada,
-                      "casos-0-saida_esperada": caso.saida_esperada, "casos-0-DELETE": "on"})
+        dados.update(
+            {
+                "casos-TOTAL_FORMS": "1",
+                "casos-INITIAL_FORMS": "1",
+                "casos-MIN_NUM_FORMS": "0",
+                "casos-MAX_NUM_FORMS": "10",
+                "casos-0-id": str(caso.pk),
+                "casos-0-entrada": caso.entrada,
+                "casos-0-saida_esperada": caso.saida_esperada,
+                "casos-0-DELETE": "on",
+            }
+        )
         resposta = self.client.post(reverse("core:atividade_update", args=[self.pratica.pk]), dados)
         self.assertRedirects(resposta, reverse("core:atividade_list"))
         self.assertFalse(self.pratica.casos_de_teste.exists())
 
     def test_formulario_sem_casos_nao_apaga_os_existentes(self):
         self.entrar(self.prof)
-        self.client.post(reverse("core:atividade_update", args=[self.pratica.pk]),
-                         self.dados_atividade(titulo="Tabuada", tipo=TIPO_PRATICA))
+        self.client.post(
+            reverse("core:atividade_update", args=[self.pratica.pk]),
+            self.dados_atividade(titulo="Tabuada", tipo=TIPO_PRATICA),
+        )
         self.assertEqual(self.pratica.casos_de_teste.count(), 1)
 
 
 @mock.patch("entregas.views.gerar_analise")
 class CorrecaoComEditorTest(EditorBase):
-
     def test_professor_ve_o_codigo_no_editor_somente_leitura(self, _analise):
         Submissao.objects.create(atividade=self.pratica, aluno=self.aluno, resposta_texto="print('oi')")
         self.entrar(self.prof)
@@ -181,12 +204,19 @@ class CorrecaoComEditorTest(EditorBase):
 
 
 class EspacosImportamTest(EditorBase):
-
     def test_espacos_no_codigo_inicial_e_na_saida_sao_mantidos(self):
         self.entrar(self.prof)
         dados = self.dados_atividade(titulo="Triângulo", tipo=TIPO_PRATICA, codigo_inicial="    # indentado\n")
-        dados.update({"casos-TOTAL_FORMS": "1", "casos-INITIAL_FORMS": "0", "casos-MIN_NUM_FORMS": "0", "casos-MAX_NUM_FORMS": "10",
-                      "casos-0-entrada": "", "casos-0-saida_esperada": "  *\n ***\n*****"})
+        dados.update(
+            {
+                "casos-TOTAL_FORMS": "1",
+                "casos-INITIAL_FORMS": "0",
+                "casos-MIN_NUM_FORMS": "0",
+                "casos-MAX_NUM_FORMS": "10",
+                "casos-0-entrada": "",
+                "casos-0-saida_esperada": "  *\n ***\n*****",
+            }
+        )
         self.client.post(reverse("core:atividade_create"), dados)
         atividade = Atividade.objects.get(titulo="Triângulo")
         self.assertEqual(atividade.codigo_inicial, "    # indentado\n")

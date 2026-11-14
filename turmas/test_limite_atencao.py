@@ -1,4 +1,5 @@
 """Configuração do limite pela turma, com validação e autorização no servidor."""
+
 from decimal import Decimal
 
 from django.conf import settings
@@ -8,6 +9,7 @@ from django.urls import reverse
 
 from painel.servicos import indicadores_da_turma
 from usuarios.models import AceiteTermos
+
 from .models import Matricula, Turma
 
 
@@ -86,18 +88,26 @@ class ConfiguracaoTurmaTest(TestCase):
         self.assertEqual(self.turma.limite_atencao, Decimal("65"))
 
     def test_limite_alterado_muda_sinalizacao_inclusive_na_igualdade(self):
-        from chamada.models import Chamada, Registro_de_Presenca
-        from django.utils import timezone
         from datetime import timedelta
+
+        from django.utils import timezone
+
+        from chamada.models import Chamada, Registro_de_Presenca
+
         Matricula.objects.create(turma=self.turma, discente=self.aluno)
         for indice in range(2):
-            chamada = Chamada.objects.create(turma=self.turma, token_chamada=f"TOK{indice}", data_expiracao=timezone.now()+timedelta(hours=1), limite_uso=5)
+            chamada = Chamada.objects.create(
+                turma=self.turma,
+                token_chamada=f"TOK{indice}",
+                data_expiracao=timezone.now() + timedelta(hours=1),
+                limite_uso=5,
+            )
             if indice == 0:
                 Registro_de_Presenca.objects.create(chamada=chamada, discente=self.aluno)
         # Só a chamada concluída ou com presença entra na frequência. Para considerar
         # a segunda como falta, o prazo deve terminar depois da matrícula e antes de agora.
-        Matricula.objects.filter(turma=self.turma).update(data_matricula=timezone.now()-timedelta(days=2))
-        Chamada.objects.filter(turma=self.turma).update(data_expiracao=timezone.now()-timedelta(hours=1))
+        Matricula.objects.filter(turma=self.turma).update(data_matricula=timezone.now() - timedelta(days=2))
+        Chamada.objects.filter(turma=self.turma).update(data_expiracao=timezone.now() - timedelta(hours=1))
         self.assertTrue(indicadores_da_turma(self.turma)[0]["em_atencao"])
         self.client.post(self.url, {"limite_atencao": "50"})
         self.turma.refresh_from_db()

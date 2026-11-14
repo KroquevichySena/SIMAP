@@ -3,7 +3,7 @@ import logging
 import google.generativeai as genai
 from django.conf import settings
 
-from .models import AnaliseIA, STATUS_CONCLUIDO, STATUS_ERRO
+from .models import STATUS_CONCLUIDO, STATUS_ERRO, AnaliseIA
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import AceiteTermos, Usuario
+
 from .forms import SenhaTemporariaAdminForm
+from .models import AceiteTermos, Usuario
 
 
 @admin.register(Usuario)
@@ -33,16 +34,26 @@ class UsuarioAdmin(UserAdmin):
         return request.user.is_authenticated and request.user.is_coordenacao and super().has_module_permission(request)
 
     def has_view_permission(self, request, obj=None):
-        return request.user.is_authenticated and request.user.is_coordenacao and super().has_view_permission(request, obj)
+        return (
+            request.user.is_authenticated and request.user.is_coordenacao and super().has_view_permission(request, obj)
+        )
 
     def has_add_permission(self, request):
         return request.user.is_authenticated and request.user.is_coordenacao and super().has_add_permission(request)
 
     def has_change_permission(self, request, obj=None):
-        return request.user.is_authenticated and request.user.is_coordenacao and super().has_change_permission(request, obj)
+        return (
+            request.user.is_authenticated
+            and request.user.is_coordenacao
+            and super().has_change_permission(request, obj)
+        )
 
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_authenticated and request.user.is_coordenacao and super().has_delete_permission(request, obj)
+        return (
+            request.user.is_authenticated
+            and request.user.is_coordenacao
+            and super().has_delete_permission(request, obj)
+        )
 
 
 @admin.register(AceiteTermos)

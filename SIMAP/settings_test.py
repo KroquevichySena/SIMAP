@@ -8,6 +8,8 @@ máquina, sem precisar de .env nem de banco instalado.
 
 Uso:
     python manage.py test --settings=SIMAP.settings_test
+    python manage.py test --settings=SIMAP.settings_test --tipo unitarios
+    python manage.py test --settings=SIMAP.settings_test --tipo integracao
 """
 import os
 
@@ -55,3 +57,6 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 import warnings  # noqa: E402
 
 warnings.filterwarnings("ignore", message="No directory at")
+
+# Permite rodar só os unitários ou só os de integração (ver SIMAP/test_runner.py).
+TEST_RUNNER = "SIMAP.test_runner.SeparadorDeTestesRunner"

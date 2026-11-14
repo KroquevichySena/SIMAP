@@ -48,6 +48,7 @@ MODELOS_PADRAO = [
     "core.MaterialDeApoio",
     "core.VideoDeApoio",
     "core.CasoDeTeste",
+    "tutoria.PedidoDeAjuda",
     "entregas.AnexoSubmissao",
 ]
 

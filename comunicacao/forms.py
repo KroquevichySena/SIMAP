@@ -1,6 +1,5 @@
 from django import forms
 from django.conf import settings
-from django.core.exceptions import ValidationError
 
 from .arquivos import validar_arquivos
 from .permissoes import destinatarios_permitidos
@@ -32,14 +31,17 @@ class MensagemBaseForm(forms.Form):
     texto = forms.CharField(
         label="Mensagem",
         max_length=settings.COMUNICACAO_TAMANHO_MAXIMO_TEXTO,
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Escreva aqui. Links começando com https:// viram clicáveis."}),
+        widget=forms.Textarea(
+            attrs={"rows": 3, "placeholder": "Escreva aqui. Links começando com https:// viram clicáveis."}
+        ),
     )
     anexos = VariosArquivosField(
         label="Anexos",
-        help_text=("Até {n} arquivos de até {mb} MB: PDF sem senha, Word, Excel, PowerPoint, imagens, texto e código-fonte. "
-                   "Documentos com macros, arquivos embutidos ou conexões externas automáticas são recusados.").format(
-            n=settings.COMUNICACAO_MAXIMO_ANEXOS,
-            mb=settings.COMUNICACAO_TAMANHO_MAXIMO_ANEXO // (1024 * 1024),
+        help_text=(
+            f"Até {settings.COMUNICACAO_MAXIMO_ANEXOS} arquivos de até "
+            f"{settings.COMUNICACAO_TAMANHO_MAXIMO_ANEXO // (1024 * 1024)} MB: "
+            "PDF sem senha, Word, Excel, PowerPoint, imagens, texto e código-fonte. "
+            "Documentos com macros, arquivos embutidos ou conexões externas automáticas são recusados."
         ),
     )
 

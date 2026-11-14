@@ -5,6 +5,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from auditoria.models import Acao, RegistroAuditoria
+
 from .acesso import url_primeiro_acesso
 from .models import AceiteTermos
 
@@ -54,7 +55,9 @@ class PrimeiroAcessoTest(TestCase):
         aceite = AceiteTermos.objects.get(usuario=self.usuario)
         self.assertEqual(aceite.versao, settings.TERMOS_DE_USO_VERSAO)
         self.assertEqual(aceite.ip_address, "127.0.0.1")
-        registro = RegistroAuditoria.objects.get(acao=Acao.CRIACAO, entidade="usuarios.AceiteTermos", objeto_id=str(aceite.pk))
+        registro = RegistroAuditoria.objects.get(
+            acao=Acao.CRIACAO, entidade="usuarios.AceiteTermos", objeto_id=str(aceite.pk)
+        )
         self.assertEqual(registro.usuario, self.usuario)
         self.aceitar()
         self.assertEqual(AceiteTermos.objects.filter(usuario=self.usuario).count(), 1)
@@ -64,7 +67,8 @@ class PrimeiroAcessoTest(TestCase):
         self.assertRedirects(self.entrar(), self.destino)
 
     def test_nova_versao_exige_aceite_inclusive_em_sessao_existente(self):
-        self.entrar(); self.aceitar()
+        self.entrar()
+        self.aceitar()
         with override_settings(TERMOS_DE_USO_VERSAO="nova"):
             self.assertRedirects(self.client.get(self.destino), url_primeiro_acesso(self.destino))
             r = self.aceitar(versao="antiga")
@@ -93,8 +97,11 @@ class PrimeiroAcessoTest(TestCase):
     def test_visitante_precisa_autenticar_e_post_exige_csrf(self):
         self.assertEqual(self.client.get(self.primeiro).status_code, 302)
         self.assertEqual(self.client.post(self.primeiro, {"aceite_termos": "on"}).status_code, 302)
-        c = Client(enforce_csrf_checks=True); c.force_login(self.usuario)
-        self.assertEqual(c.post(self.primeiro, {"aceite_termos": "on", "versao": settings.TERMOS_DE_USO_VERSAO}).status_code, 403)
+        c = Client(enforce_csrf_checks=True)
+        c.force_login(self.usuario)
+        self.assertEqual(
+            c.post(self.primeiro, {"aceite_termos": "on", "versao": settings.TERMOS_DE_USO_VERSAO}).status_code, 403
+        )
 
     def test_primeiro_acesso_pendencia_tambem_bloqueia_admin_e_downloads(self):
         coord = get_user_model().objects.create_superuser(username="coord")

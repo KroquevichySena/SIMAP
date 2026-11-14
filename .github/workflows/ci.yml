@@ -1,0 +1,97 @@
+# Pipeline de integração contínua do SIMAP.
+#
+# Roda a cada Pull Request aberto ou atualizado para a main, num ambiente
+# limpo (ubuntu-latest), com três checagens independentes que aparecem como
+# checks separados no PR e rodam em paralelo.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+# Só leitura do código: a pipeline não publica nada.
+permissions:
+  contents: read
+
+# Um commit novo no mesmo PR cancela a execução anterior, que ficou velha.
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"   # mesma versão do README do projeto
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  testes-unitarios:
+    name: Testes unitários
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v7
+
+      - name: Instalar o Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Instalar as dependências
+        run: pip install -r requirements.txt
+
+      # Só as classes SimpleTestCase: regra pura, sem banco e sem servidor.
+      # --failfast: para no primeiro teste que falhar.
+      - name: Executar os testes unitários
+        run: python manage.py test --settings=SIMAP.settings_test --tipo unitarios --failfast --verbosity 2
+
+  testes-integracao:
+    name: Testes de integração
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v7
+
+      - name: Instalar o Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Instalar as dependências
+        run: pip install -r requirements.txt
+
+      - name: Conferir se falta alguma migration
+        run: python manage.py makemigrations --check --dry-run --settings=SIMAP.settings_test
+
+      # TestCase, TransactionTestCase e LiveServerTestCase: views, formulários,
+      # permissões e fluxos completos, num banco de teste isolado (SQLite em
+      # memória, criado do zero e descartado no fim).
+      - name: Executar os testes de integração
+        run: python manage.py test --settings=SIMAP.settings_test --tipo integracao --failfast --verbosity 2
+
+  linter:
+    name: Linter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v7
+
+      - name: Instalar o Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Instalar o Ruff
+        run: pip install -r requirements-dev.txt
+
+      # Regras em ruff.toml. --output-format=github marca cada violação na
+      # linha do arquivo, na aba "Files changed" do PR.
+      - name: Executar o linter
+        run: ruff check . --output-format=github

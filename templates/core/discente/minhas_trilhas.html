@@ -73,6 +73,9 @@
                     {% endif %}
 
                     <a href="{% url 'comunicacao:atividade' atividade.pk %}" class="btn btn-sm btn-link px-0">💬 Comentários e dúvidas</a>
+                    {% if atividade.ajuda_ia and not atividade.eh_pratica %}
+                        <a href="{% url 'tutoria:atividade' atividade.pk %}" class="btn btn-sm btn-link px-0 ms-2">🙋 Preciso de ajuda</a>
+                    {% endif %}
 
                     {% if atividade.submissao %}
                         <div class="mt-2 small">

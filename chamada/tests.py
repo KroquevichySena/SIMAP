@@ -6,8 +6,6 @@ para quem está logado, e só discentes entram na tela.
 """
 from datetime import timedelta
 
-from usuarios.test_helpers import registrar_aceites_atuais
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import resolve_url
@@ -16,6 +14,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from turmas.models import Matricula, Turma
+from usuarios.test_helpers import registrar_aceites_atuais
 
 from .models import Chamada, Registro_de_Presenca
 
@@ -79,6 +78,7 @@ class ConfirmarPresencaViewTests(TestCase):
         self.client.login(username="aluno.carla", password=SENHA)
 
         self.client.post(self.url, {"turma": self.turma.pk, "token_chamada": "aula01"})
+        self.client.post(reverse("chamada:confirmar_leitura"))
 
         self.assertTrue(
             Registro_de_Presenca.objects.filter(
@@ -97,6 +97,7 @@ class ConfirmarPresencaViewTests(TestCase):
             self.url,
             {"username": "aluno.diego", "turma": self.turma.pk, "token_chamada": "AULA01"},
         )
+        self.client.post(reverse("chamada:confirmar_leitura"), {"username": "aluno.diego"})
 
         self.assertFalse(
             Registro_de_Presenca.objects.filter(discente=self.outro_discente).exists()

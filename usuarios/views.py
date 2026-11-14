@@ -10,6 +10,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 
 from auditoria.contexto import obter_ip
+
 from .acesso import aceitou_versao_atual, destino_apos_login, destino_seguro
 from .forms import AceitePrimeiroAcessoForm, CadastroUsuarioForm, TrocaSenhaTemporariaForm
 from .mixins import CoordenacaoRequiredMixin
@@ -116,18 +117,27 @@ class UsuarioCreateView(CoordenacaoRequiredMixin, CreateView):
     def form_valid(self, form):
         with transaction.atomic():
             resposta = super().form_valid(form)
-        messages.success(self.request, "Usuário cadastrado. No primeiro acesso, a pessoa trocará a senha temporária e fará o próprio aceite dos termos.")
+        messages.success(
+            self.request,
+            "Usuário cadastrado. No primeiro acesso, a pessoa trocará a senha temporária "
+            "e fará o próprio aceite dos termos.",
+        )
         return resposta
 
 
 class TermosDeUsoView(TemplateView):
-    template_name = 'usuarios/termos_de_uso.html'
+    template_name = "usuarios/termos_de_uso.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['base_layout'] = (
-            'base.html' if self.request.user.is_authenticated and not self.request.user.troca_senha_obrigatoria and aceitou_versao_atual(self.request.user)
-            else 'base_publico.html'
+        context["base_layout"] = (
+            "base.html"
+            if (
+                self.request.user.is_authenticated
+                and not self.request.user.troca_senha_obrigatoria
+                and aceitou_versao_atual(self.request.user)
+            )
+            else "base_publico.html"
         )
-        context['versao_atual'] = settings.TERMOS_DE_USO_VERSAO
+        context["versao_atual"] = settings.TERMOS_DE_USO_VERSAO
         return context

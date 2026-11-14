@@ -87,12 +87,6 @@ class RegistroAuditoria(models.Model):
     def __str__(self):
         return f"{self.data_hora:%d/%m/%Y %H:%M:%S} · {self.origem} · {self.get_acao_display()}"
 
-    @property
-    def origem(self):
-        # Quando não há usuário, a ação veio do próprio sistema
-        # (um comando no terminal, por exemplo).
-        return self.usuario_login or "sistema"
-
     def save(self, *args, **kwargs):
         if self.pk is not None and not self._state.adding:
             raise RegistroImutavelError("Registros de auditoria não podem ser alterados.")
@@ -103,3 +97,9 @@ class RegistroAuditoria(models.Model):
             "Registros de auditoria não podem ser excluídos um a um. "
             "Use o comando limpar_auditoria, que respeita o prazo de retenção."
         )
+
+    @property
+    def origem(self):
+        # Quando não há usuário, a ação veio do próprio sistema
+        # (um comando no terminal, por exemplo).
+        return self.usuario_login or "sistema"

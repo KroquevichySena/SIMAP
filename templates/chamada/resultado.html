@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}{% include 'partials/_simap_assets.html' %}{% endblock %}
+
+{% block content %}
+<div class="sm sm-celular">
+    <section class="sm-card sm-card-elevado sm-pad sm-resultado sm-resultado-{{ tipo }}">
+        <span class="sm-resultado-icone">
+            {% if tipo == "ok" %}
+                <svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            {% elif tipo == "analise" %}
+                {% include 'partials/_icone.html' with nome="alerta" %}
+            {% else %}
+                <svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            {% endif %}
+        </span>
+        <h1 class="sm-titulo-card">{{ titulo }}</h1>
+        <p class="sm-texto-apoio">{{ texto }}</p>
+        {% if tipo == "erro" and user.is_authenticated %}
+            <a class="sm-btn sm-btn-contorno sm-btn-bloco" href="{% url 'chamada:confirmar_presenca' %}" style="margin-top: 20px;">Digitar o código</a>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

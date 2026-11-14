@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include 
+from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -10,6 +10,7 @@ urlpatterns = [
     path('contas/', include ('usuarios.urls')),
     path('entregas/', include('entregas.urls')),
     path('comunicacao/', include('comunicacao.urls')),
+    path('ajuda/', include('tutoria.urls')),
     path('painel/', include('painel.urls')),
 
     path('', include('core.urls')),

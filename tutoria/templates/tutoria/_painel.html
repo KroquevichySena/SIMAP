@@ -1,0 +1,42 @@
+{% load static %}
+{% if atividade.ajuda_ia %}
+<link rel="stylesheet" href="{% static 'css/tutoria.css' %}">
+<section class="simap-cartao simap-ajuda-ia" data-painel-ajuda aria-labelledby="titulo-ajuda-{{ atividade.pk }}"
+         data-url="{% url 'tutoria:pedir' atividade.pk %}"
+         data-proximo-nivel="{{ situacao.proximo_nivel|default_if_none:'' }}"
+         data-restantes="{{ situacao.restantes_hoje }}">
+    <div class="simap-cartao-cabecalho">
+        <h2 id="titulo-ajuda-{{ atividade.pk }}">Ajuda da IA</h2>
+        <div class="simap-ajuda-ia-topo">
+            <span class="simap-contagem ajuda-restantes">{{ situacao.restantes_hoje }} ajuda(s) restante(s) hoje</span>
+            <button class="simap-botao simap-botao-compacto simap-botao-aviso" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#ajuda-{{ atividade.pk }}" aria-expanded="{% if pedidos %}true{% else %}false{% endif %}" aria-controls="ajuda-{{ atividade.pk }}">
+                Preciso de ajuda
+            </button>
+        </div>
+    </div>
+    <div class="collapse{% if pedidos %} show{% endif %}" id="ajuda-{{ atividade.pk }}">
+        <div class="simap-corpo-cartao">
+            <p class="simap-nota-editor">
+                A IA não resolve o exercício por você: ela dá pistas, explica o assunto e indica onde estudar.
+                O professor vê quantas ajudas você usou.
+            </p>
+            <div class="simap-ajuda-ia-opcoes">
+                <button type="button" class="simap-botao simap-botao-compacto simap-botao-secundario" data-tipo="DICA">
+                    Me dá uma dica <span class="ajuda-nivel simap-contagem"></span>
+                </button>
+                <button type="button" class="simap-botao simap-botao-compacto simap-botao-secundario" data-tipo="CONCEITO">Explica o conceito</button>
+                <button type="button" class="simap-botao simap-botao-compacto simap-botao-secundario" data-tipo="MATERIAL">Busca material</button>
+                {% if com_codigo %}
+                <button type="button" class="simap-botao simap-botao-compacto simap-botao-secundario" data-tipo="CODIGO">Olha meu código</button>
+                {% endif %}
+            </div>
+            <div class="ajuda-status simap-ajuda-ia-status" aria-live="polite"></div>
+            <div class="ajuda-historico simap-ajuda-ia-historico">
+                {% for pedido in pedidos %}{% include "tutoria/_pedido.html" %}{% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+<script src="{% static 'js/tutoria.js' %}" defer></script>
+{% endif %}

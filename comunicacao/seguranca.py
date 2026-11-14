@@ -87,7 +87,7 @@ PARTE_PRINCIPAL_OFFICE = {
 }
 
 # Caracteres invisíveis de controle de direção do texto (o truque do "fdp.exe").
-_CARACTERES_DE_DIRECAO = re.compile("[‎‏‪-‮⁦-⁩]")
+_CARACTERES_DE_DIRECAO = re.compile("[\u200e\u200f\u202a-\u202e\u2066-\u2069]")
 
 
 @dataclass(frozen=True)
@@ -170,7 +170,7 @@ def validar_anexo(arquivo):
         else:
             _conferir_texto(conteudo)
     except ValidationError as erro:
-        raise ValidationError(f"O arquivo \"{nome}\" não foi aceito. {erro.messages[0]}")
+        raise ValidationError(f"O arquivo \"{nome}\" não foi aceito. {erro.messages[0]}") from erro
 
     conteudo_final = conteudo_seguro if conteudo_seguro is not None else conteudo
     if len(conteudo_final) > limite:

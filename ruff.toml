@@ -1,0 +1,19 @@
+# Configuração do linter (Ruff) usada pela pipeline de CI e localmente:
+#     pip install -r requirements-dev.txt
+#     ruff check .
+target-version = "py312"
+line-length = 120
+extend-exclude = ["*/migrations/*", "staticfiles", "media"]
+
+[lint]
+# E/W  pycodestyle: indentação, espaços, linhas longas, várias instruções numa linha
+# F    pyflakes: imports e variáveis sem uso, nomes não definidos
+# I    isort: ordem dos imports
+# B    bugbear: armadilhas comuns (except sem "from", variável de laço em closure...)
+# UP   pyupgrade: sintaxe moderna para a versão do Python do projeto
+# DJ   regras do Django (ordem dos elementos do model, null em CharField...)
+# PLE  erros do pylint (caracteres de controle escondidos no código...)
+select = ["E", "W", "F", "I", "B", "UP", "DJ", "PLE"]
+
+[lint.isort]
+known-first-party = ["SIMAP", "auditoria", "chamada", "comunicacao", "core", "entregas", "painel", "turmas", "usuarios"]

@@ -8,7 +8,7 @@
     <header class="sm-cabecalho">
         <div>
             <h1 class="sm-titulo">Confirmar presença</h1>
-            <p class="sm-subtitulo">Use o token que o professor mostrou em aula.</p>
+            <p class="sm-subtitulo">Sem câmera? Digite o código que aparece embaixo do QR code.</p>
         </div>
     </header>
 
@@ -16,7 +16,7 @@
         <section class="sm-card sm-card-elevado">
             <div class="sm-card-cabecalho">
                 <h2 class="sm-titulo-card">Registrar presença</h2>
-                <p class="sm-texto-apoio">O token vale só para a turma e o horário da aula.</p>
+                <p class="sm-texto-apoio">O código muda a cada vez que o professor abre ou renova a chamada.</p>
             </div>
             <form method="post" class="sm-form sm-pad" novalidate>
                 {% csrf_token %}
@@ -41,8 +41,8 @@
                 <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>É preciso estar matriculado na turma</li>
                 <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Matrícula inativa não confirma presença</li>
                 <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Uma presença por aluno em cada chamada</li>
-                <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>O token expira na data definida pelo professor</li>
-                <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Cada token tem um limite de usos</li>
+                <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>O código vale só enquanto o QR code estiver na tela</li>
+                <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Cada chamada tem um limite de presenças</li>
             </ul>
         </aside>
     </div>

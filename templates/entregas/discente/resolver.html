@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load comunicacao_tags videos_tags %}
+{% load comunicacao_tags videos_tags tutoria_tags %}
 {% block title %}{{ atividade.titulo }} - SIMAP{% endblock %}
 {% block extra_head %}{% include "entregas/_editor_assets.html" %}{% endblock %}
 {% block content %}
@@ -51,6 +51,7 @@
             {% endif %}
         </div>
     </section>
+    {% painel_de_ajuda atividade com_codigo=True %}
 </div>
 {% endblock %}
 {% block scripts %}{% include "entregas/_editor_scripts.html" %}{% endblock %}

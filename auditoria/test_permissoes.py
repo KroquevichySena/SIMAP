@@ -1,9 +1,9 @@
 """Discente não pode consultar a auditoria, mesmo com privilégios inconsistentes."""
-from usuarios.test_helpers import registrar_aceites_atuais
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+
+from usuarios.test_helpers import registrar_aceites_atuais
 
 from .models import Acao, RegistroAuditoria
 
@@ -70,7 +70,9 @@ class PermissoesAuditoriaTest(TestCase):
                 self.assertEqual(csv.status_code, 200)
                 self.assertIn(b"DADO-RESTRITO-DA-AUDITORIA", b"".join(csv.streaming_content))
                 self.assertContains(self.client.get(reverse("termos_de_uso")), f'href="{url}"')
-                self.assertEqual(self.client.get(reverse("admin:auditoria_registroauditoria_changelist")).status_code, 200)
+                self.assertEqual(
+                    self.client.get(reverse("admin:auditoria_registroauditoria_changelist")).status_code, 200
+                )
 
     def test_docente_comum_nao_consulta(self):
         self.client.force_login(self.docente)

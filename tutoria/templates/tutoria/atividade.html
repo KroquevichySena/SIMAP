@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load comunicacao_tags tutoria_tags %}
+{% block title %}Ajuda - {{ atividade.titulo }} - SIMAP{% endblock %}
+{% block content %}
+<div class="simap-pagina simap-pagina-entregas">
+    <a class="simap-voltar" href="{% url 'core:minhas_trilhas' %}#atividade-{{ atividade.pk }}">← Voltar para minhas trilhas</a>
+    <header class="simap-cabecalho">
+        <div><h1>{{ atividade.titulo }}</h1><p class="simap-subtitulo">{{ atividade.trilha.turma.nome }} · {{ atividade.trilha.titulo }}</p></div>
+    </header>
+    <section class="simap-cartao" aria-labelledby="titulo-enunciado">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-enunciado">O que foi pedido</h2></div>
+        <div class="simap-corpo-cartao">{{ atividade.enunciado|texto_com_links }}</div>
+    </section>
+    {% painel_de_ajuda atividade %}
+</div>
+{% endblock %}

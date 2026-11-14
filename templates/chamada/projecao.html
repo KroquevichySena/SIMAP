@@ -1,0 +1,68 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMAP</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+    {% include 'partials/_simap_assets.html' %}
+</head>
+<body class="sm-projecao-pagina">
+<main class="sm sm-projecao">
+    <div class="sm-projecao-qr"><div id="qr"></div></div>
+    <div class="sm-projecao-info">
+        <p class="sm-projecao-turma">{{ chamada.turma.nome }}</p>
+        <p class="sm-projecao-instrucao">Leia o QR code com a câmera do celular. Sem câmera? Abra <strong>Confirmar presença</strong> no SIMAP e digite o código.</p>
+        <p class="sm-projecao-codigo" id="codigo">{{ chamada.token_chamada }}</p>
+        <div class="sm-projecao-tempo"><span id="segundos" class="sm-num">--</span><div class="sm-projecao-barra"><div id="barra"></div></div></div>
+        <p class="sm-projecao-contador"><strong id="presentes">0</strong> de <span id="limite">{{ chamada.limite_uso }}</span> presentes</p>
+    </div>
+    <div class="sm-projecao-fechada" id="fechada" hidden>
+        <div>
+            <p class="sm-projecao-turma" id="fechada-titulo">Tempo esgotado</p>
+            <p class="sm-projecao-instrucao" id="fechada-texto">A chamada foi fechada. Chegou atrasado? Fale com o professor.</p>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    const ciclo = {{ chamada.ciclo_segundos }};
+    const qr = new QRCode(document.getElementById("qr"), { width: 320, height: 320, colorDark: "#0f172a", colorLight: "#ffffff" });
+    let tokenAtual = null;
+    let segundos = 0;
+
+    function mostrarTempo() {
+        document.getElementById("segundos").textContent = segundos + "s";
+        document.getElementById("barra").style.width = (segundos / ciclo * 100) + "%";
+    }
+
+    async function atualizar() {
+        const resposta = await fetch("{% url 'chamada:estado' chamada.pk %}");
+        if (!resposta.ok) return;
+        const estado = await resposta.json();
+
+        if (estado.token !== tokenAtual) {
+            tokenAtual = estado.token;
+            qr.makeCode(estado.link);
+            document.getElementById("codigo").textContent = estado.token;
+        }
+        segundos = estado.segundos;
+        mostrarTempo();
+        document.getElementById("presentes").textContent = estado.presentes;
+        document.getElementById("limite").textContent = estado.limite;
+
+        const fechada = document.getElementById("fechada");
+        fechada.hidden = estado.aberto;
+        if (estado.finalizada) {
+            document.getElementById("fechada-titulo").textContent = "Chamada finalizada";
+            document.getElementById("fechada-texto").textContent = "Obrigado! O professor está revisando a lista.";
+        }
+    }
+
+    atualizar();
+    setInterval(atualizar, 2000);
+    setInterval(() => { if (segundos > 0) { segundos--; mostrarTempo(); } }, 1000);
+</script>
+</body>
+</html>

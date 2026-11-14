@@ -17,7 +17,6 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from pypdf import PdfReader, apply_configuration
 from pypdf.generic import ArrayObject, DictionaryObject, IndirectObject, NameObject
 
-
 FORMATOS_IMAGEM = {".png": "PNG", ".jpg": "JPEG", ".jpeg": "JPEG", ".gif": "GIF", ".webp": "WEBP"}
 MAX_PIXELS = 20_000_000
 MAX_PIXELS_ANIMACAO = 40_000_000
@@ -128,7 +127,8 @@ def _conferir_estrutura_pdf(conteudo):
                 if isinstance(objeto, DictionaryObject):
                     if CHAVES_PDF_PROIBIDAS.intersection(objeto):
                         raise ValidationError("O PDF contém conteúdo ativo ou arquivos embutidos.")
-                    if "/URI" in objeto and urlsplit(str(objeto["/URI"])).scheme.lower() not in ("http", "https", "mailto"):
+                    esquema = urlsplit(str(objeto["/URI"])).scheme.lower() if "/URI" in objeto else ""
+                    if "/URI" in objeto and esquema not in ("http", "https", "mailto"):
                         raise ValidationError("O PDF contém um link de execução ou protocolo não permitido.")
                     pilha.extend(objeto.values())
                 else:
@@ -168,7 +168,18 @@ def _relacionamentos(raiz, nome, nomes):
         if rel.tag != f"{{{NS_RELS}}}Relationship" or not identificador or identificador in ids or not destino:
             raise ValidationError("O documento tem relacionamentos inválidos.")
         ids.add(identificador)
-        if any(trecho in tipo.lower() for trecho in ("oleobject", "package", "activex", "vbaproject", "attachedtemplate", "externallink", "afchunk")):
+        if any(
+            trecho in tipo.lower()
+            for trecho in (
+                "oleobject",
+                "package",
+                "activex",
+                "vbaproject",
+                "attachedtemplate",
+                "externallink",
+                "afchunk",
+            )
+        ):
             raise ValidationError("O documento contém conteúdo ativo ou arquivos embutidos.")
         if rel.get("TargetMode") == "External":
             # Links clicáveis normais são permitidos; recursos externos automáticos não.
@@ -199,9 +210,14 @@ def conferir_office(conteudo, extensao):
             partes, total = {}, 0
             for item in itens:
                 nome, baixo = item.filename, item.filename.lower()
-                if ("\\" in nome or nome.startswith("/") or posixpath.normpath(nome.rstrip("/")) != nome.rstrip("/")
-                        or ".." in nome.split("/") or item.flag_bits & 1
-                        or stat.S_ISLNK(item.external_attr >> 16)):
+                if (
+                    "\\" in nome
+                    or nome.startswith("/")
+                    or posixpath.normpath(nome.rstrip("/")) != nome.rstrip("/")
+                    or ".." in nome.split("/")
+                    or item.flag_bits & 1
+                    or stat.S_ISLNK(item.external_attr >> 16)
+                ):
                     raise ValidationError("O documento contém caminhos inválidos ou partes criptografadas.")
                 if item.is_dir():
                     continue
@@ -209,11 +225,15 @@ def conferir_office(conteudo, extensao):
                     raise ValidationError("Documentos com macros ou controles ActiveX não são aceitos.")
                 if "/embeddings/" in baixo:
                     raise ValidationError("Documentos com arquivos embutidos não são aceitos.")
-                if nome != "[Content_Types].xml" and not nome.startswith((prefixo, "docProps/", "_rels/", "customXml/")):
+                if nome != "[Content_Types].xml" and not nome.startswith(
+                    (prefixo, "docProps/", "_rels/", "customXml/")
+                ):
                     raise ValidationError("O documento contém um arquivo interno não permitido.")
                 sufixo = ".rels" if baixo.endswith(".rels") else posixpath.splitext(baixo)[1]
                 if sufixo not in (".xml", ".rels") and sufixo not in FORMATOS_IMAGEM:
-                    raise ValidationError("O documento contém um tipo de arquivo interno não permitido. Exporte o material como PDF.")
+                    raise ValidationError(
+                        "O documento contém um tipo de arquivo interno não permitido. Exporte o material como PDF."
+                    )
                 with pacote.open(item) as entrada:
                     dados = entrada.read(min(item.file_size, MAX_OFFICE_ABERTO - total) + 1)
                 total += len(dados)
@@ -246,10 +266,22 @@ def conferir_office(conteudo, extensao):
                 sufixo = ".rels" if nome.lower().endswith(".rels") else posixpath.splitext(nome.lower())[1]
                 mime = sobrescritos.get(nome, padroes.get(sufixo.lstrip("."), ""))
                 if nome != "[Content_Types].xml":
-                    mime_imagem = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".webp": "image/webp"}
-                    if (not mime or (sufixo in mime_imagem and mime != mime_imagem[sufixo])
-                            or (sufixo == ".rels" and mime != "application/vnd.openxmlformats-package.relationships+xml")
-                            or (sufixo == ".xml" and not (mime == "application/xml" or mime == "text/xml" or mime.endswith("+xml")))):
+                    mime_imagem = {
+                        ".png": "image/png",
+                        ".jpg": "image/jpeg",
+                        ".jpeg": "image/jpeg",
+                        ".gif": "image/gif",
+                        ".webp": "image/webp",
+                    }
+                    if (
+                        not mime
+                        or (sufixo in mime_imagem and mime != mime_imagem[sufixo])
+                        or (sufixo == ".rels" and mime != "application/vnd.openxmlformats-package.relationships+xml")
+                        or (
+                            sufixo == ".xml"
+                            and not (mime == "application/xml" or mime == "text/xml" or mime.endswith("+xml"))
+                        )
+                    ):
                         raise ValidationError("O tipo declarado de uma parte interna é inválido.")
                 if sufixo in (".xml", ".rels"):
                     raiz = _xml_seguro(dados)
@@ -267,8 +299,11 @@ def conferir_office(conteudo, extensao):
                             raise ValidationError("O documento contém conteúdo ativo ou arquivos embutidos.")
                         if local == "f" and familia == "spreadsheetml":
                             formula = elemento.text or ""
-                            if ("|" in formula or re.search(r"\b(?:WEBSERVICE|RTD|CALL|REGISTER\.ID|SQL\.REQUEST)\s*\(", formula, re.I)
-                                    or re.search(r"\bHYPERLINK\s*\(\s*\"\s*(?:javascript|file|data):", formula, re.I)):
+                            if (
+                                "|" in formula
+                                or re.search(r"\b(?:WEBSERVICE|RTD|CALL|REGISTER\.ID|SQL\.REQUEST)\s*\(", formula, re.I)
+                                or re.search(r"\bHYPERLINK\s*\(\s*\"\s*(?:javascript|file|data):", formula, re.I)
+                            ):
                                 raise ValidationError("A planilha contém uma fórmula de execução ou conexão externa.")
                         if local == "instrText":
                             instrucoes.append(elemento.text or "")
@@ -284,8 +319,16 @@ def conferir_office(conteudo, extensao):
                         raise ValidationError("O documento é grande demais depois da reconstrução das imagens.")
                     partes[nome] = reconstruida
             rels_raiz = _xml_seguro(partes["_rels/.rels"])
-            if not any(r.get("Type") in (NS_REL_DOC + "officeDocument", "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument")
-                       and r.get("Target", "").lstrip("/") == principal and r.get("TargetMode") != "External" for r in rels_raiz):
+            if not any(
+                r.get("Type")
+                in (
+                    NS_REL_DOC + "officeDocument",
+                    "http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument",
+                )
+                and r.get("Target", "").lstrip("/") == principal
+                and r.get("TargetMode") != "External"
+                for r in rels_raiz
+            ):
                 raise ValidationError("O documento não vincula a sua parte principal.")
             saida = io.BytesIO()
             with zipfile.ZipFile(saida, "w", zipfile.ZIP_DEFLATED) as novo:

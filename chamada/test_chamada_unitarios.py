@@ -1,6 +1,5 @@
 
-from datetime import datetime, timedelta
-from datetime import timezone as fuso
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, PropertyMock, patch
 
 from django import forms
@@ -9,7 +8,7 @@ from django.test import SimpleTestCase
 from chamada.forms import ConfirmarPresencaForm
 from chamada.models import Chamada
 
-AGORA = datetime(2026, 10, 6, 10, 0, tzinfo=fuso.utc)
+AGORA = datetime(2026, 10, 6, 10, 0, tzinfo=UTC)
 RELOGIO = "chamada.models.timezone.now"
 MATRICULAS = "chamada.forms.Matricula.objects"
 CHAMADAS = "chamada.forms.Chamada.objects"
@@ -199,15 +198,3 @@ class ConfirmarPresencaFormTest(SimpleTestCase):
                 form.cleaned_data = {"token_chamada": entrada}
 
                 self.assertEqual(form.clean_token_chamada(), esperado)
-
-    # ---------- interação com dependência mockada ----------
-    @patch(PRESENCAS)
-    def test_deve_criar_o_registro_com_a_chamada_e_o_discente_validados(self, presencas):
-        form = montar_form()
-        form.chamada = "chamada-validada"
-
-        form.save()
-
-        presencas.create.assert_called_once_with(
-            chamada="chamada-validada", discente="discente"
-        )

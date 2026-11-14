@@ -1,4 +1,5 @@
 """Troca obrigatória antes do aceite, das páginas e das operações do SIMAP."""
+
 import importlib
 from types import SimpleNamespace
 
@@ -13,7 +14,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from auditoria.models import Acao, RegistroAuditoria
-from turmas.models import Turma
+
 from .acesso import url_primeiro_acesso, url_troca_senha
 from .forms import SenhaTemporariaAdminForm
 from .models import AceiteTermos
@@ -24,22 +25,36 @@ class SenhaTemporariaTest(TestCase):
         self.senha_temporaria = "TemporariaInicial123!"
         self.senha_pessoal = "PessoalDiferente456!"
         self.usuario = get_user_model().objects.create_user(
-            username="aluna.demo", perfil="DISCENTE", password=self.senha_temporaria,
-            troca_senha_obrigatoria=True, email="aluna@example.test",
+            username="aluna.demo",
+            perfil="DISCENTE",
+            password=self.senha_temporaria,
+            troca_senha_obrigatoria=True,
+            email="aluna@example.test",
         )
         self.url = reverse("trocar_senha_temporaria")
         self.destino = reverse("core:minhas_trilhas")
 
     def entrar(self):
-        return self.client.post(reverse("login"), {
-            "username": self.usuario.username, "password": self.senha_temporaria, "next": self.destino,
-        })
+        return self.client.post(
+            reverse("login"),
+            {
+                "username": self.usuario.username,
+                "password": self.senha_temporaria,
+                "next": self.destino,
+            },
+        )
 
     def trocar(self, **alteracoes):
-        return self.client.post(self.url, {
-            "old_password": self.senha_temporaria, "new_password1": self.senha_pessoal,
-            "new_password2": self.senha_pessoal, "next": self.destino, **alteracoes,
-        })
+        return self.client.post(
+            self.url,
+            {
+                "old_password": self.senha_temporaria,
+                "new_password1": self.senha_pessoal,
+                "new_password2": self.senha_pessoal,
+                "next": self.destino,
+                **alteracoes,
+            },
+        )
 
     def test_login_encaminha_para_troca_antes_dos_termos(self):
         self.assertRedirects(self.entrar(), url_troca_senha(self.destino))
@@ -50,8 +65,13 @@ class SenhaTemporariaTest(TestCase):
         self.client.force_login(self.usuario)
         for url in (self.destino, reverse("primeiro_acesso"), reverse("admin:index"), "/entregas/anexos/999/"):
             with self.subTest(url=url):
-                self.assertRedirects(self.client.get(url), url_troca_senha(url if url != reverse("primeiro_acesso") else reverse("core:dashboard")))
-        resposta = self.client.post(reverse("primeiro_acesso"), {"aceite_termos": "on", "versao": settings.TERMOS_DE_USO_VERSAO})
+                self.assertRedirects(
+                    self.client.get(url),
+                    url_troca_senha(url if url != reverse("primeiro_acesso") else reverse("core:dashboard")),
+                )
+        resposta = self.client.post(
+            reverse("primeiro_acesso"), {"aceite_termos": "on", "versao": settings.TERMOS_DE_USO_VERSAO}
+        )
         self.assertEqual(resposta.url, url_troca_senha(reverse("core:dashboard")))
         self.assertFalse(AceiteTermos.objects.exists())
         self.assertEqual(self.client.post(self.destino, {}).status_code, 302)
@@ -86,14 +106,26 @@ class SenhaTemporariaTest(TestCase):
         self.assertFalse(self.usuario.check_password(self.senha_temporaria))
         self.assertIn("_auth_user_id", self.client.session)
         self.assertFalse(AceiteTermos.objects.filter(usuario=self.usuario).exists())
-        self.assertRedirects(self.client.post(reverse("primeiro_acesso"), {
-            "aceite_termos": "on", "versao": settings.TERMOS_DE_USO_VERSAO, "next": self.destino,
-        }), self.destino)
+        self.assertRedirects(
+            self.client.post(
+                reverse("primeiro_acesso"),
+                {
+                    "aceite_termos": "on",
+                    "versao": settings.TERMOS_DE_USO_VERSAO,
+                    "next": self.destino,
+                },
+            ),
+            self.destino,
+        )
         self.client.logout()
         self.assertFalse(self.client.login(username=self.usuario.username, password=self.senha_temporaria))
-        resposta = self.client.post(reverse("login"), {"username": self.usuario.username, "password": self.senha_pessoal, "next": self.destino})
+        resposta = self.client.post(
+            reverse("login"), {"username": self.usuario.username, "password": self.senha_pessoal, "next": self.destino}
+        )
         self.assertRedirects(resposta, self.destino)
-        registro = RegistroAuditoria.objects.filter(acao=Acao.ALTERACAO, entidade="usuarios.Usuario", objeto_id=str(self.usuario.pk)).latest("id")
+        registro = RegistroAuditoria.objects.filter(
+            acao=Acao.ALTERACAO, entidade="usuarios.Usuario", objeto_id=str(self.usuario.pk)
+        ).latest("id")
         self.assertNotIn(self.senha_pessoal, str(registro.dados))
         self.assertNotIn(self.senha_temporaria, str(registro.dados))
 
@@ -116,7 +148,9 @@ class SenhaTemporariaTest(TestCase):
         uid = urlsafe_base64_encode(force_bytes(self.usuario.pk))
         token = default_token_generator.make_token(self.usuario)
         resposta = self.client.get(reverse("password_reset_confirm", args=[uid, token]))
-        resposta = self.client.post(resposta.url, {"new_password1": self.senha_pessoal, "new_password2": self.senha_pessoal})
+        resposta = self.client.post(
+            resposta.url, {"new_password1": self.senha_pessoal, "new_password2": self.senha_pessoal}
+        )
         self.assertRedirects(resposta, reverse("password_reset_complete"))
         self.usuario.refresh_from_db()
         self.assertFalse(self.usuario.troca_senha_obrigatoria)
@@ -127,7 +161,9 @@ class SenhaTemporariaTest(TestCase):
         uid = urlsafe_base64_encode(force_bytes(self.usuario.pk))
         token = default_token_generator.make_token(self.usuario)
         resposta = self.client.get(reverse("password_reset_confirm", args=[uid, token]))
-        resposta = self.client.post(resposta.url, {"new_password1": self.senha_temporaria, "new_password2": self.senha_temporaria})
+        resposta = self.client.post(
+            resposta.url, {"new_password1": self.senha_temporaria, "new_password2": self.senha_temporaria}
+        )
         self.assertEqual(resposta.status_code, 200)
         self.assertTrue(resposta.context["form"].errors)
         self.usuario.refresh_from_db()
@@ -142,7 +178,9 @@ class SenhaTemporariaTest(TestCase):
     def test_redefinicao_pela_coordenacao_no_admin_exige_nova_troca(self):
         self.usuario.troca_senha_obrigatoria = False
         self.usuario.save()
-        formulario = SenhaTemporariaAdminForm(self.usuario, {"password1": self.senha_pessoal, "password2": self.senha_pessoal})
+        formulario = SenhaTemporariaAdminForm(
+            self.usuario, {"password1": self.senha_pessoal, "password2": self.senha_pessoal}
+        )
         self.assertTrue(formulario.is_valid(), formulario.errors)
         formulario.save()
         self.usuario.refresh_from_db()
