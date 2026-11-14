@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
-{% load comunicacao_tags l10n %}
+{% load comunicacao_tags l10n tutoria_tags %}
 {% block title %}Corrigir: {{ atividade.titulo }} - SIMAP{% endblock %}
 {% block extra_head %}{% if atividade.eh_pratica %}{% include "entregas/_editor_assets.html" %}{% endif %}{% endblock %}
 {% block content %}
+{% resumo_de_ajuda atividade as ajudas %}
 <div class="simap-pagina simap-pagina-entregas">
     <a class="simap-voltar" href="{% url 'core:atividade_list' %}?trilha={{ atividade.trilha_id }}">← Voltar para atividades</a>
     <header class="simap-cabecalho">
@@ -23,6 +24,7 @@
                         <span class="simap-entrega-aluno">
                             <strong>{{ submissao.aluno.get_full_name|default:submissao.aluno.username }}</strong>
                             <span class="simap-metadados">{{ submissao.aluno.username }} · {{ submissao.data_envio|date:"d/m/Y H:i" }}</span>
+                            {% with uso=ajudas|do_aluno:submissao.aluno_id %}{% if uso %}<span class="simap-etiqueta simap-etiqueta-privada" title="{{ uso.tipos }}{% if uso.barrados %} · {{ uso.barrados }} resposta(s) barrada(s) por entregar a solução{% endif %}">{{ uso.total }} ajuda(s) da IA{% if uso.dica_max %} · dica até nível {{ uso.dica_max }}{% endif %}</span>{% endif %}{% endwith %}
                         </span>
                         <span class="simap-entrega-situacao">
                             {% if submissao.is_atrasado %}<span class="simap-etiqueta simap-etiqueta-atraso">Entregue com atraso</span>{% else %}<span class="simap-etiqueta">No prazo</span>{% endif %}
