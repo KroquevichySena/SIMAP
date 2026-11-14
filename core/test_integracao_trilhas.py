@@ -129,7 +129,7 @@ class TrilhaListagemIntegracaoTest(TrilhaIntegracaoBase):
         resposta = self.get(LISTA)
 
         # Assert
-        self.assertEqual(resposta.status_code, 201)  # QUEBRA PROPOSITAL
+        self.assertEqual(resposta.status_code, 200)
         self.assertIn("Trilhas de Aprendizagem", resposta.text)
         self.assertIn(f"Minha trilha {sufixo}", resposta.text)
         self.assertNotIn(f"Trilha de outro professor {sufixo}", resposta.text)
