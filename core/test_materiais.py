@@ -7,8 +7,6 @@ import shutil
 import tempfile
 from datetime import timedelta
 
-from usuarios.test_helpers import registrar_aceites_atuais
-
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
@@ -16,10 +14,11 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from comunicacao.models import Notificacao
 from comunicacao.arquivos_teste import PDF_OK
+from comunicacao.models import Notificacao
 from entregas.models import Submissao
 from turmas.models import Matricula, Turma
+from usuarios.test_helpers import registrar_aceites_atuais
 
 from .models import Atividade, MaterialDeApoio, TrilhaAprendizagem
 

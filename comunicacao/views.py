@@ -11,9 +11,9 @@ from django.views.generic import ListView
 from core.models import Atividade
 
 from . import permissoes, servicos
+from .arquivos import resposta_de_download
 from .forms import PublicacaoForm, RespostaForm
 from .models import Anexo, Notificacao, Publicacao, Resposta
-from .arquivos import resposta_de_download
 
 
 def _com_anexos_e_respostas(queryset):

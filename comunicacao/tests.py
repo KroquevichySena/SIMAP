@@ -6,13 +6,11 @@ Os arquivos de teste são montados aqui mesmo, byte a byte, para cada cenário
 ser explícito: um PDF de verdade, um .exe renomeado para .pdf, um Word com
 macro etc. Os uploads vão para uma pasta temporária, apagada no final.
 """
-import io
 import hashlib
+import io
 import shutil
 import tempfile
 import zipfile
-
-from usuarios.test_helpers import registrar_aceites_atuais
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -22,14 +20,15 @@ from django.urls import reverse
 
 from core.models import Atividade, TrilhaAprendizagem
 from turmas.models import Matricula, Turma
+from usuarios.test_helpers import registrar_aceites_atuais
 
+from .arquivos_teste import PDF_OK, PNG_OK, adicionar_javascript, pdf_teste
+from .arquivos_teste import office_teste as office
 from .models import Anexo, Notificacao, Publicacao, Resposta
 from .seguranca import limpar_nome, nome_para_download, validar_anexo
 from .templatetags.comunicacao_tags import texto_com_links
 
 Usuario = get_user_model()
-
-from .arquivos_teste import PDF_OK, PNG_OK, adicionar_javascript, office_teste as office, pdf_teste
 
 EXE = b"MZ\x90\x00" + b"\x00" * 60 + b"This program cannot be run in DOS mode"
 
@@ -47,7 +46,7 @@ class ValidacaoDeAnexosTest(SimpleTestCase):
             ("relatorio.docx", office()),
             ("planilha.xlsx", office("xl/workbook.xml")),
             ("exercicio.py", b"print('ola')\n"),
-            ("Main.java", "class Main { /* acentuação */ }".encode("utf-8")),
+            ("Main.java", "class Main { /* acentuação */ }".encode()),
         ]:
             with self.subTest(nome=nome):
                 self.assertEqual(validar_anexo(arquivo(nome, conteudo)).nome_original, nome)

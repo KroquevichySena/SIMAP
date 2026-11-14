@@ -12,7 +12,6 @@ from comunicacao.models import ArquivoSeguro
 
 from . import youtube
 
-
 TIPO_TEORICA = 'TEORICA'
 TIPO_PRATICA = 'PRATICA'  # Reservado para versões futuras (exige sandbox)
 

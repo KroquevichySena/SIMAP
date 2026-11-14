@@ -1,7 +1,8 @@
 from django import forms
 
-from .models import Chamada, Registro_de_Presenca
 from turmas.models import Matricula, Turma
+
+from .models import Chamada, Registro_de_Presenca
 
 
 class AbrirChamadaForm(forms.ModelForm):
@@ -86,7 +87,7 @@ class ConfirmarPresencaForm(forms.Form):
         try:
             chamada = Chamada.objects.get(token_chamada=token, turma=turma)
         except Chamada.DoesNotExist:
-            raise forms.ValidationError("Token inválido para a turma selecionada.")
+            raise forms.ValidationError("Token inválido para a turma selecionada.") from None
 
         if not chamada.esta_valida:
             motivo = "expirou" if chamada.esta_expirada else "atingiu o limite de uso"
