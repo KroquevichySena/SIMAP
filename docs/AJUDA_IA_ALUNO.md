@@ -37,6 +37,11 @@ Os pedidos também ficam registrados na **auditoria** (sem o código nem o texto
 3. **Comentários apagados.** Os comentários do código (onde costuma vir "ignore as regras") são removidos antes de ir para a IA, mantendo os números de linha.
 4. **Conferência da resposta.** Se a resposta tiver mais de 3 linhas de código, é barrada. Nas dicas, explicações e análises, uma segunda consulta à IA responde "isto entrega a solução? SIM/NÃO". Respostas barradas são trocadas por uma orientação genérica.
 5. **Limites:** 10 pedidos por dia em cada atividade, até 2 dicas por nível e 15 segundos entre pedidos. Falhas da IA não gastam o limite.
+   Os limites valem mesmo com pedidos simultâneos (dois cliques seguidos, duas abas): o pedido é
+   **reservado de forma atômica** antes de chamar o Gemini. Uma trava por aluno coloca os pedidos
+   em fila, e a reserva ("em andamento") já conta nos limites enquanto a IA responde. Se a IA
+   falhar, a reserva vira erro e libera a vaga. Uma reserva abandonada (servidor que caiu no meio
+   da chamada) deixa de contar depois de 2 minutos.
 6. **Texto seguro na tela.** A resposta da IA é escapada (nada de HTML ou scripts) e só links `https://` viram clicáveis. As sugestões de busca do Google, que precisam ser exibidas quando a busca é usada, ficam num quadro isolado, sem scripts.
 
 Nenhuma proteção de IA é perfeita, por isso o professor vê quanto de ajuda cada aluno usou.
@@ -73,3 +78,8 @@ verificador, pseudocódigo aceito, HTML escapado, busca com fontes e sugestões 
 limites diário e de intervalo, falha da IA sem gastar limite, ajuda desligada, acesso (404,
 CSRF, professor), painel com histórico, página das teóricas, resumo na correção e a leitura da
 resposta da biblioteca do Gemini.
+
+`tutoria/test_concorrencia.py` (8 testes): segundo pedido chegando enquanto a IA responde o
+primeiro (limite diário, intervalo e dica repetida), falha da IA e erro inesperado liberando a
+vaga, reserva abandonada, reservas fora das telas e duas requisições simultâneas em threads
+reais (com limite 1, só uma é aceita).
