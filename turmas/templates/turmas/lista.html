@@ -75,6 +75,7 @@
                                     </td>
                                     {% if user.is_docente %}
                                         <td class="simap-tabela-acoes">
+                                            <a class="simap-link-acao me-3" href="{% url 'configurar_turma' turma.pk %}">Configurar turma<span class="visually-hidden"> {{ turma.nome }}</span></a>
                                             <a class="simap-link-acao" href="{% url 'matriculas_turma' turma.pk %}">
                                                 Ver alunos<span class="visually-hidden"> de {{ turma.nome }}</span>
                                                 <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">

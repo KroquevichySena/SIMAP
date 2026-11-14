@@ -1,7 +1,8 @@
 from .models import Turma, Matricula
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
-from .forms import TurmaForm, MatriculaForm
+from django.contrib import messages
+from .forms import TurmaForm, MatriculaForm, LimiteAtencaoForm
 from django.contrib.auth.decorators import login_required
 from .permissoes import docente_required
 
@@ -55,3 +56,15 @@ def alterar_status_matricula(request, pk):
     matricula.status = 'INATIVA' if matricula.status == 'ATIVA' else 'ATIVA'
     matricula.save(update_fields=['status'])
     return redirect('matriculas_turma', pk=matricula.turma_id)
+
+
+@login_required
+@docente_required
+def configurar_turma(request, pk):
+    turma = get_object_or_404(Turma, pk=pk, docente=request.user)
+    form = LimiteAtencaoForm(request.POST if request.method == 'POST' else None, instance=turma)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Limite de atenção da turma atualizado.')
+        return redirect('configurar_turma', pk=turma.pk)
+    return render(request, 'turmas/configuracoes.html', {'turma': turma, 'form': form})

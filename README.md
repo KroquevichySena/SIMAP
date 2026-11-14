@@ -51,20 +51,42 @@ discente). Após o login e o aceite dos termos, pode acessar **Usuários** no me
 para cadastrar docentes e discentes em `/contas/usuarios/`.
 
 O cadastro exige nome, sobrenome, usuário de acesso, e-mail, perfil e senha
-inicial; o RGM é obrigatório para discentes. As contas criadas nessa tela não
+temporária; o RGM é obrigatório para discentes. As contas criadas nessa tela não
 recebem privilégios administrativos. A coordenação informa as credenciais à
-pessoa por um canal privado; ela pode redefinir a senha pelo e-mail cadastrado.
+pessoa por um canal privado. No primeiro acesso, a pessoa precisa substituí-la
+por uma senha diferente; a senha temporária deixa de funcionar. A redefinição
+pelo e-mail cadastrado também permite definir essa senha pessoal. Senhas
+definidas pela coordenação no Admin também exigem a troca por uma senha pessoal.
 O professor continua responsável pelas matrículas nas próprias turmas.
 
-O login pede apenas usuário e senha. Quem ainda não aceitou a versão vigente é
+O login pede apenas usuário e senha. Quem tem troca pendente é encaminhado para
+`/contas/trocar-senha-temporaria/`, antes dos termos e das funcionalidades.
+O bloqueio também vale para sessões existentes, URLs diretas e operações POST.
+Depois da troca, quem ainda não aceitou a versão vigente é
 encaminhado a `/contas/primeiro-acesso/`, onde lê os termos e confirma o próprio
 aceite. Até isso acontecer, o sistema bloqueia também URLs diretas e operações.
 O aceite registra usuário, versão, data/hora e IP e gera registro na auditoria.
 Uma nova versão dos termos exige novo aceite, inclusive em sessões existentes.
 
 Para criar a primeira conta de coordenação, use `python manage.py createsuperuser`.
-Não atribua perfil DISCENTE à conta administrativa. Não houve alteração de
-estrutura de banco para este fluxo.
+Não atribua perfil DISCENTE à conta administrativa. Após atualizar, execute
+`python manage.py migrate`: a migração `usuarios.0003` marca os docentes e
+discentes já cadastrados para uma troca de senha única. Ela preserva as contas
+da coordenação e os aceites existentes. A senha temporária não possui prazo
+automático de expiração; a restrição é de acesso até sua substituição.
+
+## Limite de atenção da turma
+
+O docente define o **Limite de atenção (%)** ao criar a turma (padrão: 60%) e
+pode alterá-lo em **Turmas → Configurar turma**. A tela de alunos e o painel
+também têm links para essa configuração. O servidor só permite a alteração
+pelo docente responsável, aceita de 0 a 100 com uma casa decimal e mantém o
+valor anterior se o envio for inválido.
+
+O painel usa o limite para sinalizar indicadores calculáveis abaixo do percentual;
+um valor igual ao limite não gera alerta. A configuração não modifica notas e
+não é um diagnóstico automático de dificuldade. O campo já existia no modelo
+da turma, portanto essa parte não exige migração adicional.
 
 ## Validação dos arquivos enviados
 
