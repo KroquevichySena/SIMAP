@@ -1,5 +1,37 @@
 /* Editor de código das atividades práticas */
-.editor-codigo { background: #fff; }
+.editor-codigo {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+}
+.editor-codigo .editor-barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    background: var(--background);
+}
+.editor-codigo .editor-nome-arquivo {
+    margin-right: auto;
+    color: var(--muted);
+    font-family: monospace;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+.editor-codigo .simap-botao:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+.editor-codigo .editor-fonte {
+    min-height: 16rem;
+    padding: 16px;
+    font-size: 13px;
+    resize: vertical;
+}
 .editor-codigo .CodeMirror {
     height: auto;
     min-height: 16rem;
@@ -7,7 +39,7 @@
     border-bottom: 0;
 }
 .editor-codigo .CodeMirror-scroll { min-height: 16rem; max-height: 32rem; }
-.editor-codigo .CodeMirror-gutters { background: #f8f9fa; }
+.editor-codigo .CodeMirror-gutters { background: var(--background); }
 .editor-codigo .editor-saida {
     min-height: 6rem;
     max-height: 18rem;

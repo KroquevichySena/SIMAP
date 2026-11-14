@@ -1,77 +1,56 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ linha.discente.get_full_name|default:linha.discente.username }} - SIMAP{% endblock %}
 
+
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <div>
-        <h2 class="mb-0">{{ linha.discente.get_full_name|default:linha.discente.username }}</h2>
-        <span class="text-muted">{{ turma }}</span>
-    </div>
-    <div class="d-flex align-items-center gap-2">
+<div class="sm">
+    <a class="sm-voltar" href="{% url 'painel:docente' %}?turma={{ turma.pk }}">{% include 'partials/_icone.html' with nome="voltar" %}Voltar ao painel de {{ turma.nome }}</a>
+
+    <header class="sm-cabecalho">
+        <div>
+            <h1 class="sm-titulo">{{ linha.discente.get_full_name|default:linha.discente.username }}</h1>
+            <p class="sm-subtitulo">{{ turma }}{% if linha.discente.rgm %} · RGM {{ linha.discente.rgm }}{% endif %}</p>
+        </div>
         {% if linha.em_atencao %}
-            <span class="badge bg-danger fs-6">Em atenção</span>
+            <span class="sm-selo sm-selo-atencao">Em atenção</span>
         {% else %}
-            <span class="badge bg-success fs-6">OK</span>
+            <span class="sm-selo sm-selo-neutro">Dentro do limite</span>
         {% endif %}
-        <a href="{% url 'painel:docente' %}?turma={{ turma.pk }}" class="btn btn-outline-secondary">Voltar ao painel</a>
-    </div>
-</div>
+    </header>
 
-<div class="row row-cols-2 row-cols-lg-4 g-3 mb-4">
-    <div class="col">
-        <div class="card h-100 {% if 'frequencia' in linha.abaixo %}border-danger{% endif %}">
-            <div class="card-body">
-                <div class="text-muted small">Frequência</div>
-                <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=linha.frequencia %}</div>
-                <div class="small text-muted">{{ linha.faltas }} falta{{ linha.faltas|pluralize }}</div>
-            </div>
+    <section class="sm-stats">
+        <div class="sm-card sm-card-elevado sm-stat{% if 'frequencia' in linha.abaixo %} sm-stat-alerta{% endif %}">
+            <span class="sm-stat-icone sm-tom-azul">{% include 'partials/_icone.html' with nome="calendario" %}</span>
+            <div><p>Frequência</p><strong>{% include 'painel/_percentual.html' with valor=linha.frequencia %}</strong><small>{{ linha.faltas }} falta{{ linha.faltas|pluralize }}</small></div>
         </div>
-    </div>
-    <div class="col">
-        <div class="card h-100 {% if 'entregas' in linha.abaixo %}border-danger{% endif %}">
-            <div class="card-body">
-                <div class="text-muted small">Taxa de entrega</div>
-                <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=linha.entregas %}</div>
-            </div>
+        <div class="sm-card sm-card-elevado sm-stat{% if 'entregas' in linha.abaixo %} sm-stat-alerta{% endif %}">
+            <span class="sm-stat-icone sm-tom-teal">{% include 'partials/_icone.html' with nome="entregas" %}</span>
+            <div><p>Taxa de entrega</p><strong>{% include 'painel/_percentual.html' with valor=linha.entregas %}</strong></div>
         </div>
-    </div>
-    <div class="col">
-        <div class="card h-100 {% if 'progresso' in linha.abaixo %}border-danger{% endif %}">
-            <div class="card-body">
-                <div class="text-muted small">Progresso</div>
-                <div class="fs-3 fw-bold">{% include 'painel/_percentual.html' with valor=linha.progresso %}</div>
-            </div>
+        <div class="sm-card sm-card-elevado sm-stat{% if 'progresso' in linha.abaixo %} sm-stat-alerta{% endif %}">
+            <span class="sm-stat-icone sm-tom-violeta">{% include 'partials/_icone.html' with nome="progresso" %}</span>
+            <div><p>Progresso</p><strong>{% include 'painel/_percentual.html' with valor=linha.progresso %}</strong></div>
         </div>
-    </div>
-    <div class="col">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="text-muted small">Média de notas</div>
-                <div class="fs-3 fw-bold">{{ linha.media|default_if_none:"—" }}</div>
-                <div class="small text-muted">Turma: {{ resumo.media|default_if_none:"—" }}</div>
-            </div>
+        <div class="sm-card sm-card-elevado sm-stat">
+            <span class="sm-stat-icone sm-tom-ceu">{% include 'partials/_icone.html' with nome="nota" %}</span>
+            <div><p>Média de notas</p><strong>{{ linha.media|default_if_none:"—" }}</strong><small>Turma: {{ resumo.media|default_if_none:"—" }}</small></div>
         </div>
-    </div>
-</div>
+    </section>
 
-<div class="row g-3 mb-4">
-    <div class="col-lg-7">
-        <div class="card h-100">
-            <div class="card-body">
-                <h6 class="card-title">Aluno × média da turma</h6>
-                <div style="position: relative; height: 300px;">
-                    <canvas id="grafico-comparacao"></canvas>
-                </div>
+    <div class="sm-dupla">
+        <section class="sm-card sm-card-elevado sm-pad sm-form">
+            <h2 class="sm-titulo-secao">Aluno × média da turma</h2>
+            <div class="sm-grafico" style="height: 300px;">
+                <canvas id="grafico-comparacao"></canvas>
             </div>
-        </div>
-    </div>
-    <div class="col-lg-5">
-        <div class="card h-100">
-            <div class="card-body">
-                <h6 class="card-title">Presenças</h6>
-                <div class="table-responsive" style="max-height: 300px;">
-                    <table class="table table-sm align-middle mb-0">
+        </section>
+        <section class="sm-card sm-card-elevado">
+            <div class="sm-card-topo"><h2 class="sm-titulo-secao">Presenças</h2></div>
+            <div class="sm-tabela-wrap">
+                <div class="sm-rolagem">
+                    <table class="sm-tabela">
                         <thead>
                             <tr>
                                 <th>Data</th>
@@ -82,95 +61,99 @@
                         <tbody>
                             {% for item in historico.chamadas %}
                             <tr>
-                                <td>{{ item.chamada.data_expiracao|date:"d/m/Y" }}</td>
-                                <td>{{ item.chamada.token_chamada }}</td>
+                                <td class="sm-num">{{ item.chamada.data_expiracao|date:"d/m/Y" }}</td>
+                                <td><strong>{{ item.chamada.token_chamada }}</strong></td>
                                 <td>
                                     {% if item.presente %}
-                                        <span class="badge bg-success">Presente</span>
+                                        <span class="sm-selo sm-selo-sucesso">Presente</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Falta</span>
+                                        <span class="sm-selo sm-selo-perigo">Falta</span>
                                     {% endif %}
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="3" class="text-center text-muted">Nenhuma chamada encerrada desde a matrícula.</td>
+                                <td colspan="3" class="sm-vazio">Nenhuma chamada encerrada desde a matrícula.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
-</div>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <h6 class="card-title">Entregas por trilha</h6>
+    <section class="sm-card sm-card-elevado">
+        <div class="sm-card-topo"><h2 class="sm-titulo-secao">Entregas por trilha</h2></div>
         {% for item_trilha in historico.trilhas %}
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <strong>{{ item_trilha.trilha.titulo }}</strong>
-                <span class="small text-muted">Progresso: {% include 'painel/_percentual.html' with valor=item_trilha.percentual %}</span>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-sm table-striped align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Atividade</th>
-                            <th>Prazo</th>
-                            <th>Entrega</th>
-                            <th>Nota</th>
-                            <th>Feedback</th>
-                            <th class="text-end"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in item_trilha.atividades %}
-                        <tr>
-                            <td>
-                                {{ item.atividade.titulo }}
-                                {% if item.concluida %}<span class="badge bg-secondary ms-1">Concluída</span>{% endif %}
-                            </td>
-                            <td>{{ item.atividade.prazo|date:"d/m/Y"|default:"Sem prazo" }}</td>
-                            <td>
-                                {% if item.situacao == "no_prazo" %}
-                                    <span class="badge bg-success">No prazo</span>
-                                {% elif item.situacao == "atrasada" %}
-                                    <span class="badge bg-warning text-dark">Atrasada</span>
-                                {% elif item.situacao == "pendente" %}
-                                    <span class="badge bg-danger">Pendente</span>
+            <div class="sm-trilha">
+                <div class="sm-trilha-topo">
+                    <strong>{{ item_trilha.trilha.titulo }}</strong>
+                    <span class="sm-trilha-percentual">
+                        <span class="sm-progresso" style="width: 160px;"><div style="width: {{ item_trilha.percentual|default:0|stringformat:'d' }}%;"></div></span>
+                        {% include 'painel/_percentual.html' with valor=item_trilha.percentual %}
+                    </span>
+                </div>
+                <div class="sm-tabela-wrap">
+                    <table class="sm-tabela">
+                        <thead>
+                            <tr>
+                                <th>Atividade</th>
+                                <th>Prazo</th>
+                                <th>Entrega</th>
+                                <th>Nota</th>
+                                <th>Feedback</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in item_trilha.atividades %}
+                            <tr>
+                                <td>
+                                    {{ item.atividade.titulo }}
+                                    {% if item.concluida %}<span class="sm-selo sm-selo-neutro">Concluída</span>{% endif %}
+                                </td>
+                                <td class="sm-num">{{ item.atividade.prazo|date:"d/m/Y"|default:"Sem prazo" }}</td>
+                                <td>
+                                    {% if item.situacao == "no_prazo" %}
+                                        <span class="sm-selo sm-selo-sucesso">No prazo</span>
+                                    {% elif item.situacao == "atrasada" %}
+                                        <span class="sm-selo sm-selo-atencao">Atrasada</span>
+                                    {% elif item.situacao == "pendente" %}
+                                        <span class="sm-selo sm-selo-perigo">Pendente</span>
+                                    {% else %}
+                                        <span class="sm-selo sm-selo-info">Em aberto</span>
+                                    {% endif %}
+                                </td>
+                                {% if item.submissao.avaliacao_oficial %}
+                                    <td class="sm-num"><strong>{{ item.submissao.avaliacao_oficial.nota }}</strong></td>
+                                    <td>{{ item.submissao.avaliacao_oficial.feedback_professor|default:"—"|truncatechars:60 }}</td>
                                 {% else %}
-                                    <span class="badge bg-light text-dark">Em aberto</span>
+                                    <td>—</td>
+                                    <td>—</td>
                                 {% endif %}
-                            </td>
-                            {% if item.submissao.avaliacao_oficial %}
-                                <td>{{ item.submissao.avaliacao_oficial.nota }}</td>
-                                <td class="small">{{ item.submissao.avaliacao_oficial.feedback_professor|default:"—"|truncatechars:60 }}</td>
-                            {% else %}
-                                <td>—</td>
-                                <td class="small">—</td>
-                            {% endif %}
-                            <td class="text-end">
-                                {% if item.submissao %}
-                                    <a href="{% url 'entregas:corrigir' item.atividade.pk %}" class="btn btn-sm btn-outline-success">Corrigir</a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                <td style="text-align: right;">
+                                    {% if item.submissao %}
+                                        <a href="{% url 'entregas:corrigir' item.atividade.pk %}" class="sm-btn sm-btn-contorno sm-btn-pequeno">Corrigir</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         {% empty %}
-            <p class="text-muted mb-0">Nenhuma trilha publicada nesta turma.</p>
+            <p class="sm-vazio">Nenhuma trilha publicada nesta turma.</p>
         {% endfor %}
-    </div>
+    </section>
 </div>
 {% endblock %}
 
 {% block scripts %}
 {{ dados_comparacao|json_script:"dados-comparacao" }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/simap_graficos.js' %}"></script>
 <script>
     const comparacao = JSON.parse(document.getElementById("dados-comparacao").textContent);
     const rotulos = ["Frequência", "Entregas", "Progresso"];
@@ -180,13 +163,13 @@
         data: {
             labels: rotulos,
             datasets: [
-                {label: "Aluno", data: comparacao.aluno, backgroundColor: "#0d6efd"},
-                {label: "Média da turma", data: comparacao.turma, backgroundColor: "#adb5bd"},
+                {label: "Aluno", data: comparacao.aluno, backgroundColor: "#2563eb"},
+                {label: "Média da turma", data: comparacao.turma, backgroundColor: "#cbd5e1"},
                 {
                     label: "Limite de atenção",
                     type: "line",
                     data: rotulos.map(() => comparacao.limite),
-                    borderColor: "#dc3545",
+                    borderColor: "#d97706",
                     borderDash: [6, 4],
                     pointRadius: 0,
                 },

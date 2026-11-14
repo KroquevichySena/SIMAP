@@ -1,68 +1,28 @@
 {% extends 'base_publico.html' %}
-
 {% block title %}Entrar - SIMAP{% endblock %}
-
 {% block content %}
-<div class="card auth-card shadow-sm border-0 p-4" style="max-width: 420px; width: 100%;">
-    <div class="card-body">
-
-        <h1 class="text-center fw-bold mb-1" style="letter-spacing: 2px;">SIMAP</h1>
-        <div class="brand-underline mx-auto mb-3"></div>
-        <p class="text-center text-muted small mb-4">Sistema Integrado de Chamadas e Aprendizagem</p>
-
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger py-2 small">
-                {{ form.non_field_errors.0 }}
-            </div>
-        {% endif %}
-
-        <form method="post">
-            {% csrf_token %}
-
-            <div class="mb-3">
-                <label for="id_username" class="form-label fw-semibold">Usuário ou RGM</label>
-                <input type="text" name="username" id="id_username" class="form-control"
-                       placeholder="Digite seu usuário ou RGM" autofocus>
-            </div>
-
-            <div class="mb-3">
-                <label for="id_password" class="form-label fw-semibold">Senha</label>
-                <input type="password" name="password" id="id_password" class="form-control"
-                       placeholder="••••••••••">
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="lembrar">
-                    <label class="form-check-label small" for="lembrar">Lembrar acesso</label>
-                </div>
-                <a href="{% url 'password_reset' %}" class="small">Esqueceu a senha?</a>
-            </div>
-
-            <div class="form-check mb-3 mt-1">
-                <input class="form-check-input {% if form.aceite_termos.errors %}is-invalid{% endif %}"
-                       type="checkbox" name="aceite_termos" id="aceite_termos">
-                <label class="form-check-label small" for="aceite_termos">
-                    Li e aceito os
-                    <a href="{% url 'termos_de_uso' %}" target="_blank">Termos de Uso e a Política de Privacidade</a>
-                </label>
-                {% if form.aceite_termos.errors %}
-                    <div class="text-danger small mt-1">{{ form.aceite_termos.errors.0 }}</div>
-                {% endif %}
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100 fw-semibold">Entrar no Sistema</button>
-        </form>
-
-        <hr class="my-4">
-
-        <p class="text-center text-muted small mb-1">É aluno e possui código de chamada?</p>
-        <p class="text-center mb-0">
-            <a href="{% url 'chamada:confirmar_presenca' %}" class="fw-semibold">
-                Acessar Entrada Direta por Token →
-            </a>
-        </p>
-
-    </div>
-</div>
+<section class="simap-cartao simap-auth" aria-label="Acesso ao SIMAP">
+    {% include 'usuarios/_cabecalho_acesso.html' with titulo="Entre na sua conta" descricao="Acesse suas turmas e acompanhe a aprendizagem em programação." %}
+    <form method="post" class="simap-auth-form" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {% include 'usuarios/_erros_acesso.html' %}
+        <div class="simap-campo{% if form.username.errors %} simap-campo-invalido{% endif %}">
+            <label for="id_username">Usuário de acesso</label>
+            <input type="text" name="username" id="id_username" value="{{ form.username.value|default_if_none:'' }}" placeholder="Digite seu usuário" autocomplete="username" required autofocus{% if form.username.errors %} aria-invalid="true" aria-describedby="id_username_error"{% endif %}>
+            {% if form.username.errors %}<ul class="simap-erros-campo" id="id_username_error">{% for erro in form.username.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="simap-campo{% if form.password.errors %} simap-campo-invalido{% endif %}">
+            <label for="id_password">Senha</label>
+            <input type="password" name="password" id="id_password" placeholder="Digite sua senha" autocomplete="current-password" required{% if form.password.errors %} aria-invalid="true" aria-describedby="id_password_error"{% endif %}>
+            {% if form.password.errors %}<ul class="simap-erros-campo" id="id_password_error">{% for erro in form.password.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <a href="{% url 'password_reset' %}" class="simap-auth-link">Esqueceu a senha?</a>
+        <button type="submit" class="simap-botao simap-botao-primario">Entrar no sistema</button>
+    </form>
+    <aside class="simap-auth-orientacao" aria-label="Presença por código">
+        <strong>Possui um código de chamada?</strong>
+        <p>Entre com sua conta de aluno e acesse <b>Confirmar presença</b> no menu para informar o código. O código confirma sua presença; ele não substitui seu usuário e senha.</p>
+    </aside>
+</section>
 {% endblock %}

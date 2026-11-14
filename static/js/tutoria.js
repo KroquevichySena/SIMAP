@@ -44,7 +44,7 @@
 
     function escrever(texto, classe) {
       status.textContent = texto;
-      status.className = "small ajuda-status mb-2 " + (classe || "text-muted");
+      status.className = "ajuda-status simap-ajuda-ia-status " + (classe || "");
     }
 
     botoes.forEach(function (botao) {

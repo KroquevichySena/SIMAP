@@ -5,17 +5,17 @@ estudar, sem resolver o exercício por ele.
 
 ## Como o aluno usa
 
-- **Atividade prática:** o painel **🙋 Preciso de ajuda** fica embaixo do editor de código.
+- **Atividade prática:** o cartão **Ajuda da IA** (botão **Preciso de ajuda**) fica embaixo do editor de código.
 - **Atividade teórica:** o link **🙋 Preciso de ajuda** aparece em *Minhas trilhas* e abre uma página com o enunciado e o painel.
 
 O aluno **não escreve o pedido**: ele só escolhe uma ação.
 
 | Botão | O que a IA faz |
 |---|---|
-| 💡 Me dá uma dica | Dicas em níveis. **Nível 1:** perguntas que fazem pensar. **Nível 2:** aponta o conceito ou recurso da linguagem. **Nível 3:** estrutura da solução em pseudocódigo, em português. Cada nível só libera depois do anterior, e a IA recebe as dicas já dadas para não repetir. |
-| 📖 Explica o conceito | Explica o assunto com um exemplo de **outro contexto**, diferente do exercício. |
-| 🔎 Busca material | Busca na web (Google, pelo próprio Gemini) de 3 a 5 materiais, com os links das fontes. |
-| 🐞 Olha meu código | Só nas práticas. Envia o código do editor e o erro da última execução; a IA explica o erro e onde olhar, sem reescrever o código. |
+| Me dá uma dica | Dicas em níveis. **Nível 1:** perguntas que fazem pensar. **Nível 2:** aponta o conceito ou recurso da linguagem. **Nível 3:** estrutura da solução em pseudocódigo, em português. Cada nível só libera depois do anterior, e a IA recebe as dicas já dadas para não repetir. |
+| Explica o conceito | Explica o assunto com um exemplo de **outro contexto**, diferente do exercício. |
+| Busca material | Busca na web (Google, pelo próprio Gemini) de 3 a 5 materiais, com os links das fontes. |
+| Olha meu código | Só nas práticas. Envia o código do editor e o erro da última execução; a IA explica o erro e onde olhar, sem reescrever o código. |
 
 As respostas ficam guardadas e aparecem de novo quando o aluno reabre a atividade.
 

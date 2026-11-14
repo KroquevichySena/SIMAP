@@ -1,36 +1,30 @@
 {% load comunicacao_tags videos_tags %}
-<article class="card mb-3 shadow-sm{% if publicacao.privada %} border-warning{% endif %}" id="publicacao-{{ publicacao.pk }}">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-start mb-2">
-      <div>
-        <strong>{{ publicacao.autor.get_full_name|default:publicacao.autor.username }}</strong>
-        {% if publicacao.autor_id == publicacao.turma.docente_id %}<span class="badge bg-primary ms-1">Professor</span>{% endif %}
-        <div class="small text-muted">{{ publicacao.criada_em|date:"d/m/Y H:i" }}</div>
-      </div>
-      <div class="text-end">
-        {% if publicacao.privada %}
-          <span class="badge bg-warning text-dark">🔒 Privada{% if publicacao.autor_id == user.pk %} para {{ publicacao.destinatario.get_full_name|default:publicacao.destinatario.username }}{% endif %}</span>
-        {% elif publicacao.atividade_id and mostrar_atividade %}
-          <span class="badge bg-info text-dark">Atividade: {{ publicacao.atividade.titulo }}</span>
+<article class="simap-cartao simap-publicacao{% if publicacao.privada %} simap-publicacao-privada{% endif %}" id="publicacao-{{ publicacao.pk }}">
+    <div class="simap-corpo-cartao">
+        <header class="simap-publicacao-cabecalho">
+            <div>
+                <strong>{{ publicacao.autor.get_full_name|default:publicacao.autor.username }}</strong>
+                {% if publicacao.autor_id == publicacao.turma.docente_id %}<span class="simap-etiqueta simap-etiqueta-azul">Professor</span>{% endif %}
+                <time class="simap-metadados" datetime="{{ publicacao.criada_em|date:'c' }}">{{ publicacao.criada_em|date:"d/m/Y H:i" }}</time>
+            </div>
+            {% if publicacao.privada %}
+                <span class="simap-etiqueta simap-etiqueta-privada">Privada{% if publicacao.autor_id == user.pk %} para {{ publicacao.destinatario.get_full_name|default:publicacao.destinatario.username }}{% endif %}</span>
+            {% elif publicacao.atividade_id and mostrar_atividade %}
+                <span class="simap-etiqueta">Atividade: {{ publicacao.atividade.titulo }}</span>
+            {% endif %}
+        </header>
+        <div class="simap-mensagem-texto">{{ publicacao.texto|texto_com_links }}</div>
+        {% with codigos=publicacao.texto|videos_do_youtube %}{% if codigos %}{% include "core/_videos.html" %}{% endif %}{% endwith %}
+        {% include 'comunicacao/_anexos.html' with anexos=publicacao.anexos.all %}
+        {% if resumo %}
+        <div class="simap-publicacao-acoes">
+            <a href="{% url 'comunicacao:publicacao' publicacao.pk %}" class="simap-botao simap-botao-compacto simap-botao-secundario">{% if publicacao.total_respostas %}{{ publicacao.total_respostas }} resposta{{ publicacao.total_respostas|pluralize }} · {% endif %}Responder<span class="visually-hidden"> à publicação de {{ publicacao.autor.get_full_name|default:publicacao.autor.username }}</span></a>
+            {% if publicacao|pode_apagar:user %}
+            <form method="post" action="{% url 'comunicacao:publicacao_apagar' publicacao.pk %}" onsubmit="return confirm('Apagar esta publicação e todas as respostas?');" class="m-0">
+                {% csrf_token %}<button type="submit" class="simap-botao simap-botao-compacto simap-botao-perigo">Apagar<span class="visually-hidden"> publicação de {{ publicacao.autor.get_full_name|default:publicacao.autor.username }}</span></button>
+            </form>
+            {% endif %}
+        </div>
         {% endif %}
-      </div>
     </div>
-
-    <div class="mb-1" style="overflow-wrap:anywhere">{{ publicacao.texto|texto_com_links }}</div>
-    {% with codigos=publicacao.texto|videos_do_youtube %}{% if codigos %}{% include "core/_videos.html" %}{% endif %}{% endwith %}
-    {% include 'comunicacao/_anexos.html' with anexos=publicacao.anexos.all %}
-
-    {% if resumo %}
-    <div class="d-flex justify-content-between align-items-center mt-3">
-      <a href="{% url 'comunicacao:publicacao' publicacao.pk %}" class="btn btn-sm btn-outline-primary">
-        💬 {% if publicacao.total_respostas %}{{ publicacao.total_respostas }} resposta(s) · {% endif %}Responder
-      </a>
-      {% if publicacao|pode_apagar:user %}
-      <form method="post" action="{% url 'comunicacao:publicacao_apagar' publicacao.pk %}" onsubmit="return confirm('Apagar esta publicação e todas as respostas?');" class="m-0">
-        {% csrf_token %}<button class="btn btn-sm btn-link text-danger">Apagar</button>
-      </form>
-      {% endif %}
-    </div>
-    {% endif %}
-  </div>
 </article>

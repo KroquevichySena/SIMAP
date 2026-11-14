@@ -1,12 +1,12 @@
 {% load comunicacao_tags %}
-<div class="pedido-de-ajuda border rounded p-2 mb-2 {% if pedido.status == 'RESPONDIDO' %}bg-white{% else %}bg-light{% endif %}">
-    <div class="d-flex justify-content-between small text-muted mb-1">
-        <span class="fw-semibold text-body">{{ pedido.titulo }}</span>
-        <span>{{ pedido.criado_em|date:"d/m H:i" }}</span>
-    </div>
-    <div class="small" style="overflow-wrap:anywhere">{{ pedido.resposta|texto_com_links }}</div>
+<article class="simap-ajuda-ia-pedido{% if pedido.status != 'RESPONDIDO' %} simap-ajuda-ia-pedido-aviso{% endif %}">
+    <header class="simap-ajuda-ia-pedido-topo">
+        <strong>{{ pedido.titulo }}</strong>
+        <span class="simap-metadados">{{ pedido.criado_em|date:"d/m H:i" }}</span>
+    </header>
+    <div class="simap-ajuda-ia-resposta">{{ pedido.resposta|texto_com_links }}</div>
     {% if pedido.fontes %}
-        <ul class="small mb-1 mt-2 ps-3">
+        <ul class="simap-ajuda-ia-fontes">
             {% for fonte in pedido.fontes %}
                 <li><a href="{{ fonte.url }}" target="_blank" rel="noopener noreferrer nofollow">{{ fonte.titulo|default:"fonte" }}</a></li>
             {% endfor %}
@@ -14,8 +14,8 @@
     {% endif %}
     {% if pedido.sugestoes_de_busca %}
         {# Exigência do Google para respostas com busca: as sugestões aparecem num quadro isolado, sem scripts. #}
-        <iframe class="w-100 border-0 mt-1" style="height:64px" sandbox="allow-popups allow-popups-to-escape-sandbox"
+        <iframe class="simap-ajuda-ia-sugestoes" sandbox="allow-popups allow-popups-to-escape-sandbox"
                 title="Sugestões de busca do Google" srcdoc="{{ pedido.sugestoes_de_busca }}"></iframe>
     {% endif %}
-    {% if pedido.status == 'BARRADO' %}<div class="small text-muted fst-italic mt-1">A resposta da IA foi trocada por esta porque entregava a solução.</div>{% endif %}
-</div>
+    {% if pedido.status == 'BARRADO' %}<p class="simap-ajuda-ia-barrado">A resposta da IA foi trocada por esta porque entregava a solução.</p>{% endif %}
+</article>

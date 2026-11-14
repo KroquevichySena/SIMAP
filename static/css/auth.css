@@ -1,24 +1,152 @@
-:root{
-
-    --bs-primary: #0759fa;
+/* Layout público: acesso, recuperação de senha e leitura dos termos. */
+body.simap-publico {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
-
-body {
-  background-color: #f4f6fb;
+.simap-publico-conteudo {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+    padding: 40px 20px;
 }
-
-.brand-underline {
-  width: 48px;
-  height: 3px;
-  background-color: var(--bs-primary);
-  border-radius: 2px;
+.simap-publico-mensagens {
+    width: 100%;
+    max-width: 440px;
 }
-
-.auth-card {
-  border-radius: 16px;
+.simap-auth {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 440px;
+    padding: 32px;
+    overflow-wrap: anywhere;
 }
-
-.auth-card .form-control:focus {
-  border-color: var(--bs-primary);
-  box-shadow: 0 0 0 0.2rem rgba(47, 111, 237, 0.15);
+.simap-auth-marca {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 28px;
+    color: var(--foreground);
+}
+.simap-auth-marca strong {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+.simap-auth-marca span {
+    color: var(--muted);
+    font-size: 13px;
+}
+.simap-auth-cabecalho h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -.025em;
+}
+.simap-auth-cabecalho p {
+    margin: 12px 0 24px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+.simap-auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.simap-auth-form input:not([type="hidden"]):not([type="checkbox"]),
+.simap-auth-form select,
+.simap-auth-form textarea {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: var(--card);
+    color: var(--foreground);
+    font: inherit;
+}
+.simap-auth-form input:focus-visible {
+    outline: 2px solid #93c5fd;
+    outline-offset: 2px;
+    border-color: var(--primary);
+}
+.simap-auth-form .simap-campo-invalido input {
+    border-color: #dc2626;
+    background-color: #fef2f2;
+}
+.simap-auth-form .simap-campo-checkbox {
+    align-items: flex-start;
+}
+.simap-auth-form .simap-campo-checkbox input {
+    margin-top: 3px;
+}
+.simap-auth-form .simap-campo-checkbox label {
+    font-weight: 400;
+    line-height: 1.7;
+}
+.simap-auth-form .simap-ajuda-campo ul {
+    margin: 0;
+    padding-left: 18px;
+}
+.simap-auth .simap-botao {
+    width: 100%;
+}
+.simap-auth-link {
+    align-self: flex-start;
+    padding-block: 10px;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 500;
+}
+.simap-auth-orientacao {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+.simap-auth-orientacao strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #334155;
+    font-size: 13px;
+}
+.simap-auth-orientacao p {
+    margin: 0;
+}
+.simap-auth-status {
+    display: inline-block;
+    margin-bottom: 16px;
+    padding: 6px 12px;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 600;
+}
+.simap-auth-status-concluido {
+    border-color: #a7f3d0;
+    background-color: #ecfdf5;
+    color: #047857;
+}
+.simap-auth-status-invalido {
+    border-color: #fde68a;
+    background-color: #fffbeb;
+    color: #92400e;
+}
+@media (max-width: 575.98px) {
+    .simap-publico-conteudo {
+        padding: 24px 16px;
+    }
+    .simap-auth {
+        padding: 24px 20px;
+    }
 }

@@ -3,43 +3,121 @@
 {% block title %}Alunos - {{ turma.nome }} - SIMAP{% endblock %}
 
 {% block content %}
-    <h2>Alunos de {{ turma }}</h2>
-    <a href="{% url 'lista_turmas' %}" class="btn btn-secondary mb-3">Voltar</a>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Aluno</th>
-                <th>RGM</th>
-                <th>Matriculado em</th>
-                <th>Status</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for matricula in matriculas %}
-            <tr>
-                <td>{{ matricula.discente.get_full_name|default:matricula.discente }}</td>
-                <td>{{ matricula.discente.rgm|default:"N/A" }}</td>
-                <td>{{ matricula.data_matricula|date:"d/m/Y" }}</td>
-                <td>
-                    <span class="badge {% if matricula.status == 'ATIVA' %}bg-success{% else %}bg-secondary{% endif %}">
-                        {{ matricula.get_status_display }}
-                    </span>
-                </td>
-                <td>
-                    <form method="post" action="{% url 'alterar_status_matricula' matricula.pk %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                            {% if matricula.status == 'ATIVA' %}Inativar{% else %}Reativar{% endif %}
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5">Nenhum aluno matriculado nesta turma.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="simap-pagina">
+        <a class="simap-voltar" href="{% url 'lista_turmas' %}">
+            <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+            Voltar para turmas
+        </a>
+
+        <header class="simap-cabecalho">
+            <div>
+                <h1 class="simap-titulo-turma">{{ turma.nome }}</h1>
+                <p class="simap-subtitulo">Consulte os alunos vinculados e gerencie a situação de cada matrícula.</p>
+            </div>
+            {% if turma.ativa %}
+                <div class="simap-acoes">
+                    <a href="{% url 'criar_matricula' %}" class="simap-botao simap-botao-primario">
+                        <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="m16 11 2 2 4-4" />
+                        </svg>
+                        Matricular aluno
+                    </a>
+                </div>
+            {% endif %}
+        </header>
+
+        <dl class="simap-resumo-turma">
+            <div class="simap-cartao simap-resumo-item">
+                <dt>Período</dt>
+                <dd>{{ turma.periodo }}</dd>
+            </div>
+            <div class="simap-cartao simap-resumo-item">
+                <dt>Docente responsável</dt>
+                <dd>{{ turma.docente.get_full_name|default:turma.docente.username }}</dd>
+            </div>
+            <div class="simap-cartao simap-resumo-item">
+                <dt>Situação da turma</dt>
+                <dd>
+                    {% if turma.ativa %}
+                        <span class="simap-situacao simap-situacao-ativa">Ativa</span>
+                    {% else %}
+                        <span class="simap-situacao simap-situacao-inativa">Inativa</span>
+                    {% endif %}
+                </dd>
+            </div>
+            <div class="simap-cartao simap-resumo-item">
+                <dt>Criada em</dt>
+                <dd>{{ turma.data_criacao|date:"d/m/Y" }}</dd>
+            </div>
+        </dl>
+
+        <div class="simap-orientacao-matriculas">
+            <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="10" /><path d="M12 11v6m0-10h.01" />
+            </svg>
+            <p><strong>Inativar não exclui a matrícula.</strong> O aluno deixa de poder confirmar novas presenças nesta turma, e os registros anteriores são preservados.</p>
+        </div>
+
+        <section class="simap-cartao" aria-labelledby="titulo-alunos-turma">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-alunos-turma">Alunos matriculados</h2>
+                <span class="simap-contagem">{{ matriculas|length }} aluno{{ matriculas|length|pluralize }}</span>
+            </div>
+
+            {% if matriculas %}
+                <div class="simap-tabela-rolagem" role="region" aria-labelledby="titulo-alunos-turma" tabindex="0">
+                    <table class="simap-tabela">
+                        <caption class="visually-hidden">Alunos com matrículas ativas e inativas em {{ turma.nome }}.</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Aluno</th>
+                                <th scope="col">RGM</th>
+                                <th scope="col">Matriculado em</th>
+                                <th scope="col">Situação</th>
+                                <th scope="col"><span class="visually-hidden">Ações</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for matricula in matriculas %}
+                                <tr>
+                                    <th scope="row" class="simap-turma-nome">
+                                        {{ matricula.discente.get_full_name|default:matricula.discente.username }}
+                                        {% if matricula.discente.get_full_name %}
+                                            <span class="simap-turma-data">{{ matricula.discente.username }}</span>
+                                        {% endif %}
+                                    </th>
+                                    <td class="simap-rgm">{{ matricula.discente.rgm|default:"Não informado" }}</td>
+                                    <td class="simap-periodo">{{ matricula.data_matricula|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <span class="simap-situacao {% if matricula.status == 'ATIVA' %}simap-situacao-ativa{% else %}simap-situacao-inativa{% endif %}">
+                                            {{ matricula.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="simap-tabela-acoes">
+                                        <form method="post" action="{% url 'alterar_status_matricula' matricula.pk %}" class="m-0">
+                                            {% csrf_token %}
+                                            <button type="submit" class="simap-botao simap-botao-compacto {% if matricula.status == 'ATIVA' %}simap-botao-aviso{% else %}simap-botao-secundario{% endif %}">
+                                                {% if matricula.status == 'ATIVA' %}Inativar{% else %}Reativar{% endif %}<span class="visually-hidden"> matrícula de {{ matricula.discente.get_full_name|default:matricula.discente.username }}</span>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="simap-vazio">
+                    <svg class="simap-icone simap-vazio-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87" />
+                        <circle cx="9" cy="7" r="4" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    <h3>Nenhum aluno matriculado nesta turma</h3>
+                    <p>{% if turma.ativa %}Use “Matricular aluno” para vincular um discente à turma.{% else %}Esta turma está inativa e não aparece na seleção de novas matrículas.{% endif %}</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
 {% endblock %}

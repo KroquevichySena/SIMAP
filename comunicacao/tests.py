@@ -7,9 +7,12 @@ ser explícito: um PDF de verdade, um .exe renomeado para .pdf, um Word com
 macro etc. Os uploads vão para uma pasta temporária, apagada no final.
 """
 import io
+import hashlib
 import shutil
 import tempfile
 import zipfile
+
+from usuarios.test_helpers import registrar_aceites_atuais
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -26,19 +29,9 @@ from .templatetags.comunicacao_tags import texto_com_links
 
 Usuario = get_user_model()
 
-PDF_OK = b"%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\n%%EOF"
-PNG_OK = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
+from .arquivos_teste import PDF_OK, PNG_OK, adicionar_javascript, office_teste as office, pdf_teste
+
 EXE = b"MZ\x90\x00" + b"\x00" * 60 + b"This program cannot be run in DOS mode"
-
-
-def office(principal="word/document.xml", extras=()):
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as pacote:
-        pacote.writestr("[Content_Types].xml", "<Types/>")
-        pacote.writestr(principal, "<document/>")
-        for nome in extras:
-            pacote.writestr(nome, b"conteudo")
-    return buffer.getvalue()
 
 
 def arquivo(nome, conteudo):
@@ -85,7 +78,7 @@ class ValidacaoDeAnexosTest(SimpleTestCase):
             validar_anexo(arquivo("foto.png", PDF_OK))
 
     def test_bloqueia_pdf_com_javascript(self):
-        malicioso = PDF_OK.replace(b"/Catalog", b"/Catalog /OpenAction << /S /JavaScript /JS (app.alert(1)) >>")
+        malicioso = pdf_teste(adicionar_javascript)
         with self.assertRaisesMessage(ValidationError, "conteúdo ativo"):
             validar_anexo(arquivo("boleto.pdf", malicioso))
 
@@ -198,6 +191,8 @@ class ComunicacaoBase(TestCase):
         trilha = TrilhaAprendizagem.objects.create(turma=cls.turma, titulo="Módulo 1")
         cls.atividade = Atividade.objects.create(trilha=trilha, titulo="Laços", enunciado="Faça um for")
         cls.rascunho = Atividade.objects.create(trilha=trilha, titulo="Rascunho", enunciado="x", publicada=False)
+
+        registrar_aceites_atuais(Usuario.objects.all())
 
     def mural(self, turma=None):
         return reverse("comunicacao:mural", args=[(turma or self.turma).pk])
@@ -388,6 +383,27 @@ class DownloadDeAnexoTest(ComunicacaoBase):
         resposta = self.client.get(reverse("comunicacao:anexo", args=[anexo.pk]))
         self.assertEqual(resposta["Content-Type"], "text/plain")
         self.assertIn('filename="exercicio.py.txt"', resposta["Content-Disposition"])
+
+    def test_download_de_imagem_entrega_apenas_o_conteudo_reconstruido(self):
+        marcador = b"CONTEUDO-EXTRA-QUE-NAO-DEVE-SER-SALVO"
+        anexo = self.enviar("foto.png", PNG_OK + marcador)
+        self.client.force_login(self.prof)
+        resposta = self.client.get(reverse("comunicacao:anexo", args=[anexo.pk]))
+        conteudo = b"".join(resposta.streaming_content)
+        self.assertNotIn(marcador, conteudo)
+        self.assertEqual(anexo.tamanho, len(conteudo))
+        self.assertEqual(anexo.sha256, hashlib.sha256(conteudo).hexdigest())
+
+    def test_download_de_office_entrega_pacote_reconstruido(self):
+        marcador = b"CONTEUDO-EXTRA-FORA-DO-ZIP"
+        anexo = self.enviar("aula.docx", office() + marcador)
+        self.client.force_login(self.prof)
+        resposta = self.client.get(reverse("comunicacao:anexo", args=[anexo.pk]))
+        conteudo = b"".join(resposta.streaming_content)
+        self.assertNotIn(marcador, conteudo)
+        self.assertEqual(anexo.sha256, hashlib.sha256(conteudo).hexdigest())
+        with zipfile.ZipFile(io.BytesIO(conteudo)) as pacote:
+            self.assertIn("word/document.xml", pacote.namelist())
 
     def test_quem_nao_pode_ver_a_mensagem_nao_baixa_o_anexo(self):
         anexo = self.enviar("privado.pdf", PDF_OK, destinatario=self.prof.pk)

@@ -7,6 +7,8 @@ import shutil
 import tempfile
 from datetime import timedelta
 
+from usuarios.test_helpers import registrar_aceites_atuais
+
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
@@ -15,14 +17,13 @@ from django.urls import reverse
 from django.utils import timezone
 
 from comunicacao.models import Notificacao
+from comunicacao.arquivos_teste import PDF_OK
 from entregas.models import Submissao
 from turmas.models import Matricula, Turma
 
 from .models import Atividade, MaterialDeApoio, TrilhaAprendizagem
 
 Usuario = get_user_model()
-
-PDF_OK = b"%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\n%%EOF"
 
 
 class TrilhasBase(TestCase):
@@ -59,6 +60,8 @@ class TrilhasBase(TestCase):
             turma=cls.turma, titulo="Módulo 1", ordem=1, publicada=True,
             descricao="Leia https://docs.python.org/3/ antes da aula.",
         )
+
+        registrar_aceites_atuais(Usuario.objects.all())
 
     def entrar(self, usuario):
         self.client.force_login(usuario)
@@ -99,6 +102,16 @@ class MaterialDeApoioTest(TrilhasBase):
         self.assertEqual(resposta.status_code, 200)
         self.assertContains(resposta, "não é permitido")
         self.assertFalse(TrilhaAprendizagem.objects.filter(titulo="Módulo 2").exists())
+        self.assertFalse(MaterialDeApoio.objects.exists())
+
+    def test_documento_office_falso_nao_cria_atividade(self):
+        self.entrar(self.prof)
+        resposta = self.client.post(reverse("core:atividade_create"), self.dados_atividade(
+            materiais=[SimpleUploadedFile("aula.docx", b"PK\x03\x04nao e um documento Office")],
+        ))
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "corrompido")
+        self.assertFalse(Atividade.objects.exists())
         self.assertFalse(MaterialDeApoio.objects.exists())
 
     def test_material_da_atividade_e_removido_na_edicao(self):

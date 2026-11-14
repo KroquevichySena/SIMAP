@@ -24,4 +24,4 @@ class RegistroAuditoriaAdmin(admin.ModelAdmin):
         return False
 
     def has_view_permission(self, request, obj=None):
-        return request.user.is_active and request.user.is_superuser
+        return request.user.pode_consultar_auditoria

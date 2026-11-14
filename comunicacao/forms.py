@@ -36,7 +36,8 @@ class MensagemBaseForm(forms.Form):
     )
     anexos = VariosArquivosField(
         label="Anexos",
-        help_text="Até {n} arquivos de até {mb} MB: PDF, Word, Excel, PowerPoint, imagens, texto e código-fonte.".format(
+        help_text=("Até {n} arquivos de até {mb} MB: PDF sem senha, Word, Excel, PowerPoint, imagens, texto e código-fonte. "
+                   "Documentos com macros, arquivos embutidos ou conexões externas automáticas são recusados.").format(
             n=settings.COMUNICACAO_MAXIMO_ANEXOS,
             mb=settings.COMUNICACAO_TAMANHO_MAXIMO_ANEXO // (1024 * 1024),
         ),

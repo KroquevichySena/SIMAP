@@ -268,7 +268,7 @@ class TelasTest(TutoriaBase):
                                      resposta="Dica que eu já recebi.")
         self.entrar(self.aluno)
         resposta = self.client.get(reverse("entregas:resolver", args=[self.pratica.pk]))
-        self.assertContains(resposta, "🙋 Preciso de ajuda")
+        self.assertContains(resposta, "Preciso de ajuda")
         self.assertContains(resposta, 'data-tipo="CODIGO"')
         self.assertContains(resposta, "Dica que eu já recebi.")
         self.assertContains(resposta, 'data-proximo-nivel="2"')
@@ -293,7 +293,7 @@ class TelasTest(TutoriaBase):
         self.entrar(self.prof)
         with mock.patch("entregas.views.gerar_analise"):
             resposta = self.client.get(reverse("entregas:corrigir", args=[self.pratica.pk]))
-        self.assertContains(resposta, "🙋 3 ajuda(s) da IA, dica até nível 2")
+        self.assertContains(resposta, "3 ajuda(s) da IA · dica até nível 2")
         self.assertContains(resposta, "1 resposta(s) barrada(s)")
 
     def test_formulario_do_professor_controla_a_ajuda(self):

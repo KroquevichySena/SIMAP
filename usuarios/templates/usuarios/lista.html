@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Usuários - SIMAP{% endblock %}
+{% block content %}
+<div class="simap-pagina">
+    <header class="simap-cabecalho">
+        <div><h1>Usuários</h1><p class="simap-subtitulo">Cadastros de docentes e discentes gerenciados pela coordenação.</p></div>
+        <div class="simap-acoes"><a href="{% url 'usuario_criar' %}" class="simap-botao simap-botao-primario">+ Cadastrar usuário</a></div>
+    </header>
+    <form method="get" class="simap-cartao simap-filtros">
+        <div class="simap-campo">
+            <label for="f-perfil">Perfil</label>
+            <select id="f-perfil" name="perfil" class="simap-input"><option value="">Todos os perfis</option><option value="DOCENTE"{% if filtros.perfil == 'DOCENTE' %} selected{% endif %}>Docente</option><option value="DISCENTE"{% if filtros.perfil == 'DISCENTE' %} selected{% endif %}>Discente</option></select>
+        </div>
+        <div class="simap-campo"><label for="f-usuario">Buscar usuário</label><input type="search" id="f-usuario" name="q" value="{{ filtros.q }}" class="simap-input" placeholder="Nome, usuário, e-mail ou RGM"></div>
+        <button type="submit" class="simap-botao simap-botao-secundario">Filtrar</button>
+        {% if filtros.q or filtros.perfil %}<a href="{% url 'usuarios_lista' %}" class="simap-voltar">Limpar filtros</a>{% endif %}
+    </form>
+    <section class="simap-cartao" aria-labelledby="titulo-usuarios">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-usuarios">Contas cadastradas</h2><span class="simap-contagem">{{ paginator.count }} usuário{{ paginator.count|pluralize }}</span></div>
+        {% if usuarios %}
+        <div class="simap-tabela-rolagem" role="region" aria-labelledby="titulo-usuarios" tabindex="0">
+            <table class="simap-tabela">
+                <caption class="visually-hidden">Contas de docentes e discentes, sem contas administrativas.</caption>
+                <thead><tr><th scope="col">Nome / usuário</th><th scope="col">Perfil</th><th scope="col">E-mail</th><th scope="col">RGM</th><th scope="col">Situação</th></tr></thead>
+                <tbody>{% for conta in usuarios %}
+                    <tr>
+                        <th scope="row" class="simap-turma-nome">{{ conta.get_full_name|default:conta.username }}<span class="simap-turma-data">{{ conta.username }}</span></th>
+                        <td><span class="simap-etiqueta{% if conta.is_docente %} simap-etiqueta-azul{% endif %}">{{ conta.get_perfil_display }}</span></td>
+                        <td>{{ conta.email|default:"Não informado" }}</td><td class="simap-rgm">{{ conta.rgm|default:"—" }}</td>
+                        <td><span class="simap-situacao {% if conta.is_active %}simap-situacao-ativa{% else %}simap-situacao-inativa{% endif %}">{% if conta.is_active %}Ativa{% else %}Inativa{% endif %}</span></td>
+                    </tr>
+                {% endfor %}</tbody>
+            </table>
+        </div>
+        {% else %}<div class="simap-vazio"><h3>Nenhum usuário encontrado</h3><p>Cadastre uma conta ou ajuste os filtros para consultar docentes e discentes.</p></div>{% endif %}
+    </section>
+    {% if is_paginated %}
+    <nav class="simap-paginacao" aria-label="Paginação de usuários">
+        {% if page_obj.has_previous %}<a class="simap-botao simap-botao-secundario" href="?{{ filtros_url }}{% if filtros_url %}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}
+        <span aria-current="page">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a class="simap-botao simap-botao-secundario" href="?{{ filtros_url }}{% if filtros_url %}&amp;{% endif %}page={{ page_obj.next_page_number }}">Próxima</a>{% endif %}
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

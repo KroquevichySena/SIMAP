@@ -12,6 +12,8 @@ telas, e ninguém acessa o que é de outra pessoa trocando o ID na URL.
 """
 from datetime import timedelta
 
+from usuarios.test_helpers import registrar_aceites_atuais
+
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
 from django.test import TestCase
@@ -67,6 +69,8 @@ class BaseSIMAPTestCase(TestCase):
             ordem=1,
             publicada=True,
         )
+
+        registrar_aceites_atuais(Usuario.objects.all())
 
 
 class ModeloTrilhaTests(BaseSIMAPTestCase):

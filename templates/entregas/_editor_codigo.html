@@ -10,19 +10,19 @@ Parâmetros:
   url_rascunho   onde salvar o rascunho (vazio = não salva)
 {% endcomment %}
 {% load static editor_tags %}
-<div class="editor-codigo border rounded" data-editor-codigo
+<div class="editor-codigo" data-editor-codigo
      data-pyodide-url="{% pyodide_url %}"
      data-worker-url="{% static 'js/python_worker.js' %}"
      data-sandbox-url="{% static 'js/python_sandbox.js' %}"
      data-casos="casos-{{ sufixo }}"
      {% if url_rascunho %}data-url-rascunho="{{ url_rascunho }}"{% endif %}
      {% if somente_leitura %}data-somente-leitura="1"{% endif %}>
-    <div class="editor-barra d-flex flex-wrap align-items-center gap-2 px-2 py-1 border-bottom bg-light">
-        <span class="font-monospace small text-muted me-auto">seu_codigo.py</span>
+    <div class="editor-barra">
+        <span class="editor-nome-arquivo">seu_codigo.py{% if somente_leitura %} · Somente leitura{% endif %}</span>
         <span class="editor-status small text-muted" aria-live="polite"></span>
-        <button type="button" class="btn btn-sm btn-success editor-executar">▶ Executar</button>
-        <button type="button" class="btn btn-sm btn-outline-danger editor-parar" disabled>■ Parar</button>
-        {% if casos %}<button type="button" class="btn btn-sm btn-outline-primary editor-testar">🧪 Testar casos ({{ casos|length }})</button>{% endif %}
+        <button type="button" class="simap-botao simap-botao-compacto simap-botao-primario editor-executar">Executar</button>
+        <button type="button" class="simap-botao simap-botao-compacto simap-botao-perigo editor-parar" disabled>Parar</button>
+        {% if casos %}<button type="button" class="simap-botao simap-botao-compacto simap-botao-secundario editor-testar">Testar casos ({{ casos|length }})</button>{% endif %}
     </div>
     <textarea class="editor-fonte form-control font-monospace border-0 rounded-0" rows="14" spellcheck="false"
               {% if nome_campo %}name="{{ nome_campo }}" required{% endif %}

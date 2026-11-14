@@ -1,126 +1,90 @@
 {% extends 'base.html' %}
-
 {% block title %}Auditoria - SIMAP{% endblock %}
-
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <h2 class="mb-0">Auditoria</h2>
-        <small class="text-muted">Acessos e ações dos usuários. Consulta restrita à coordenação.</small>
-    </div>
-    <a href="?{{ filtros_url }}{% if filtros_url %}&{% endif %}formato=csv" class="btn btn-outline-secondary">Exportar CSV</a>
+<div class="simap-pagina simap-pagina-auditoria">
+    <header class="simap-cabecalho">
+        <div><h1>Auditoria</h1><p class="simap-subtitulo">Consulte os acessos e as ações dos usuários. Área restrita à coordenação.</p></div>
+        <div class="simap-acoes"><a href="?{{ filtros_url }}{% if filtros_url %}&amp;{% endif %}formato=csv" class="simap-botao simap-botao-secundario">Exportar CSV</a></div>
+    </header>
+    <section class="simap-cartao" aria-labelledby="titulo-filtros-auditoria">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-filtros-auditoria">Filtrar registros</h2><span class="simap-contagem">Combine os filtros para refinar a consulta.</span></div>
+        <form method="get" class="simap-formulario">
+            <div class="simap-auditoria-filtros">
+                <div class="simap-campo">
+                    <label for="f-acao">Ação</label>
+                    <select name="acao" id="f-acao" class="simap-input">
+                        <option value="">Todas as ações</option>
+                        {% for valor, rotulo in acoes %}<option value="{{ valor }}"{% if filtros.acao == valor %} selected{% endif %}>{{ rotulo }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="simap-campo">
+                    <label for="f-usuario">Usuário</label>
+                    <input type="text" name="usuario" id="f-usuario" value="{{ filtros.usuario }}" class="simap-input" placeholder="Login do usuário">
+                </div>
+                <div class="simap-campo">
+                    <label for="f-entidade">Entidade</label>
+                    <input type="text" name="entidade" id="f-entidade" value="{{ filtros.entidade }}" class="simap-input" placeholder="Ex.: Atividade">
+                </div>
+                <div class="simap-campo">
+                    <label for="f-de">Data inicial</label>
+                    <input type="date" name="de" id="f-de" value="{{ filtros.de }}" class="simap-input">
+                </div>
+                <div class="simap-campo">
+                    <label for="f-ate">Data final</label>
+                    <input type="date" name="ate" id="f-ate" value="{{ filtros.ate }}" class="simap-input">
+                </div>
+                <div class="simap-campo">
+                    <label for="f-ip">Endereço IP</label>
+                    <input type="text" name="ip" id="f-ip" value="{{ filtros.ip }}" class="simap-input" placeholder="Ex.: 192.0.2.10">
+                </div>
+            </div>
+            <div class="simap-campo">
+                <label for="f-q">Buscar nos registros</label>
+                <input type="search" name="q" id="f-q" value="{{ filtros.q }}" class="simap-input" placeholder="Descrição, objeto ou caminho">
+            </div>
+            <div class="simap-formulario-acoes">
+                <button type="submit" class="simap-botao simap-botao-primario">Filtrar</button>
+                <a href="{% url 'auditoria:registro_list' %}" class="simap-botao simap-botao-secundario">Limpar filtros</a>
+            </div>
+        </form>
+    </section>
+    <section class="simap-cartao" aria-labelledby="titulo-registros">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-registros">Histórico de ações</h2><span class="simap-contagem">{{ paginator.count }} registro{{ paginator.count|pluralize }} encontrado{{ paginator.count|pluralize }}</span></div>
+        {% if registros %}
+        <div class="simap-tabela-rolagem" role="region" aria-labelledby="titulo-registros" tabindex="0">
+            <table class="simap-tabela simap-tabela-auditoria">
+                <caption class="visually-hidden">Registros de auditoria, do mais recente para o mais antigo, conforme os filtros aplicados.</caption>
+                <thead><tr><th scope="col">Data e hora</th><th scope="col">Ação</th><th scope="col">Usuário</th><th scope="col">Objeto</th><th scope="col">Descrição</th><th scope="col">Origem</th></tr></thead>
+                <tbody>
+                    {% for r in registros %}
+                    <tr>
+                        <td class="simap-periodo"><time datetime="{{ r.data_hora|date:'c' }}">{{ r.data_hora|date:"d/m/Y H:i:s" }}</time></td>
+                        <td><span class="simap-etiqueta{% if r.acao == 'ACESSO_NEGADO' or r.acao == 'LOGIN_FALHA' %} simap-auditoria-critica{% elif r.acao == 'EXCLUSAO' or r.acao == 'EXPURGO' %} simap-auditoria-aviso{% elif r.acao == 'CRIACAO' or r.acao == 'ALTERACAO' %} simap-etiqueta-azul{% endif %}">{{ r.get_acao_display }}</span></td>
+                        <th scope="row" class="simap-auditoria-usuario">{{ r.origem }}</th>
+                        <td class="simap-auditoria-objeto">{% if r.entidade %}<span class="simap-metadados">{{ r.entidade }} #{{ r.objeto_id }}</span>{{ r.objeto_repr }}{% else %}—{% endif %}</td>
+                        <td class="simap-auditoria-descricao">
+                            {{ r.descricao|default:"—" }}
+                            {% if r.dados %}
+                            <details class="simap-auditoria-detalhes">
+                                <summary>Ver detalhes</summary>
+                                <pre>{{ r.dados|pprint }}</pre>
+                            </details>
+                            {% endif %}
+                        </td>
+                        <td class="simap-periodo">{{ r.ip|default:"—" }}{% if r.metodo %}<span class="simap-metadados">{{ r.metodo }} {{ r.status_http|default:"" }}</span>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}<div class="simap-vazio"><h3>Nenhum registro encontrado.</h3><p>Tente ajustar ou limpar os filtros para consultar outros registros.</p></div>{% endif %}
+    </section>
+    {% if is_paginated %}
+    <nav class="simap-paginacao" aria-label="Paginação da auditoria">
+        {% if page_obj.has_previous %}<a class="simap-botao simap-botao-secundario" href="?{{ filtros_url }}{% if filtros_url %}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}
+        <span aria-current="page">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a class="simap-botao simap-botao-secundario" href="?{{ filtros_url }}{% if filtros_url %}&amp;{% endif %}page={{ page_obj.next_page_number }}">Próxima</a>{% endif %}
+    </nav>
+    {% endif %}
 </div>
-
-<form method="get" class="card card-body mb-3">
-    <div class="row g-2">
-        <div class="col-md-2">
-            <label class="form-label small mb-1" for="f-acao">Ação</label>
-            <select name="acao" id="f-acao" class="form-select form-select-sm">
-                <option value="">Todas</option>
-                {% for valor, rotulo in acoes %}
-                    <option value="{{ valor }}" {% if filtros.acao == valor %}selected{% endif %}>{{ rotulo }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label small mb-1" for="f-usuario">Usuário</label>
-            <input type="text" name="usuario" id="f-usuario" value="{{ filtros.usuario }}" class="form-control form-control-sm" placeholder="login">
-        </div>
-        <div class="col-md-2">
-            <label class="form-label small mb-1" for="f-entidade">Entidade</label>
-            <input type="text" name="entidade" id="f-entidade" value="{{ filtros.entidade }}" class="form-control form-control-sm" placeholder="ex.: Atividade">
-        </div>
-        <div class="col-md-2">
-            <label class="form-label small mb-1" for="f-de">De</label>
-            <input type="date" name="de" id="f-de" value="{{ filtros.de }}" class="form-control form-control-sm">
-        </div>
-        <div class="col-md-2">
-            <label class="form-label small mb-1" for="f-ate">Até</label>
-            <input type="date" name="ate" id="f-ate" value="{{ filtros.ate }}" class="form-control form-control-sm">
-        </div>
-        <div class="col-md-2">
-            <label class="form-label small mb-1" for="f-ip">IP</label>
-            <input type="text" name="ip" id="f-ip" value="{{ filtros.ip }}" class="form-control form-control-sm">
-        </div>
-        <div class="col-md-8">
-            <input type="text" name="q" value="{{ filtros.q }}" class="form-control form-control-sm" placeholder="Buscar na descrição, objeto ou caminho">
-        </div>
-        <div class="col-md-4 d-flex gap-2">
-            <button type="submit" class="btn btn-sm btn-primary flex-grow-1">Filtrar</button>
-            <a href="{% url 'auditoria:registro_list' %}" class="btn btn-sm btn-outline-secondary">Limpar</a>
-        </div>
-    </div>
-</form>
-
-<p class="small text-muted mb-2">{{ paginator.count }} registro{{ paginator.count|pluralize }} encontrado{{ paginator.count|pluralize }}.</p>
-
-<div class="table-responsive">
-    <table class="table table-sm table-striped align-middle small">
-        <thead>
-            <tr>
-                <th>Data e hora</th>
-                <th>Ação</th>
-                <th>Usuário</th>
-                <th>Objeto</th>
-                <th>Descrição</th>
-                <th>Origem</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for r in registros %}
-            <tr>
-                <td class="text-nowrap">{{ r.data_hora|date:"d/m/Y H:i:s" }}</td>
-                <td>
-                    {% if r.acao == 'ACESSO_NEGADO' or r.acao == 'LOGIN_FALHA' %}
-                        <span class="badge bg-danger">{{ r.get_acao_display }}</span>
-                    {% elif r.acao == 'EXCLUSAO' or r.acao == 'EXPURGO' %}
-                        <span class="badge bg-warning text-dark">{{ r.get_acao_display }}</span>
-                    {% elif r.acao == 'CRIACAO' or r.acao == 'ALTERACAO' %}
-                        <span class="badge bg-primary">{{ r.get_acao_display }}</span>
-                    {% else %}
-                        <span class="badge bg-secondary">{{ r.get_acao_display }}</span>
-                    {% endif %}
-                </td>
-                <td>{{ r.origem }}</td>
-                <td>
-                    {% if r.entidade %}
-                        <span class="text-muted">{{ r.entidade }} #{{ r.objeto_id }}</span><br>{{ r.objeto_repr }}
-                    {% else %}—{% endif %}
-                </td>
-                <td>
-                    {{ r.descricao }}
-                    {% if r.dados %}
-                        <details>
-                            <summary class="text-primary">detalhes</summary>
-                            <pre class="mb-0 small bg-white border rounded p-2">{{ r.dados|pprint }}</pre>
-                        </details>
-                    {% endif %}
-                </td>
-                <td class="text-nowrap">
-                    {{ r.ip|default:"—" }}
-                    {% if r.metodo %}<br><span class="text-muted">{{ r.metodo }} {{ r.status_http|default:"" }}</span>{% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" class="text-center text-muted">Nenhum registro encontrado.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-{% if is_paginated %}
-<nav aria-label="Paginação">
-    <ul class="pagination pagination-sm">
-        {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?{{ filtros_url }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
-        {% endif %}
-        <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
-        {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?{{ filtros_url }}&page={{ page_obj.next_page_number }}">Próxima</a></li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
 {% endblock %}

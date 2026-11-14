@@ -1,11 +1,18 @@
+import secrets
+from datetime import timedelta
+
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+
+LETRAS_DO_CODIGO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 
 
 class Chamada(models.Model):
     """Modelo usado para gerar
       chamadas dentro do Simap"""
+
+    CICLOS = [(15, "15 segundos"), (30, "30 segundos"), (45, "45 segundos"), (60, "60 segundos")]
 
     turma = models.ForeignKey(
         "turmas.Turma",
@@ -22,6 +29,9 @@ class Chamada(models.Model):
         default=1,
         help_text="Quantidade máxima de alunos que podem confirmar presença com este token.",
     )
+    ciclo_segundos = models.PositiveSmallIntegerField("Tempo do QR code", choices=CICLOS, default=30)
+    renovacoes = models.PositiveSmallIntegerField(default=0)
+    finalizada_em = models.DateTimeField("Finalizada em", null=True, blank=True)
 
     class Meta:
         verbose_name = "chamada"
@@ -43,10 +53,48 @@ class Chamada(models.Model):
     def esta_valida(self):
         return not self.esta_expirada and not self.vagas_esgotadas
 
+    @property
+    def qr_aberto(self):
+        return self.finalizada_em is None and not self.esta_expirada
+
+    @staticmethod
+    def gerar_token():
+        while True:
+            token = "".join(secrets.choice(LETRAS_DO_CODIGO) for _ in range(6))
+            if not Chamada.objects.filter(token_chamada=token).exists():
+                return token
+
+    def iniciar_ciclo(self):
+        """Gera um código novo e conta o tempo do QR a partir de agora."""
+        self.token_chamada = self.gerar_token()
+        self.data_expiracao = timezone.now() + timedelta(seconds=self.ciclo_segundos)
+
+    def renovar(self):
+        self.iniciar_ciclo()
+        self.renovacoes += 1
+        self.save(update_fields=["token_chamada", "data_expiracao", "renovacoes"])
+
+    def finalizar(self):
+        agora = timezone.now()
+        self.finalizada_em = agora
+        if self.data_expiracao > agora:
+            self.data_expiracao = agora
+        self.save(update_fields=["finalizada_em", "data_expiracao"])
+
 
 class Registro_de_Presenca(models.Model):
     """ Modelo usado para registrar a 
     presença dos alunos nas chamadas"""
+
+    CONFIRMADA = "CONFIRMADA"
+    EM_ANALISE = "EM_ANALISE"
+    RECUSADA = "RECUSADA"
+    SITUACOES = [
+        (CONFIRMADA, "Confirmada"),
+        (EM_ANALISE, "Em análise"),
+        (RECUSADA, "Recusada"),
+    ]
+    ORIGENS = [("QR", "QR code"), ("CODIGO", "Código digitado")]
 
     chamada = models.ForeignKey(
         Chamada,
@@ -62,6 +110,11 @@ class Registro_de_Presenca(models.Model):
     )
 
     data_registro = models.DateTimeField("Registro em", auto_now_add=True)
+    situacao = models.CharField(max_length=10, choices=SITUACOES, default=CONFIRMADA)
+    motivo = models.CharField(max_length=200, blank=True)
+    origem = models.CharField(max_length=6, choices=ORIGENS, default="CODIGO")
+    distancia_m = models.PositiveIntegerField("Distância até a instituição (m)", null=True, blank=True)
+    dispositivo = models.CharField(max_length=36, blank=True)
 
     class Meta:
         verbose_name = "Registro de Presenca"

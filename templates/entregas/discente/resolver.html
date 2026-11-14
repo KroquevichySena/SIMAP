@@ -1,60 +1,57 @@
 {% extends 'base.html' %}
 {% load comunicacao_tags videos_tags tutoria_tags %}
-
 {% block title %}{{ atividade.titulo }} - SIMAP{% endblock %}
-
 {% block extra_head %}{% include "entregas/_editor_assets.html" %}{% endblock %}
-
 {% block content %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb small">
-        <li class="breadcrumb-item"><a href="{% url 'core:minhas_trilhas' %}#atividade-{{ atividade.pk }}">Minhas trilhas</a></li>
-        <li class="breadcrumb-item">{{ atividade.trilha.titulo }}</li>
-        <li class="breadcrumb-item active" aria-current="page">{{ atividade.titulo }}</li>
-    </ol>
-</nav>
-
-<div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-    <h3 class="mb-0 me-auto">💻 {{ atividade.titulo }}</h3>
-    {% if atividade.prazo %}<span class="badge bg-warning text-dark">Prazo: {{ atividade.prazo }}</span>{% endif %}
-    {% if submissao %}
-        <span class="badge bg-info text-dark">Resposta enviada</span>
-        {% if submissao.avaliacao_oficial %}<span class="badge bg-success">Nota: {{ submissao.avaliacao_oficial.nota }}</span>{% endif %}
-    {% endif %}
-</div>
-
-<div class="card mb-3">
-    <div class="card-body py-2" style="overflow-wrap:anywhere">
-        {{ atividade.enunciado|texto_com_links }}
-        {% if atividade.materiais.all %}{% include "core/_materiais.html" with materiais=atividade.materiais.all %}{% endif %}
-        {% if atividade.videos.all %}{% include "core/_videos.html" with codigos=atividade.videos.all|codigos_dos_videos %}{% endif %}
+<div class="simap-pagina simap-pagina-entregas">
+    <a class="simap-voltar" href="{% url 'core:minhas_trilhas' %}#atividade-{{ atividade.pk }}">← Voltar para minhas trilhas</a>
+    <header class="simap-cabecalho">
+        <div><h1>{{ atividade.titulo }}</h1><p class="simap-subtitulo">{{ atividade.trilha.turma.nome }} · {{ atividade.trilha.titulo }}</p></div>
+        <div class="simap-acoes"><a href="{% url 'comunicacao:atividade' atividade.pk %}" class="simap-botao simap-botao-secundario">Tirar dúvidas</a></div>
+    </header>
+    <div class="simap-entrega-situacao">
+        {% if atividade.prazo %}<span class="simap-etiqueta">Prazo: {{ atividade.prazo|date:"d/m/Y H:i" }}</span>{% else %}<span class="simap-etiqueta">Sem prazo de entrega</span>{% endif %}
+        {% if submissao %}
+            <span class="simap-situacao simap-situacao-ativa">Resposta enviada</span>
+            {% if submissao.avaliacao_oficial %}<span class="simap-etiqueta simap-etiqueta-azul">Nota: {{ submissao.avaliacao_oficial.nota }}</span>{% else %}<span class="simap-etiqueta">Aguardando avaliação</span>{% endif %}
+        {% else %}<span class="simap-etiqueta simap-etiqueta-azul">Em elaboração</span>{% endif %}
     </div>
-</div>
-
-{% if submissao %}
-    <p class="small text-muted mb-2">Esta é a resposta que você entregou. Você ainda pode executá-la, mas não alterá-la.</p>
-    {% include "entregas/_editor_codigo.html" with sufixo="aluno" codigo=codigo somente_leitura="1" casos=casos %}
-    {% for anexo in submissao.anexos.all %}
-        <div class="small mt-2"><a href="{% url 'entregas:baixar_anexo' anexo.pk %}">📎 {{ anexo.nome_original }}</a> <span class="text-muted">({{ anexo.tamanho_legivel }})</span></div>
-    {% endfor %}
-{% else %}
-    <form method="POST" action="{% url 'entregas:submeter' atividade.pk %}" enctype="multipart/form-data" id="form-entrega">
-        {% csrf_token %}
-        {% include "entregas/_editor_codigo.html" with sufixo="aluno" codigo=codigo nome_campo="resposta_texto" casos=casos url_rascunho=url_rascunho %}
-        <div class="d-flex flex-wrap align-items-end gap-2 mt-3">
-            <div class="me-auto">
-                <label class="form-label small text-muted mb-1" for="anexos">Anexar arquivos (opcional)</label>
-                <input type="file" name="anexos" id="anexos" class="form-control form-control-sm" multiple accept="{{ extensoes_aceitas }}">
-            </div>
-            <a href="{% url 'comunicacao:atividade' atividade.pk %}" class="btn btn-outline-secondary">💬 Dúvidas</a>
-            <button type="submit" class="btn btn-primary"
-                    onclick="return confirm('Depois de entregar não dá para mudar o código. Entregar agora?')">Entregar resposta</button>
+    <section class="simap-cartao" aria-labelledby="titulo-enunciado">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-enunciado">O que foi pedido</h2></div>
+        <div class="simap-corpo-cartao">
+            {{ atividade.enunciado|texto_com_links }}
+            {% if atividade.materiais.all %}{% include "core/_materiais.html" with materiais=atividade.materiais.all %}{% endif %}
+            {% if atividade.videos.all %}{% include "core/_videos.html" with codigos=atividade.videos.all|codigos_dos_videos %}{% endif %}
         </div>
-        <p class="small text-muted mt-2 mb-0">O rascunho é salvo sozinho enquanto você escreve{% if rascunho %} (último: {{ rascunho.atualizado_em|date:"d/m H:i" }}){% endif %}.</p>
-    </form>
-{% endif %}
-
-{% painel_de_ajuda atividade com_codigo=True %}
+    </section>
+    <section class="simap-cartao" aria-labelledby="titulo-resposta">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-resposta">{% if submissao %}Sua resposta entregue{% else %}Sua resposta{% endif %}</h2><span class="simap-contagem">Python</span></div>
+        <div class="simap-corpo-cartao simap-entrega-editor">
+            {% if submissao %}
+                <p class="simap-nota-editor">Esta é a resposta que você entregou. Você ainda pode executá-la, mas não alterá-la.</p>
+                {% include "entregas/_editor_codigo.html" with sufixo="aluno" codigo=codigo somente_leitura="1" casos=casos %}
+                {% include "entregas/_anexos.html" with anexos=submissao.anexos.all %}
+            {% else %}
+                <p class="simap-nota-editor">Escreva e execute seu código. Use os casos de teste disponíveis para conferir a saída antes de entregar.</p>
+                <form method="post" action="{% url 'entregas:submeter' atividade.pk %}" enctype="multipart/form-data" id="form-entrega" class="simap-form-entrega">
+                    {% csrf_token %}
+                    {% include "entregas/_editor_codigo.html" with sufixo="aluno" codigo=codigo nome_campo="resposta_texto" casos=casos url_rascunho=url_rascunho %}
+                    <p class="simap-ajuda-campo">O rascunho é salvo sozinho enquanto você escreve{% if rascunho %} (último: {{ rascunho.atualizado_em|date:"d/m H:i" }}){% endif %}.</p>
+                    <div class="simap-campo">
+                        <label for="anexos">Anexar arquivos (opcional)</label>
+                        <input type="file" name="anexos" id="anexos" class="simap-input" multiple accept="{{ extensoes_aceitas }}">
+                        <p class="small text-muted">Até 5 arquivos de 10 MB cada. PDF sem senha e documentos sem macros, arquivos embutidos ou conexões externas automáticas.</p>
+                    </div>
+                    <p class="simap-nota-editor">Depois de entregar, sua resposta fica disponível apenas para consulta e execução.</p>
+                    <div class="simap-formulario-acoes">
+                        <button type="submit" class="simap-botao simap-botao-primario" onclick="return confirm('Depois de entregar não dá para mudar o código. Entregar agora?')">Entregar resposta</button>
+                        <a href="{% url 'core:minhas_trilhas' %}#atividade-{{ atividade.pk }}" class="simap-botao simap-botao-secundario">Voltar para trilhas</a>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </section>
+    {% painel_de_ajuda atividade com_codigo=True %}
+</div>
 {% endblock %}
-
 {% block scripts %}{% include "entregas/_editor_scripts.html" %}{% endblock %}

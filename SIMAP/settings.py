@@ -61,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     # A auditoria vem depois da autenticação porque precisa saber quem é o usuário
     "auditoria.middleware.AuditoriaMiddleware",
+    "usuarios.middleware.AceiteTermosMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -136,7 +137,7 @@ PASSWORD_RESET_TIMEOUT = 60 * 60
 
 # Versão vigente dos Termos de Uso e Política de Privacidade.
 # Fonte única: alimenta o texto exibido em usuarios/termos_de_uso.html e a
-# checagem de reaceite em usuarios/forms.py (LoginComTermosForm).
+# checagem de reaceite no primeiro acesso e no middleware de usuários.
 TERMOS_DE_USO_VERSAO = "1.2"
 
 # Idioma e fuso horário.

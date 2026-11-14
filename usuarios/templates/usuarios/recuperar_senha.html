@@ -1,14 +1,14 @@
-{% extends 'base.html' %}
-
+{% extends 'base_publico.html' %}
 {% block title %}Recuperar senha - SIMAP{% endblock %}
-
 {% block content %}
-    <h2>Recuperar senha</h2>
-    <p>Informe seu e-mail cadastrado. Enviaremos um link para redefinir sua senha.</p>
-
-    <form method="post">
+<section class="simap-cartao simap-auth" aria-label="Recuperação de senha">
+    {% include 'usuarios/_cabecalho_acesso.html' with titulo="Recuperar senha" descricao="Informe seu e-mail cadastrado. Enviaremos um link para redefinir sua senha." %}
+    <form method="post" class="simap-auth-form" novalidate>
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Enviar link de recuperação</button>
+        {% include 'usuarios/_erros_acesso.html' %}
+        {% for campo in form %}{% include 'partials/_campo_formulario.html' %}{% endfor %}
+        <button type="submit" class="simap-botao simap-botao-primario">Enviar link de recuperação</button>
+        <a href="{% url 'login' %}" class="simap-botao simap-botao-secundario">Voltar para o login</a>
     </form>
+</section>
 {% endblock %}

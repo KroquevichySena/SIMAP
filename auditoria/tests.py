@@ -5,6 +5,8 @@ from datetime import timedelta
 from io import StringIO
 from unittest import mock
 
+from usuarios.test_helpers import registrar_aceites_atuais
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
@@ -45,6 +47,8 @@ class BaseAuditoriaTestCase(TestCase):
             trilha=cls.trilha, titulo="Exercício 1", enunciado="Descreva."
         )
 
+        registrar_aceites_atuais(Usuario.objects.all())
+
     def setUp(self):
         # Descarta os registros gerados pela montagem do cenário.
         RegistroAuditoria.objects.all().delete()
@@ -84,19 +88,27 @@ class AutenticacaoTests(BaseAuditoriaTestCase):
 
 
 class AceiteDosTermosTests(BaseAuditoriaTestCase):
-    """O login pela tela do SIMAP exige aceitar os termos, e o aceite fica registrado."""
+    """A autenticação leva ao primeiro acesso, onde o próprio usuário aceita."""
 
     url = reverse("login")
 
-    def test_login_sem_aceitar_os_termos_e_barrado(self):
+    def setUp(self):
+        super().setUp()
+        AceiteTermos.objects.filter(usuario=self.docente).delete()
+
+    def test_login_sem_aceitar_encaminha_para_primeiro_acesso(self):
         resposta = self.client.post(self.url, {"username": "prof.ana", "password": SENHA})
-        self.assertEqual(resposta.status_code, 200)  # a tela volta com o erro
-        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertEqual(resposta.status_code, 302)
+        self.assertIn(reverse("primeiro_acesso"), resposta.url)
+        self.assertIn("_auth_user_id", self.client.session)
         self.assertFalse(AceiteTermos.objects.filter(usuario=self.docente).exists())
 
     def test_aceite_e_gravado_com_a_versao_e_entra_na_auditoria(self):
         self.client.post(self.url, {
             "username": "prof.ana", "password": SENHA, "aceite_termos": "on",
+        })
+        self.client.post(reverse("primeiro_acesso"), {
+            "aceite_termos": "on", "versao": settings.TERMOS_DE_USO_VERSAO,
         })
         self.assertEqual(int(self.client.session["_auth_user_id"]), self.docente.pk)
         aceite = AceiteTermos.objects.get(usuario=self.docente)

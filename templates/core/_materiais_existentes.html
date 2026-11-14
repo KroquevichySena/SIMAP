@@ -1,0 +1,8 @@
+{% if object and object.materiais.all %}
+<div class="simap-nota-formulario">
+    <strong>Material já publicado</strong>
+    {% for material in object.materiais.all %}
+        <div><a href="{% url 'core:baixar_material' material.pk %}">{{ material.nome_original }}</a> <span class="text-muted">({{ material.tamanho_legivel }})</span></div>
+    {% endfor %}
+</div>
+{% endif %}

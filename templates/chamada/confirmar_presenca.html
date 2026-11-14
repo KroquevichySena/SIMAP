@@ -2,36 +2,49 @@
 
 {% block title %}Confirmar Presença - SIMAP{% endblock %}
 
-{% block content %}
-<style>
-    .btn-presenca {
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .btn-presenca:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    }
-    .btn-presenca:active {
-        transform: scale(0.96);
-    }
-</style>
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow">
-            <div class="card-header bg-dark text-white">
-                <h4 class="mb-0">{{ titulo_pagina }}</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-success btn-presenca">Confirmar Presença</button>
-                    </div>
-                </form>
-            </div>
+{% block content %}
+<div class="sm">
+    <header class="sm-cabecalho">
+        <div>
+            <h1 class="sm-titulo">Confirmar presença</h1>
+            <p class="sm-subtitulo">Sem câmera? Digite o código que aparece embaixo do QR code.</p>
         </div>
+    </header>
+
+    <div class="sm-grid-form">
+        <section class="sm-card sm-card-elevado">
+            <div class="sm-card-cabecalho">
+                <h2 class="sm-titulo-card">Registrar presença</h2>
+                <p class="sm-texto-apoio">O código muda a cada vez que o professor abre ou renova a chamada.</p>
+            </div>
+            <form method="post" class="sm-form sm-pad" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="sm-alerta sm-alerta-erro" role="alert">
+                        <svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <p><strong>Não foi possível confirmar</strong>{{ form.non_field_errors|join:" " }}</p>
+                    </div>
+                {% endif %}
+                {% for campo in form %}
+                    {% include 'partials/_campo.html' %}
+                {% endfor %}
+                <div>
+                    <button type="submit" class="sm-btn sm-btn-primario">Confirmar presença</button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="sm-regras">
+            <strong>Regras da chamada</strong>
+            <ul>
+                <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>É preciso estar matriculado na turma</li>
+                <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Matrícula inativa não confirma presença</li>
+                <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Uma presença por aluno em cada chamada</li>
+                <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>O código vale só enquanto o QR code estiver na tela</li>
+                <li><svg class="sm-icone" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Cada chamada tem um limite de presenças</li>
+            </ul>
+        </aside>
     </div>
 </div>
 {% endblock %}

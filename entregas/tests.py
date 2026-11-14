@@ -6,6 +6,8 @@ as falhas, para provar que o sistema continua funcionando quando elas caem.
 """
 from unittest import mock
 
+from usuarios.test_helpers import registrar_aceites_atuais
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -37,6 +39,8 @@ class BaseEntregasTestCase(TestCase):
         cls.atividade = Atividade.objects.create(
             trilha=trilha, titulo="Exercício", enunciado="Explique o que é uma variável."
         )
+
+        registrar_aceites_atuais(Usuario.objects.all())
 
 
 class GeminiTests(BaseEntregasTestCase):

@@ -45,8 +45,8 @@ class MaterialDeApoioMixin(forms.Form):
     materiais = VariosArquivosField(
         label="Material de apoio (opcional)",
         help_text="PDF, Word, Excel, PowerPoint, imagens, texto ou código-fonte. "
-        "Até 5 arquivos por vez, de até 10 MB cada. Executáveis, compactados e "
-        "documentos com macro são bloqueados.",
+        "Até 5 arquivos por vez, de até 10 MB cada. PDFs devem estar sem senha. "
+        "Executáveis, compactados, macros, arquivos embutidos e conexões externas automáticas são bloqueados.",
     )
     remover_materiais = forms.ModelMultipleChoiceField(
         label="Remover material já enviado",

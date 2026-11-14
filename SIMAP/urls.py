@@ -12,7 +12,6 @@ urlpatterns = [
     path('comunicacao/', include('comunicacao.urls')),
     path('ajuda/', include('tutoria.urls')),
     path('painel/', include('painel.urls')),
-    path('contas/', include ('usuarios.urls')),
 
     path('', include('core.urls')),
 

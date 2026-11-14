@@ -17,6 +17,7 @@ nomes de usuários e títulos levam time.time_ns() para nunca colidir.
 import time
 
 import requests
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import LiveServerTestCase
 from django.urls import reverse
@@ -91,6 +92,11 @@ class TrilhaIntegracaoBase(LiveServerTestCase):
             {"username": usuario.username, "password": SENHA, "aceite_termos": "on"},
         )
         self.assertEqual(resposta.status_code, 302, "o login deveria ter funcionado")
+        self.get(resposta.headers["Location"])
+        aceite = self.post(reverse("primeiro_acesso"), {
+            "aceite_termos": "on", "versao": settings.TERMOS_DE_USO_VERSAO,
+        })
+        self.assertEqual(aceite.status_code, 302)
         return resposta
 
     def criar_trilha_pela_api(self, titulo, turma=None, ordem=1):

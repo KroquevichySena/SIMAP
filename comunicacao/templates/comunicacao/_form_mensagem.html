@@ -1,35 +1,33 @@
-<form method="post" enctype="multipart/form-data" class="card card-body shadow-sm mb-4" novalidate>
-  {% csrf_token %}
-  {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors|join:" " }}</div>{% endif %}
-
-  {% if form.destinatario %}
-  <div class="mb-2">
-    <label class="form-label fw-semibold" for="{{ form.destinatario.id_for_label }}">{{ form.destinatario.label }}</label>
-    <select name="{{ form.destinatario.html_name }}" id="{{ form.destinatario.id_for_label }}" class="form-select{% if form.destinatario.errors %} is-invalid{% endif %}">
-      {% for valor, rotulo in form.destinatario.field.choices %}
-        <option value="{{ valor }}"{% if form.destinatario.value|stringformat:"s" == valor|stringformat:"s" %} selected{% endif %}>{{ rotulo }}</option>
-      {% endfor %}
-    </select>
-    <div class="form-text">{{ form.destinatario.help_text }}</div>
-    {% for erro in form.destinatario.errors %}<div class="invalid-feedback d-block">{{ erro }}</div>{% endfor %}
-  </div>
-  {% endif %}
-
-  <div class="mb-2">
-    <label class="form-label fw-semibold" for="{{ form.texto.id_for_label }}">{{ titulo_texto|default:form.texto.label }}</label>
-    <textarea name="{{ form.texto.html_name }}" id="{{ form.texto.id_for_label }}" rows="3" maxlength="{{ form.texto.field.max_length }}"
-      class="form-control{% if form.texto.errors %} is-invalid{% endif %}"
-      placeholder="{{ form.texto.field.widget.attrs.placeholder }}">{{ form.texto.value|default:"" }}</textarea>
-    {% for erro in form.texto.errors %}<div class="invalid-feedback d-block">{{ erro }}</div>{% endfor %}
-  </div>
-
-  <div class="mb-3">
-    <label class="form-label fw-semibold" for="{{ form.anexos.id_for_label }}">Anexos <span class="fw-normal text-muted">(opcional)</span></label>
-    <input type="file" name="{{ form.anexos.html_name }}" id="{{ form.anexos.id_for_label }}" multiple
-      accept="{{ form.anexos.field.widget.attrs.accept }}" class="form-control{% if form.anexos.errors %} is-invalid{% endif %}">
-    <div class="form-text">{{ form.anexos.help_text }} Arquivos executáveis (.exe, .bat, .msi…), compactados e documentos com macro são bloqueados.</div>
-    {% for erro in form.anexos.errors %}<div class="invalid-feedback d-block">{{ erro }}</div>{% endfor %}
-  </div>
-
-  <div><button type="submit" class="btn btn-primary">{{ texto_botao|default:"Publicar" }}</button></div>
-</form>
+<section class="simap-cartao" aria-labelledby="titulo-nova-mensagem">
+    <div class="simap-cartao-cabecalho"><h2 id="titulo-nova-mensagem">{{ titulo_formulario|default:"Nova mensagem" }}</h2><span class="simap-contagem">* Campo obrigatório</span></div>
+    <form method="post" enctype="multipart/form-data" class="simap-formulario" novalidate>
+        {% csrf_token %}
+        {% if form.errors %}
+        <div class="simap-aviso-erro" role="alert"><strong>Não foi possível enviar. Revise os campos abaixo.</strong>{% if form.non_field_errors %}<ul>{% for erro in form.non_field_errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}</div>
+        {% endif %}
+        {% if form.destinatario %}
+        <div class="simap-campo{% if form.destinatario.errors %} simap-campo-invalido{% endif %}">
+            <label for="{{ form.destinatario.id_for_label }}">{{ form.destinatario.label }}</label>
+            <select name="{{ form.destinatario.html_name }}" id="{{ form.destinatario.id_for_label }}" class="simap-input" aria-describedby="{{ form.destinatario.auto_id }}_helptext{% if form.destinatario.errors %} {{ form.destinatario.auto_id }}_error{% endif %}"{% if form.destinatario.errors %} aria-invalid="true"{% endif %}>
+                {% for valor, rotulo in form.destinatario.field.choices %}
+                <option value="{{ valor }}"{% if form.destinatario.value|stringformat:"s" == valor|stringformat:"s" %} selected{% endif %}>{{ rotulo }}</option>
+                {% endfor %}
+            </select>
+            <p class="simap-ajuda-campo" id="{{ form.destinatario.auto_id }}_helptext">{{ form.destinatario.help_text }}</p>
+            {% if form.destinatario.errors %}<ul class="simap-erros-campo" id="{{ form.destinatario.auto_id }}_error">{% for erro in form.destinatario.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        {% endif %}
+        <div class="simap-campo{% if form.texto.errors %} simap-campo-invalido{% endif %}">
+            <label for="{{ form.texto.id_for_label }}">{{ titulo_texto|default:form.texto.label }} <span class="simap-obrigatorio" aria-hidden="true">*</span></label>
+            <textarea name="{{ form.texto.html_name }}" id="{{ form.texto.id_for_label }}" rows="4" maxlength="{{ form.texto.field.max_length }}" class="simap-input" placeholder="{{ form.texto.field.widget.attrs.placeholder }}" required{% if form.texto.errors %} aria-invalid="true" aria-describedby="{{ form.texto.auto_id }}_error"{% endif %}>{{ form.texto.value|default:"" }}</textarea>
+            {% if form.texto.errors %}<ul class="simap-erros-campo" id="{{ form.texto.auto_id }}_error">{% for erro in form.texto.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="simap-campo{% if form.anexos.errors %} simap-campo-invalido{% endif %}">
+            <label for="{{ form.anexos.id_for_label }}">Anexos (opcional)</label>
+            <input type="file" name="{{ form.anexos.html_name }}" id="{{ form.anexos.id_for_label }}" multiple accept="{{ form.anexos.field.widget.attrs.accept }}" class="simap-input" aria-describedby="{{ form.anexos.auto_id }}_helptext{% if form.anexos.errors %} {{ form.anexos.auto_id }}_error{% endif %}"{% if form.anexos.errors %} aria-invalid="true"{% endif %}>
+            <p class="simap-ajuda-campo" id="{{ form.anexos.auto_id }}_helptext">{{ form.anexos.help_text }} Arquivos executáveis (.exe, .bat, .msi…), compactados e documentos com macro são bloqueados.</p>
+            {% if form.anexos.errors %}<ul class="simap-erros-campo" id="{{ form.anexos.auto_id }}_error">{% for erro in form.anexos.errors %}<li>{{ erro }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="simap-formulario-acoes"><button type="submit" class="simap-botao simap-botao-primario">{{ texto_botao|default:"Publicar" }}</button></div>
+    </form>
+</section>

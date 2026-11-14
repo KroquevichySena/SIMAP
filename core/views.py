@@ -95,8 +95,8 @@ class DashboardRedirectView(LoginRequiredMixin, TemplateView):
             return redirect("painel:docente")
         if request.user.is_discente:
             return redirect("painel:discente")
-        if request.user.is_superuser:
-            return redirect("auditoria:registro_list")
+        if request.user.is_coordenacao:
+            return redirect("usuarios_lista")
         raise PermissionDenied("Seu usuário não possui um perfil definido.")
 
 

@@ -9,7 +9,7 @@ let pyodide = null;
 
 // Prepara a função que executa o código do aluno. Cada execução começa do
 // zero (variáveis não passam de uma execução para outra), o input() lê da
-// caixa "Entrada" e mostra o valor lido, e o erro mostra só as linhas do
+// caixa "Entrada" sem repetir o valor na saída, e o erro mostra só as linhas do
 // código do aluno, sem as linhas internas do Pyodide.
 const PREPARO = `
 import builtins, sys, traceback
@@ -47,13 +47,10 @@ def __simap_executar(codigo, entradas):
     def entrada(mensagem=""):
         sys.stdout.write(str(mensagem))
         if not fila:
-            sys.stdout.write("\\n")
             raise EOFError(
                 "o programa pediu mais entradas do que as linhas da caixa Entrada"
             )
-        valor = fila.pop(0)
-        sys.stdout.write(valor + "\\n")
-        return valor
+        return fila.pop(0)
 
     builtins.input = entrada
     sys.stdout = _SaidaLimitada(_saida_original)
