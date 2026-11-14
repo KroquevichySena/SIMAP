@@ -48,7 +48,10 @@ def perguntar(instrucoes, conteudo, buscar_na_web=False, max_tokens=700):
         tools=[types.Tool(google_search=types.GoogleSearch())] if buscar_na_web else None,
     )
     try:
-        resposta = _cliente().models.generate_content(
+        # O cliente precisa ficar numa variável durante a chamada: quando ele é
+        # descartado, a biblioteca fecha a conexão antes de o pedido sair.
+        cliente = _cliente()
+        resposta = cliente.models.generate_content(
             model=settings.TUTORIA_MODELO, contents=conteudo, config=config
         )
     except IAIndisponivel:
