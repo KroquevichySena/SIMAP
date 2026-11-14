@@ -343,6 +343,29 @@ class LeituraDaRespostaDoGeminiTest(SimpleTestCase):
         self.assertIsNotNone(chamada["config"].tools)
 
     @override_settings(GEMINI_API_KEY="chave-de-teste")
+    def test_cliente_continua_aberto_durante_a_chamada(self):
+        # Imita a google-genai: o cliente fecha a conexão quando é descartado.
+        class Modelos:
+            def __init__(self, estado):
+                self.estado = estado
+
+            def generate_content(self, **kwargs):
+                if self.estado["fechado"]:
+                    raise RuntimeError("Cannot send a request, as the client has been closed.")
+                return SimpleNamespace(text="Resposta", candidates=[])
+
+        class ClienteQueFechaAoSerDescartado:
+            def __init__(self, **kwargs):
+                self.estado = {"fechado": False}
+                self.models = Modelos(self.estado)
+
+            def __del__(self):
+                self.estado["fechado"] = True
+
+        with mock.patch("google.genai.Client", ClienteQueFechaAoSerDescartado):
+            self.assertEqual(gemini.perguntar("regras", "pedido").texto, "Resposta")
+
+    @override_settings(GEMINI_API_KEY="chave-de-teste")
     def test_erro_da_biblioteca_vira_ia_indisponivel(self):
         cliente = mock.Mock()
         cliente.models.generate_content.side_effect = RuntimeError("429 quota")
