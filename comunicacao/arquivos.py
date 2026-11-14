@@ -67,7 +67,7 @@ def resposta_de_download(registro, mostrar_na_tela=False):
     try:
         arquivo = registro.arquivo.open("rb")
     except FileNotFoundError:
-        raise Http404("O arquivo não está mais disponível.")
+        raise Http404("O arquivo não está mais disponível.") from None
     resposta = FileResponse(
         arquivo,
         as_attachment=not (mostrar_na_tela and registro.eh_imagem),

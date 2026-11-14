@@ -4,9 +4,9 @@ from unittest import mock
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
+from comunicacao.arquivos_teste import PNG_OK
 from core.models import Atividade
 from core.test_materiais import PDF_OK, TrilhasBase
-from comunicacao.arquivos_teste import PNG_OK
 
 from .models import AnexoSubmissao, Submissao
 

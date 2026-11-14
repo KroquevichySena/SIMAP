@@ -6,8 +6,6 @@ para quem está logado, e só discentes entram na tela.
 """
 from datetime import timedelta
 
-from usuarios.test_helpers import registrar_aceites_atuais
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import resolve_url
@@ -16,6 +14,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from turmas.models import Matricula, Turma
+from usuarios.test_helpers import registrar_aceites_atuais
 
 from .models import Chamada, Registro_de_Presenca
 

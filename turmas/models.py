@@ -1,6 +1,6 @@
-from django.db import models
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 
 class Instituicao(models.Model):
@@ -53,7 +53,7 @@ class Turma(models.Model):
 
 
     def __str__(self):
-        return f"{self.nome} - {self.periodo}"  
+        return f"{self.nome} - {self.periodo}"
 
 class Matricula(models.Model):
     STATUS_CHOICES = [
@@ -71,7 +71,7 @@ class Matricula(models.Model):
                 fields=['turma', 'discente'],
                 name='matricula_unica_por_turma'
             )
-        ]  
+        ]
 
     def __str__(self):
-        return f"{self.turma} - {self.discente}" 
+        return f"{self.turma} - {self.discente}"
