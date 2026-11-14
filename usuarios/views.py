@@ -10,6 +10,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 
 from auditoria.contexto import obter_ip
+
 from .acesso import aceitou_versao_atual, destino_seguro, url_primeiro_acesso
 from .forms import AceitePrimeiroAcessoForm, CadastroUsuarioForm
 from .mixins import CoordenacaoRequiredMixin
@@ -94,18 +95,21 @@ class UsuarioCreateView(CoordenacaoRequiredMixin, CreateView):
     def form_valid(self, form):
         with transaction.atomic():
             resposta = super().form_valid(form)
-        messages.success(self.request, "Usuário cadastrado. O aceite dos termos será feito pela própria pessoa no primeiro acesso.")
+        messages.success(
+            self.request, "Usuário cadastrado. O aceite dos termos será feito pela própria pessoa no primeiro acesso."
+        )
         return resposta
 
 
 class TermosDeUsoView(TemplateView):
-    template_name = 'usuarios/termos_de_uso.html'
+    template_name = "usuarios/termos_de_uso.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['base_layout'] = (
-            'base.html' if self.request.user.is_authenticated and aceitou_versao_atual(self.request.user)
-            else 'base_publico.html'
+        context["base_layout"] = (
+            "base.html"
+            if self.request.user.is_authenticated and aceitou_versao_atual(self.request.user)
+            else "base_publico.html"
         )
-        context['versao_atual'] = settings.TERMOS_DE_USO_VERSAO
+        context["versao_atual"] = settings.TERMOS_DE_USO_VERSAO
         return context

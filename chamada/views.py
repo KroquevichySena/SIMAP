@@ -1,16 +1,17 @@
 import uuid
 from datetime import datetime
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from turmas.models import Matricula
+
 from .forms import AbrirChamadaForm, ConfirmarPresencaForm
 from .models import Chamada, Registro_de_Presenca
 from .servicos import PresencaRecusada, registrar_presenca
@@ -241,14 +242,21 @@ def confirmar_leitura(request):
             }
         else:
             contexto = {
-                'tipo': 'ok',
-                'titulo': 'Presença registrada',
-                'texto': f"{chamada.turma.nome} · {timezone.localtime(presenca.data_registro):%H:%M}. Pode guardar o celular.",
+                "tipo": "ok",
+                "titulo": "Presença registrada",
+                "texto": (
+                    f"{chamada.turma.nome} · {timezone.localtime(presenca.data_registro):%H:%M}. "
+                    "Pode guardar o celular."
+                ),
             }
 
-    resposta = render(request, 'chamada/resultado.html', contexto)
+    resposta = render(request, "chamada/resultado.html", contexto)
     resposta.set_signed_cookie(
-        COOKIE_APARELHO, aparelho, max_age=UM_ANO, httponly=True,
-        secure=request.is_secure(), samesite='Lax',
+        COOKIE_APARELHO,
+        aparelho,
+        max_age=UM_ANO,
+        httponly=True,
+        secure=request.is_secure(),
+        samesite="Lax",
     )
     return resposta

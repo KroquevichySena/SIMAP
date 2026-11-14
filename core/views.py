@@ -250,7 +250,7 @@ class AtividadeCreateView(DocenteRequiredMixin, AtividadeMateriaisMixin, CreateV
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["docente"] = self.request.user  
+        kwargs["docente"] = self.request.user
         return kwargs
 
     def get_initial(self):

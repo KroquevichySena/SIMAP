@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 # O app_name é fundamental para organizar os links (namespacing)

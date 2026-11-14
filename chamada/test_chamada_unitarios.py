@@ -1,6 +1,5 @@
 
-from datetime import datetime, timedelta
-from datetime import timezone as fuso
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, PropertyMock, patch
 
 from django import forms
@@ -9,7 +8,7 @@ from django.test import SimpleTestCase
 from chamada.forms import ConfirmarPresencaForm
 from chamada.models import Chamada
 
-AGORA = datetime(2026, 10, 6, 10, 0, tzinfo=fuso.utc)
+AGORA = datetime(2026, 10, 6, 10, 0, tzinfo=UTC)
 RELOGIO = "chamada.models.timezone.now"
 MATRICULAS = "chamada.forms.Matricula.objects"
 CHAMADAS = "chamada.forms.Chamada.objects"

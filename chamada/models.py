@@ -1,8 +1,8 @@
 import secrets
 from datetime import timedelta
 
-from django.db import models
 from django.conf import settings
+from django.db import models
 from django.utils import timezone
 
 LETRAS_DO_CODIGO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
@@ -83,7 +83,7 @@ class Chamada(models.Model):
 
 
 class Registro_de_Presenca(models.Model):
-    """ Modelo usado para registrar a 
+    """ Modelo usado para registrar a
     presença dos alunos nas chamadas"""
 
     CONFIRMADA = "CONFIRMADA"

@@ -12,7 +12,7 @@ from pypdf.generic import ArrayObject, DictionaryObject, NameObject, TextStringO
 
 from .arquivos_teste import PDF_OK, PNG_OK, adicionar_javascript, imagem_teste, office_teste, pdf_teste
 from .seguranca import validar_anexo
-from .validacao_documentos import NS_RELS, NS_REL_DOC
+from .validacao_documentos import NS_REL_DOC, NS_RELS
 
 
 def validar(nome, conteudo):
@@ -98,10 +98,18 @@ class PdfSeguroTest(SimpleTestCase):
 
     def test_rejeita_acao_em_anotacao_e_objeto_indireto(self):
         def configurar(escritor):
-            acao = DictionaryObject({NameObject("/S"): NameObject("/Launch"), NameObject("/F"): TextStringObject("teste")})
-            anotacao = DictionaryObject({NameObject("/Type"): NameObject("/Annot"), NameObject("/Subtype"): NameObject("/Link"),
-                                        NameObject("/A"): escritor._add_object(acao)})
+            acao = DictionaryObject(
+                {NameObject("/S"): NameObject("/Launch"), NameObject("/F"): TextStringObject("teste")}
+            )
+            anotacao = DictionaryObject(
+                {
+                    NameObject("/Type"): NameObject("/Annot"),
+                    NameObject("/Subtype"): NameObject("/Link"),
+                    NameObject("/A"): escritor._add_object(acao),
+                }
+            )
             escritor.pages[0][NameObject("/Annots")] = ArrayObject([escritor._add_object(anotacao)])
+
         with self.assertRaisesMessage(ValidationError, "conteúdo ativo"):
             validar("texto.pdf", pdf_teste(configurar))
 
@@ -111,9 +119,12 @@ class PdfSeguroTest(SimpleTestCase):
                 stream.write(b"/Java#53cript")
 
         def configurar(escritor):
-            escritor._root_object[NameObject("/OpenAction")] = DictionaryObject({
-                NameObject("/S"): NomeComEscape("/JavaScript"),
-            })
+            escritor._root_object[NameObject("/OpenAction")] = DictionaryObject(
+                {
+                    NameObject("/S"): NomeComEscape("/JavaScript"),
+                }
+            )
+
         with self.assertRaisesMessage(ValidationError, "conteúdo ativo"):
             validar("texto.pdf", pdf_teste(configurar))
 
@@ -123,11 +134,20 @@ class PdfSeguroTest(SimpleTestCase):
                 validar("texto.pdf", PDF_OK)
 
     def test_link_normal_permitido_protocolo_ativo_bloqueado(self):
-        for destino, permitido in (("https://example.com/aula", True), ("javascript:teste", False), ("file:///teste", False)):
-            def configurar(escritor):
-                escritor._root_object[NameObject("/OpenAction")] = DictionaryObject({
-                    NameObject("/S"): NameObject("/URI"), NameObject("/URI"): TextStringObject(destino),
-                })
+        for destino, permitido in (
+            ("https://example.com/aula", True),
+            ("javascript:teste", False),
+            ("file:///teste", False),
+        ):
+
+            def configurar(escritor, destino=destino):
+                escritor._root_object[NameObject("/OpenAction")] = DictionaryObject(
+                    {
+                        NameObject("/S"): NameObject("/URI"),
+                        NameObject("/URI"): TextStringObject(destino),
+                    }
+                )
+
             with self.subTest(destino=destino):
                 if permitido:
                     validar("texto.pdf", pdf_teste(configurar))
@@ -142,7 +162,11 @@ class PdfSeguroTest(SimpleTestCase):
 
 class OfficeSeguroTest(SimpleTestCase):
     def test_aceita_formatos_sem_conteudo_ativo(self):
-        for extensao, principal in (("docx", "word/document.xml"), ("xlsx", "xl/workbook.xml"), ("pptx", "ppt/presentation.xml")):
+        for extensao, principal in (
+            ("docx", "word/document.xml"),
+            ("xlsx", "xl/workbook.xml"),
+            ("pptx", "ppt/presentation.xml"),
+        ):
             with self.subTest(extensao=extensao):
                 dados = validar("aula." + extensao, office_teste(principal))
                 with zipfile.ZipFile(io.BytesIO(dados.conteudo_seguro)) as pacote:
@@ -154,7 +178,13 @@ class OfficeSeguroTest(SimpleTestCase):
                 validar("aula.docx", office_teste(substituir={"word/document.xml": xml}))
 
     def test_rejeita_programa_extra_caminho_invalido_e_embutidos(self):
-        for nome in ("programa.exe", "word/programa.exe", "word/extra.txt", "word/embeddings/objeto.bin", "../fora.xml"):
+        for nome in (
+            "programa.exe",
+            "word/programa.exe",
+            "word/extra.txt",
+            "word/embeddings/objeto.bin",
+            "../fora.xml",
+        ):
             with self.subTest(nome=nome), self.assertRaises(ValidationError):
                 validar("aula.docx", office_teste(extras=[nome]))
 
@@ -177,12 +207,16 @@ class OfficeSeguroTest(SimpleTestCase):
                     validar("aula.docx", office_teste())
 
     def test_links_normais_permitidos_recursos_externos_bloqueados(self):
-        for tipo, destino, permitido in (("hyperlink", "https://example.com/aula", True),
-                                         ("hyperlink", "javascript:teste", False),
-                                         ("image", "https://example.com/foto.png", False),
-                                         ("attachedTemplate", "https://example.com/modelo", False)):
-            rels = (f'<Relationships xmlns="{NS_RELS}"><Relationship Id="rId2" '
-                    f'Type="{NS_REL_DOC}{tipo}" Target="{destino}" TargetMode="External"/></Relationships>').encode()
+        for tipo, destino, permitido in (
+            ("hyperlink", "https://example.com/aula", True),
+            ("hyperlink", "javascript:teste", False),
+            ("image", "https://example.com/foto.png", False),
+            ("attachedTemplate", "https://example.com/modelo", False),
+        ):
+            rels = (
+                f'<Relationships xmlns="{NS_RELS}"><Relationship Id="rId2" '
+                f'Type="{NS_REL_DOC}{tipo}" Target="{destino}" TargetMode="External"/></Relationships>'
+            ).encode()
             conteudo = office_teste(substituir={"word/_rels/document.xml.rels": rels})
             with self.subTest(tipo=tipo, destino=destino):
                 if permitido:
@@ -192,8 +226,10 @@ class OfficeSeguroTest(SimpleTestCase):
                         validar("aula.docx", conteudo)
 
     def test_rejeita_relacionamento_interno_inexistente(self):
-        rels = (f'<Relationships xmlns="{NS_RELS}"><Relationship Id="rId2" '
-                f'Type="{NS_REL_DOC}image" Target="media/ausente.png"/></Relationships>').encode()
+        rels = (
+            f'<Relationships xmlns="{NS_RELS}"><Relationship Id="rId2" '
+            f'Type="{NS_REL_DOC}image" Target="media/ausente.png"/></Relationships>'
+        ).encode()
         with self.assertRaisesMessage(ValidationError, "inexistente"):
             validar("aula.docx", office_teste(substituir={"word/_rels/document.xml.rels": rels}))
 
@@ -209,15 +245,24 @@ class OfficeSeguroTest(SimpleTestCase):
             validar("aula.docx", office_teste(substituir={"word/media/image1.png": b"falsa"}))
 
     def test_rejeita_dde_em_campo_word(self):
-        xml = b'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:instrText>DD</w:instrText><w:instrText>EAUTO teste</w:instrText></w:document>'
+        xml = (
+            b'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+            b"<w:instrText>DD</w:instrText><w:instrText>EAUTO teste</w:instrText></w:document>"
+        )
         with self.assertRaises(ValidationError):
             validar("aula.docx", office_teste(substituir={"word/document.xml": xml}))
 
     def test_formula_comum_permitida_conexoes_e_comandos_bloqueados(self):
-        for formula, permitido in (("SUM(A1:A3)", True), ('WEBSERVICE("https://example.com")', False),
-                                    ('cmd|teste!A1', False), ('HYPERLINK("file:///teste")', False)):
-            xml = ('<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-                   f'<sheetData><row><c><f>{formula}</f></c></row></sheetData></worksheet>').encode()
+        for formula, permitido in (
+            ("SUM(A1:A3)", True),
+            ('WEBSERVICE("https://example.com")', False),
+            ("cmd|teste!A1", False),
+            ('HYPERLINK("file:///teste")', False),
+        ):
+            xml = (
+                '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                f"<sheetData><row><c><f>{formula}</f></c></row></sheetData></worksheet>"
+            ).encode()
             conteudo = office_teste("xl/workbook.xml", substituir={"xl/worksheets/sheet1.xml": xml})
             with self.subTest(formula=formula):
                 if permitido:
@@ -233,7 +278,7 @@ class OfficeSeguroTest(SimpleTestCase):
             for item in antigo.infolist():
                 dados = antigo.read(item)
                 if item.filename == "[Content_Types].xml":
-                    dados = dados.replace(b'image/png', b'application/octet-stream')
+                    dados = dados.replace(b"image/png", b"application/octet-stream")
                 novo.writestr(item.filename, dados)
         with self.assertRaisesMessage(ValidationError, "tipo declarado"):
             validar("aula.docx", saida.getvalue())

@@ -1,6 +1,7 @@
 from django import forms
-from .models import Turma, Matricula
 from django.contrib.auth import get_user_model
+
+from .models import Matricula, Turma
 
 
 class TurmaForm(forms.ModelForm):

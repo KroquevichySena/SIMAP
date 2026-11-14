@@ -1,9 +1,11 @@
-from .models import Turma, Matricula
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_POST
-from .forms import TurmaForm, MatriculaForm
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from .forms import MatriculaForm, TurmaForm
+from .models import Matricula, Turma
 from .permissoes import docente_required
+
 
 @login_required
 def lista_turmas(request):

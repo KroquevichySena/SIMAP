@@ -7,11 +7,18 @@ app_name = "entregas"
 urlpatterns = [
     path("docente/atividades/<int:pk>/corrigir/", views.CorrigirAtividadeView.as_view(), name="corrigir"),
     path("docente/submissoes/<int:pk>/avaliar/", views.GravarNotaView.as_view(), name="avaliar"),
-    path("docente/submissoes/<int:pk>/analise/tentar-novamente/", views.RetentarAnaliseView.as_view(), name="retentar_analise"),
-    path("docente/atividades/<int:pk>/notificar-pendentes/", views.NotificarPendentesView.as_view(), name="notificar_pendentes"),
+    path(
+        "docente/submissoes/<int:pk>/analise/tentar-novamente/",
+        views.RetentarAnaliseView.as_view(),
+        name="retentar_analise",
+    ),
+    path(
+        "docente/atividades/<int:pk>/notificar-pendentes/",
+        views.NotificarPendentesView.as_view(),
+        name="notificar_pendentes",
+    ),
     path("atividades/<int:pk>/submeter/", views.SubmeterAtividadeView.as_view(), name="submeter"),
     path("atividades/<int:pk>/resolver/", views.ResolverAtividadeView.as_view(), name="resolver"),
     path("atividades/<int:pk>/rascunho/", views.SalvarRascunhoView.as_view(), name="salvar_rascunho"),
     path("anexos/<int:pk>/", views.BaixarAnexoSubmissaoView.as_view(), name="baixar_anexo"),
-
 ]

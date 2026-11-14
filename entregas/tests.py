@@ -6,14 +6,13 @@ as falhas, para provar que o sistema continua funcionando quando elas caem.
 """
 from unittest import mock
 
-from usuarios.test_helpers import registrar_aceites_atuais
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from core.models import Atividade, TrilhaAprendizagem
 from turmas.models import Matricula, Turma
+from usuarios.test_helpers import registrar_aceites_atuais
 
 from .ia_services import gerar_analise
 from .models import STATUS_CONCLUIDO, STATUS_ERRO, Submissao

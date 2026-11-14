@@ -114,6 +114,9 @@ class Publicacao(models.Model):
     def __str__(self):
         return f"{self.get_tipo_display()} de {self.autor} ({self.criada_em:%d/%m/%Y %H:%M})"
 
+    def get_absolute_url(self):
+        return reverse("comunicacao:publicacao", args=[self.pk])
+
     @property
     def tipo(self):
         if self.destinatario_id:
@@ -128,9 +131,6 @@ class Publicacao(models.Model):
     @property
     def privada(self):
         return self.destinatario_id is not None
-
-    def get_absolute_url(self):
-        return reverse("comunicacao:publicacao", args=[self.pk])
 
 
 class Resposta(models.Model):
