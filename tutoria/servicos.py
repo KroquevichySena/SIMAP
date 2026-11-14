@@ -131,10 +131,6 @@ class Situacao:
     ajuda_ligada: bool
 
 
-# ---------------------------------------------------------------------------
-# Limites
-# ---------------------------------------------------------------------------
-
 # Um pedido "em andamento" conta nos limites enquanto espera a IA. Se o
 # servidor cair no meio da chamada, a reserva fica para trás; depois deste
 # tempo ela deixa de contar (a chamada ao Gemini desiste bem antes disso).
@@ -205,10 +201,6 @@ def conferir_limites(aluno, atividade, tipo, nivel):
         raise PedidoRecusado(f"A próxima dica disponível é a de nível {atual.proximo_nivel}.")
 
 
-# ---------------------------------------------------------------------------
-# Preparação do pedido
-# ---------------------------------------------------------------------------
-
 def sem_comentarios(codigo):
     """Tira os comentários do código Python (onde costuma vir o "ignore as regras")."""
     try:
@@ -258,10 +250,6 @@ def montar_pedido(atividade, tipo, nivel, codigo="", erro="", dicas_anteriores=(
     return instrucoes, "\n\n".join(partes)
 
 
-# ---------------------------------------------------------------------------
-# Conferência da resposta
-# ---------------------------------------------------------------------------
-
 def parece_solucao(texto):
     """Heurística: a resposta tem código demais para ser só uma dica?"""
     for bloco, _ in _BLOCO_DE_CODIGO.findall(texto):
@@ -289,10 +277,6 @@ def _limpar_texto(texto):
     texto = re.sub(r"^#+\s*", "", texto, flags=re.MULTILINE)
     return texto.strip()
 
-
-# ---------------------------------------------------------------------------
-# O pedido
-# ---------------------------------------------------------------------------
 
 def _travar(aluno):
     """
@@ -323,10 +307,10 @@ def reservar(aluno, atividade, tipo, nivel=0, codigo="", erro=""):
                     aluno=aluno, atividade=atividade, tipo=tipo, nivel=nivel, status=Status.EM_ANDAMENTO,
                     codigo_enviado=(codigo or "")[:LIMITE_CODIGO], erro_enviado=(erro or "")[:LIMITE_ERRO],
                 )
-        except OperationalError as erro:
+        except OperationalError as falha:
             # O PostgreSQL espera a trava sozinho. O SQLite (testes e CI) pode
             # responder "locked" na hora: aí esperamos um pouco e tentamos de novo.
-            if "locked" not in str(erro).lower() or tentativa == TENTATIVAS_DE_TRAVA - 1:
+            if "locked" not in str(falha).lower() or tentativa == TENTATIVAS_DE_TRAVA - 1:
                 raise
             time.sleep(0.02 * (tentativa + 1))
 

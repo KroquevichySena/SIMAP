@@ -47,9 +47,7 @@
     return "";
   }
 
-  // ---------------------------------------------------------------------
   // Execução isolada: um iframe sandbox por editor, criado só quando preciso.
-  // ---------------------------------------------------------------------
   function criarExecutor(config, aoMudarEstado) {
     let iframe = null;
     let pronto = null;          // Promise resolvida quando o Python carregou
@@ -167,9 +165,7 @@
     return { executar: executar, parar: parar, ocupado: function () { return !!atual; } };
   }
 
-  // ---------------------------------------------------------------------
   // Um editor na página.
-  // ---------------------------------------------------------------------
   function montarEditor(raiz) {
     const fonte = raiz.querySelector(".editor-fonte");
     const entrada = raiz.querySelector(".editor-entrada");

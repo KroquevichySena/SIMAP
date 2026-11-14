@@ -11,7 +11,7 @@ import time
 from datetime import timedelta
 from unittest import mock
 
-from django.db import connection
+from django.db import OperationalError, connection
 from django.test import TransactionTestCase, override_settings
 from django.utils import timezone
 
@@ -113,7 +113,23 @@ class PedidoEmAndamentoContaNoLimiteTest(TutoriaBase):
         from django.urls import reverse
 
         resposta = self.client.get(reverse("entregas:resolver", args=[self.pratica.pk]))
-        self.assertNotContains(resposta, "pedido-de-ajuda border")
+        self.assertNotContains(resposta, "simap-ajuda-ia-pedido")
+
+    def test_banco_ocupado_tenta_de_novo_sem_perder_o_erro_do_aluno(self):
+        # O SQLite pode responder "locked" na primeira tentativa de travar.
+        travar = servicos._travar
+        chamadas = []
+
+        def travar_ocupado_uma_vez(aluno):
+            chamadas.append(aluno)
+            if len(chamadas) == 1:
+                raise OperationalError("database is locked")
+            travar(aluno)
+
+        with mock.patch("tutoria.servicos._travar", travar_ocupado_uma_vez), mock.patch("tutoria.servicos.time.sleep"):
+            pedido = servicos.reservar(self.aluno, self.pratica, Tipo.CODIGO, codigo="print(x)", erro="NameError: x")
+        self.assertEqual(len(chamadas), 2)
+        self.assertEqual(pedido.erro_enviado, "NameError: x")
 
 
 @override_settings(TUTORIA_INTERVALO_SEGUNDOS=0, TUTORIA_PEDIDOS_POR_DIA=1, TUTORIA_DICAS_POR_NIVEL=2)
