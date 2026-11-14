@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import AceiteTermos, Usuario
+from .forms import SenhaTemporariaAdminForm
 
 
 @admin.register(Usuario)
@@ -13,13 +14,20 @@ class UsuarioAdmin(UserAdmin):
     list_display = ("username", "first_name", "last_name", "email", "perfil", "is_active", "is_staff")
     list_filter = ("perfil", "is_staff", "is_superuser", "is_active")
     search_fields = ("username", "first_name", "last_name", "email", "rgm")
+    change_password_form = SenhaTemporariaAdminForm
+    readonly_fields = ("troca_senha_obrigatoria",)
 
     fieldsets = UserAdmin.fieldsets + (
-        ("SIMAP", {"fields": ("perfil", "rgm")}),
+        ("SIMAP", {"fields": ("perfil", "rgm", "troca_senha_obrigatoria")}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
         ("SIMAP", {"fields": ("perfil", "rgm")}),
     )
+
+    def save_model(self, request, obj, form, change):
+        if not change and not obj.is_coordenacao:
+            obj.troca_senha_obrigatoria = True
+        super().save_model(request, obj, form, change)
 
     def has_module_permission(self, request):
         return request.user.is_authenticated and request.user.is_coordenacao and super().has_module_permission(request)

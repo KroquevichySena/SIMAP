@@ -9,7 +9,7 @@
         <form method="post" class="simap-formulario" novalidate>
             {% csrf_token %}
             {% include 'turmas/_erros_formulario.html' %}
-            <div class="simap-nota-formulario"><strong>Conta sem privilégios administrativos</strong><p>A pessoa cadastrada fará o próprio aceite no primeiro acesso. Defina uma senha inicial e compartilhe os dados de acesso por um canal privado; a recuperação de senha estará disponível pelo e-mail informado.</p></div>
+            <div class="simap-nota-formulario"><strong>Primeiro acesso protegido</strong><p>Defina uma senha temporária exclusiva e compartilhe os dados de acesso por um canal privado. A pessoa deverá escolher uma senha diferente antes de acessar o sistema e fará o próprio aceite dos termos. Esta conta não terá privilégios administrativos.</p></div>
             {% for campo in form %}{% include 'partials/_campo_formulario.html' %}{% endfor %}
             <div class="simap-formulario-acoes">
                 <button type="submit" class="simap-botao simap-botao-primario">Cadastrar usuário</button>

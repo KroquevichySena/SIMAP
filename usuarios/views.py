@@ -10,8 +10,8 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 
 from auditoria.contexto import obter_ip
-from .acesso import aceitou_versao_atual, destino_seguro, url_primeiro_acesso
-from .forms import AceitePrimeiroAcessoForm, CadastroUsuarioForm
+from .acesso import aceitou_versao_atual, destino_apos_login, destino_seguro
+from .forms import AceitePrimeiroAcessoForm, CadastroUsuarioForm, TrocaSenhaTemporariaForm
 from .mixins import CoordenacaoRequiredMixin
 from .models import AceiteTermos, Usuario
 
@@ -20,10 +20,32 @@ class LoginView(auth_views.LoginView):
     form_class = AuthenticationForm
 
     def get_success_url(self):
-        destino = destino_seguro(self.request)
-        if not aceitou_versao_atual(self.request.user):
-            return url_primeiro_acesso(destino)
-        return destino
+        return destino_apos_login(self.request)
+
+
+class TrocarSenhaTemporariaView(LoginRequiredMixin, auth_views.PasswordChangeView):
+    template_name = "usuarios/trocar_senha_temporaria.html"
+    form_class = TrocaSenhaTemporariaForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not request.user.troca_senha_obrigatoria:
+            return HttpResponseRedirect(destino_apos_login(request))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto["next"] = destino_seguro(self.request)
+        return contexto
+
+    def form_valid(self, form):
+        # A view nativa salva a senha e atualiza a sessão; o formulário limpa a pendência.
+        with transaction.atomic():
+            resposta = super().form_valid(form)
+        messages.success(self.request, "Senha pessoal definida. A senha temporária deixou de funcionar.")
+        return resposta
+
+    def get_success_url(self):
+        return destino_apos_login(self.request)
 
 
 class PrimeiroAcessoView(LoginRequiredMixin, FormView):
@@ -94,7 +116,7 @@ class UsuarioCreateView(CoordenacaoRequiredMixin, CreateView):
     def form_valid(self, form):
         with transaction.atomic():
             resposta = super().form_valid(form)
-        messages.success(self.request, "Usuário cadastrado. O aceite dos termos será feito pela própria pessoa no primeiro acesso.")
+        messages.success(self.request, "Usuário cadastrado. No primeiro acesso, a pessoa trocará a senha temporária e fará o próprio aceite dos termos.")
         return resposta
 
 
@@ -104,7 +126,7 @@ class TermosDeUsoView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['base_layout'] = (
-            'base.html' if self.request.user.is_authenticated and aceitou_versao_atual(self.request.user)
+            'base.html' if self.request.user.is_authenticated and not self.request.user.troca_senha_obrigatoria and aceitou_versao_atual(self.request.user)
             else 'base_publico.html'
         )
         context['versao_atual'] = settings.TERMOS_DE_USO_VERSAO

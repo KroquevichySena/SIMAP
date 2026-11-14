@@ -1,10 +1,12 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from.import views
+from .forms import RedefinirSenhaForm
 
 urlpatterns = [
     path('login/', views.LoginView.as_view(template_name='usuarios/login.html'), name='login'),
     path('primeiro-acesso/', views.PrimeiroAcessoView.as_view(), name='primeiro_acesso'),
+    path('trocar-senha-temporaria/', views.TrocarSenhaTemporariaView.as_view(), name='trocar_senha_temporaria'),
     path('usuarios/', views.UsuarioListView.as_view(), name='usuarios_lista'),
     path('usuarios/novo/', views.UsuarioCreateView.as_view(), name='usuario_criar'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
@@ -18,7 +20,7 @@ urlpatterns = [
      name='password_reset_done'),
 
     path('resetar-senha/<uidb64>/<token>/', 
-     auth_views.PasswordResetConfirmView.as_view(template_name='usuarios/resetar_senha.html'),
+     auth_views.PasswordResetConfirmView.as_view(template_name='usuarios/resetar_senha.html', form_class=RedefinirSenhaForm),
      name='password_reset_confirm'),
 
     path('resetar-senha/concluido/', 

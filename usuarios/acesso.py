@@ -24,7 +24,7 @@ def destino_seguro(request, destino=None):
         return padrao
     try:
         rota = resolve(urlsplit(destino).path)
-        if rota.url_name in {"primeiro_acesso", "login", "logout"}:
+        if rota.url_name in {"primeiro_acesso", "trocar_senha_temporaria", "login", "logout"}:
             return padrao
     except Resolver404:
         pass
@@ -33,3 +33,16 @@ def destino_seguro(request, destino=None):
 
 def url_primeiro_acesso(destino):
     return reverse("primeiro_acesso") + "?" + urlencode({"next": destino})
+
+
+def url_troca_senha(destino):
+    return reverse("trocar_senha_temporaria") + "?" + urlencode({"next": destino})
+
+
+def destino_apos_login(request):
+    destino = destino_seguro(request)
+    if request.user.troca_senha_obrigatoria:
+        return url_troca_senha(destino)
+    if not aceitou_versao_atual(request.user):
+        return url_primeiro_acesso(destino)
+    return destino
