@@ -91,6 +91,21 @@ TAREFAS = {
     ),
 }
 
+# Usada quando a busca na web não está disponível (cota da chave, por exemplo).
+TAREFA_MATERIAL_SEM_BUSCA = (
+    "Indique de 3 a 5 materiais de estudo sobre o conceito que o exercício exige, de "
+    "preferência em português e de fontes conhecidas e confiáveis, como a documentação "
+    "oficial do Python (docs.python.org), tutoriais e cursos gratuitos conhecidos. Para "
+    "cada um, escreva uma linha com o nome do material, o site e o que o aluno vai "
+    "aprender. Só escreva um endereço completo se tiver certeza de que ele existe; na "
+    "dúvida, cite apenas o nome do site. Não resolva o exercício."
+)
+
+AVISO_SEM_BUSCA = (
+    "(Indicação feita sem busca na web: os endereços não foram conferidos agora, "
+    "então confira cada link antes de usar.)"
+)
+
 PALAVRAS = {Tipo.DICA: 120, Tipo.CONCEITO: 180, Tipo.MATERIAL: 200, Tipo.CODIGO: 160}
 
 RESPOSTA_SEGURA = {
@@ -333,6 +348,23 @@ def _falhou(pedido):
     pedido.save(update_fields=["status", "resposta"])
 
 
+def _pedir_material(instrucoes, conteudo):
+    """
+    Tenta a busca na web e, se ela não estiver disponível, pede sem busca.
+
+    Devolve (resposta, sem_busca). A busca pode ser recusada mesmo com a chave
+    funcionando (a cota de busca é separada), e o aluno não deve ficar sem
+    resposta por causa disso.
+    """
+    if settings.TUTORIA_BUSCA_NA_WEB:
+        try:
+            return gemini.perguntar(instrucoes, conteudo, buscar_na_web=True), False
+        except gemini.IAIndisponivel:
+            pass
+    sem_busca = instrucoes.replace(TAREFAS[(Tipo.MATERIAL, 0)], TAREFA_MATERIAL_SEM_BUSCA)
+    return gemini.perguntar(sem_busca, conteudo), True
+
+
 def _responder(pedido, atividade, codigo, erro):
     tipo, nivel = pedido.tipo, pedido.nivel
     anteriores = list(
@@ -341,13 +373,19 @@ def _responder(pedido, atividade, codigo, erro):
     ) if tipo == Tipo.DICA else []
     instrucoes, conteudo = montar_pedido(atividade, tipo, nivel, codigo, erro, anteriores)
 
+    sem_busca = False
     try:
-        resposta = gemini.perguntar(instrucoes, conteudo, buscar_na_web=(tipo == Tipo.MATERIAL))
+        if tipo == Tipo.MATERIAL:
+            resposta, sem_busca = _pedir_material(instrucoes, conteudo)
+        else:
+            resposta = gemini.perguntar(instrucoes, conteudo)
     except gemini.IAIndisponivel:
         _falhou(pedido)
         return
 
     texto = _limpar_texto(resposta.texto)
+    if sem_busca:
+        texto = f"{texto}\n\n{AVISO_SEM_BUSCA}"
     barrar = parece_solucao(texto) or (
         tipo != Tipo.MATERIAL and ia_confirma_que_entrega_solucao(atividade, texto)
     )

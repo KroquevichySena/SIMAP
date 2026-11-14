@@ -52,8 +52,15 @@ Nenhuma proteção de IA é perfeita, por isso o professor vê quanto de ajuda c
 |---|---|---|
 | `GEMINI_API_KEY` | (já existia) | Chave do Gemini |
 | `TUTORIA_MODELO` | `gemini-3.1-flash-lite` | Modelo usado na ajuda ao aluno |
+| `TUTORIA_BUSCA_NA_WEB` | `True` | Com `False`, a busca de material não tenta a busca na web |
 
 Limites em `SIMAP/settings.py`: `TUTORIA_PEDIDOS_POR_DIA`, `TUTORIA_DICAS_POR_NIVEL`, `TUTORIA_INTERVALO_SEGUNDOS`.
+
+A busca na web do Gemini tem uma cota separada, que em chaves gratuitas costuma vir zerada
+(o pedido volta com erro 429). Quando a busca é recusada, o botão "Busca material" pede as
+indicações direto à IA, sem busca, e a resposta termina com um aviso para o aluno conferir os
+links. Se a chave não tem busca, vale definir `TUTORIA_BUSCA_NA_WEB=False` para não gastar uma
+chamada a cada pedido.
 
 A ajuda usa a biblioteca nova do Google, **google-genai** (a antiga, `google-generativeai`,
 foi descontinuada e não tem a busca na web). A análise da correção continua na biblioteca
@@ -83,3 +90,7 @@ resposta da biblioteca do Gemini.
 primeiro (limite diário, intervalo e dica repetida), falha da IA e erro inesperado liberando a
 vaga, reserva abandonada, reservas fora das telas e duas requisições simultâneas em threads
 reais (com limite 1, só uma é aceita).
+
+`tutoria/test_material.py` (5 testes): busca recusada caindo para a indicação sem busca, regras
+mantidas, busca desligada pela configuração, busca funcionando sem mudança e falha das duas
+chamadas sem gastar a cota.

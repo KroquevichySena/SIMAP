@@ -183,6 +183,9 @@ GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
 
 # Ajuda da IA para o aluno (app "tutoria").
 TUTORIA_MODELO = env("TUTORIA_MODELO", default="gemini-3.1-flash-lite")
+# A busca na web do Gemini não entra na cota de chaves gratuitas. Com False,
+# o botão "Busca material" pede as indicações direto, sem tentar a busca.
+TUTORIA_BUSCA_NA_WEB = env.bool("TUTORIA_BUSCA_NA_WEB", default=True)
 TUTORIA_PEDIDOS_POR_DIA = 10          # por aluno, em cada atividade
 TUTORIA_DICAS_POR_NIVEL = 2           # o aluno pode pedir "outra dica" do mesmo nível
 TUTORIA_INTERVALO_SEGUNDOS = 15       # entre um pedido e outro do mesmo aluno
