@@ -14,18 +14,19 @@
                 <h1 class="simap-titulo-turma">{{ turma.nome }}</h1>
                 <p class="simap-subtitulo">Consulte os alunos vinculados e gerencie a situação de cada matrícula.</p>
             </div>
-            {% if turma.ativa %}
-                <div class="simap-acoes">
-                    <a href="{% url 'criar_matricula' %}" class="simap-botao simap-botao-primario">
-                        <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <path d="m16 11 2 2 4-4" />
-                        </svg>
-                        Matricular aluno
-                    </a>
-                </div>
-            {% endif %}
+            <div class="simap-acoes">
+                <a href="{% url 'configurar_turma' turma.pk %}" class="simap-botao simap-botao-secundario">Configurar turma</a>
+                {% if turma.ativa %}
+                <a href="{% url 'criar_matricula' %}" class="simap-botao simap-botao-primario">
+                    <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="m16 11 2 2 4-4" />
+                    </svg>
+                    Matricular aluno
+                </a>
+                {% endif %}
+            </div>
         </header>
 
         <dl class="simap-resumo-turma">

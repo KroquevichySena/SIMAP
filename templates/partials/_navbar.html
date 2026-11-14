@@ -16,7 +16,7 @@
 
         {% if user.perfil == 'DOCENTE' %}
           <li class="nav-item">
-            <a class="nav-link{% if rota == 'lista_turmas' or rota == 'criar_turma' or rota == 'criar_matricula' or rota == 'matriculas_turma' %} active{% endif %}" href="{% url 'lista_turmas' %}"{% if rota == 'lista_turmas' or rota == 'criar_turma' or rota == 'criar_matricula' or rota == 'matriculas_turma' %} aria-current="page"{% endif %}>Turmas</a>
+            <a class="nav-link{% if rota == 'lista_turmas' or rota == 'criar_turma' or rota == 'criar_matricula' or rota == 'matriculas_turma' or rota == 'configurar_turma' %} active{% endif %}" href="{% url 'lista_turmas' %}"{% if rota == 'lista_turmas' or rota == 'criar_turma' or rota == 'criar_matricula' or rota == 'matriculas_turma' or rota == 'configurar_turma' %} aria-current="page"{% endif %}>Turmas</a>
           </li>
           <li class="nav-item">
             <a class="nav-link{% if namespace == 'core' and rota|slice:':7' == 'trilha_' %} active{% endif %}" href="{% url 'core:trilha_list' %}"{% if namespace == 'core' and rota|slice:':7' == 'trilha_' %} aria-current="page"{% endif %}>Trilhas</a>

@@ -13,14 +13,6 @@
         </div>
         {% if turmas %}
         <div class="sm-cabecalho-acoes">
-            <form method="POST" action="{% url 'painel:definir_limite' turma.pk %}" class="sm-limite">
-                {% csrf_token %}
-                <div class="sm-campo">
-                    <label for="{{ form_limite.limite_atencao.id_for_label }}">Limite de atenção (%)</label>
-                    {{ form_limite.limite_atencao }}
-                </div>
-                <button type="submit" class="sm-btn sm-btn-contorno">{% include 'partials/_icone.html' with nome="salvar" %}Salvar</button>
-            </form>
             <form method="GET" class="sm-campo">
                 <label for="seletor-turma">Turma</label>
                 <select id="seletor-turma" name="turma" class="form-select" onchange="this.form.submit()">
@@ -29,6 +21,7 @@
                     {% endfor %}
                 </select>
             </form>
+            <a href="{% url 'configurar_turma' turma.pk %}" class="sm-btn sm-btn-contorno">Configurar turma · limite {{ turma.limite_atencao|floatformat:1 }}%</a>
         </div>
         {% endif %}
     </header>

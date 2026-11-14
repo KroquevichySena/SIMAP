@@ -1,4 +1,5 @@
 """Cadastro exclusivo da coordenação e separação entre conta e matrícula."""
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
@@ -18,9 +19,14 @@ class CadastroUsuarioTest(TestCase):
         self.client.force_login(self.coord)
         self.url = reverse("usuario_criar")
         self.dados = {
-            "first_name": "Maria", "last_name": "Silva", "username": "maria.silva",
-            "email": "maria@example.test", "perfil": "DISCENTE", "rgm": "12345",
-            "password1": "SenhaInicialForte123!", "password2": "SenhaInicialForte123!",
+            "first_name": "Maria",
+            "last_name": "Silva",
+            "username": "maria.silva",
+            "email": "maria@example.test",
+            "perfil": "DISCENTE",
+            "rgm": "12345",
+            "password1": "SenhaInicialForte123!",
+            "password2": "SenhaInicialForte123!",
         }
 
     def test_coord_cadastra_discente_sem_privilegios_sem_aceite_sem_matricula(self):
@@ -34,6 +40,7 @@ class CadastroUsuarioTest(TestCase):
         self.assertTrue(usuario.is_active)
         self.assertFalse(usuario.is_superuser)
         self.assertFalse(usuario.is_staff)
+        self.assertTrue(usuario.troca_senha_obrigatoria)
         self.assertFalse(AceiteTermos.objects.filter(usuario=usuario).exists())
         self.assertFalse(Matricula.objects.filter(discente=usuario).exists())
         log = RegistroAuditoria.objects.get(acao=Acao.CRIACAO, entidade="usuarios.Usuario", objeto_id=str(usuario.pk))
@@ -126,15 +133,25 @@ class CadastroUsuarioTest(TestCase):
                     self.assertEqual(self.client.get(url).status_code, 403)
                     self.assertEqual(self.client.post(url, self.dados).status_code, 403)
 
-    def test_conta_criada_entra_no_primeiro_acesso_e_so_depois_nas_trilhas(self):
+    def test_conta_criada_troca_senha_aceita_termos_e_so_depois_acessa_trilhas(self):
         self.client.post(self.url, self.dados)
         self.client.logout()
         destino = reverse("core:minhas_trilhas")
         r = self.client.post(
             reverse("login"), {"username": self.dados["username"], "password": self.dados["password1"], "next": destino}
         )
-        self.assertIn(reverse("primeiro_acesso"), r.url)
+        self.assertIn(reverse("trocar_senha_temporaria"), r.url)
         self.assertEqual(self.client.get(destino).status_code, 302)
+        r = self.client.post(
+            reverse("trocar_senha_temporaria"),
+            {
+                "old_password": self.dados["password1"],
+                "new_password1": "PessoalNovaForte987!",
+                "new_password2": "PessoalNovaForte987!",
+                "next": destino,
+            },
+        )
+        self.assertIn(reverse("primeiro_acesso"), r.url)
         self.assertRedirects(
             self.client.post(
                 reverse("primeiro_acesso"),

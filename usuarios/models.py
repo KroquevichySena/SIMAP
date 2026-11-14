@@ -11,6 +11,10 @@ class Usuario(AbstractUser):
 
     rgm = models.CharField(max_length=20, blank=True)
     perfil = models.CharField(max_length=10, choices=PERFIL_CHOICES)
+    troca_senha_obrigatoria = models.BooleanField(
+        "Troca de senha pendente", default=False,
+        help_text="Exige uma nova senha pessoal antes de acessar as funcionalidades.",
+    )
 
     @property
     def is_docente(self) -> bool:

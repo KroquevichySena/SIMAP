@@ -1,14 +1,11 @@
-from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
-from django.views.generic import TemplateView, View
+from django.shortcuts import get_object_or_404
+from django.views.generic import TemplateView
 
 from core.mixins import DiscenteRequiredMixin, DocenteRequiredMixin
 from turmas.models import Turma
 
-from .forms import LimiteAtencaoForm
 from .servicos import (
     METRICAS,
     dados_do_grafico,
@@ -43,7 +40,6 @@ class PainelDocenteView(DocenteRequiredMixin, TemplateView):
         linhas = indicadores_da_turma(turma)
         ctx["linhas"] = linhas
         ctx["resumo"] = resumo_da_turma(linhas)
-        ctx["form_limite"] = LimiteAtencaoForm(instance=turma)
         ctx["dados_grafico"] = dados_do_grafico(turma, linhas)
         return ctx
 
@@ -110,15 +106,3 @@ class PainelDiscenteView(DiscenteRequiredMixin, TemplateView):
             ],
         }
         return ctx
-
-
-class DefinirLimiteView(DocenteRequiredMixin, View):
-    def post(self, request, pk, *args, **kwargs):
-        turma = get_object_or_404(Turma, pk=pk, docente=request.user)
-        form = LimiteAtencaoForm(request.POST, instance=turma)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Limite de atenção atualizado.")
-        else:
-            messages.error(request, "Informe um limite entre 0 e 100.")
-        return redirect(f"{reverse('painel:docente')}?turma={turma.pk}")

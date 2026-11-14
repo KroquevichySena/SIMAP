@@ -1,0 +1,20 @@
+{% extends 'base_publico.html' %}
+{% block title %}Definir senha pessoal - SIMAP{% endblock %}
+{% block content %}
+<section class="simap-cartao simap-auth" aria-label="Troca obrigatória de senha">
+    {% include 'usuarios/_cabecalho_acesso.html' with titulo="Defina sua senha pessoal" descricao="Substitua a senha temporária por uma senha que somente você conheça para continuar." %}
+    <p class="simap-ajuda-campo">Conta: <strong>{{ user.get_full_name|default:user.username }}</strong>. Sua nova senha deve ser diferente da temporária.</p>
+    <form method="post" class="simap-auth-form" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {% include 'usuarios/_erros_acesso.html' %}
+        {% for campo in form %}{% include 'partials/_campo_formulario.html' %}{% endfor %}
+        <button type="submit" class="simap-botao simap-botao-primario">Salvar minha senha e continuar</button>
+        <a href="{% url 'password_reset' %}" class="simap-auth-link">Esqueci a senha temporária</a>
+    </form>
+    <form method="post" action="{% url 'logout' %}" class="mt-3">
+        {% csrf_token %}
+        <button type="submit" class="simap-botao simap-botao-secundario w-100">Sair</button>
+    </form>
+</section>
+{% endblock %}

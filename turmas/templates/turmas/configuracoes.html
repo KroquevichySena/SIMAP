@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Configurar turma - SIMAP{% endblock %}
+{% block content %}
+<div class="simap-pagina simap-formulario-pagina">
+    <a class="simap-voltar" href="{% url 'lista_turmas' %}">← Voltar para turmas</a>
+    <header class="simap-cabecalho">
+        <div><h1>Configurar turma</h1><p class="simap-subtitulo">{{ turma.nome }} · {{ turma.periodo }}</p></div>
+    </header>
+    <section class="simap-cartao" aria-labelledby="titulo-configuracoes">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-configuracoes">Acompanhamento dos alunos</h2></div>
+        <form method="post" class="simap-formulario" novalidate>
+            {% csrf_token %}
+            {% include 'turmas/_erros_formulario.html' %}
+            <div class="simap-nota-formulario"><strong>Uma configuração por turma</strong><p>Este limite é usado nos painéis do professor e do aluno. A sinalização ajuda no acompanhamento; não altera notas e não representa um diagnóstico de dificuldade.</p></div>
+            {% include 'turmas/_campo_formulario.html' with campo=form.limite_atencao %}
+            <div class="simap-formulario-acoes">
+                <button type="submit" class="simap-botao simap-botao-primario">Salvar limite de atenção</button>
+                <a href="{% url 'matriculas_turma' turma.pk %}" class="simap-botao simap-botao-secundario">Ver alunos</a>
+                <a href="{% url 'painel:docente' %}?turma={{ turma.pk }}" class="simap-botao simap-botao-secundario">Ver painel da turma</a>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}
