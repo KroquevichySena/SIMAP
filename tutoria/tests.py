@@ -136,7 +136,10 @@ class ProtecaoContraARespostaProntaTest(TutoriaBase):
 
     def test_resposta_com_codigo_pronto_e_barrada(self):
         self.entrar(self.aluno)
-        solucao = "Claro! Aqui está:\n```python\nn = int(input())\nfor i in range(1, 11):\n    print(n, 'x', i, '=', n * i)\nprint('fim')\n```"
+        solucao = (
+            "Claro! Aqui está:\n```python\nn = int(input())\nfor i in range(1, 11):\n"
+            "    print(n, 'x', i, '=', n * i)\nprint('fim')\n```"
+        )
         resposta = self.pedir(IAFalsa(solucao), tipo="DICA", nivel="1")
         self.assertEqual(resposta.json()["status"], "BARRADO")
         self.assertNotIn("range(1, 11)", resposta.json()["html"])
@@ -166,7 +169,8 @@ class ProtecaoContraARespostaProntaTest(TutoriaBase):
 
     def test_html_vindo_da_ia_e_escapado(self):
         self.entrar(self.aluno)
-        html = self.pedir(IAFalsa("Veja <script>alert(1)</script> e https://docs.python.org/3/"), tipo="CONCEITO").json()["html"]
+        ia = IAFalsa("Veja <script>alert(1)</script> e https://docs.python.org/3/")
+        html = self.pedir(ia, tipo="CONCEITO").json()["html"]
         self.assertNotIn("<script>", html)
         self.assertIn("&lt;script&gt;", html)
         self.assertIn('href="https://docs.python.org/3/"', html)
@@ -180,7 +184,10 @@ class MaterialDaWebTest(TutoriaBase):
             "1. Documentação oficial sobre for.\n2. Vídeo sobre laços.",
             fontes=[{"titulo": "docs.python.org", "url": "https://vertexaisearch.cloud.google.com/redirect/abc"},
                     {"titulo": "falso", "url": "javascript:alert(1)"}],
-            sugestoes='<style>.x{}</style><a href="https://www.google.com/search?q=for">for python</a><script>alert(2)</script>',
+            sugestoes=(
+                '<style>.x{}</style><a href="https://www.google.com/search?q=for">for python</a>'
+                "<script>alert(2)</script>"
+            ),
         )
         resposta = self.pedir(ia, tipo="MATERIAL")
         self.assertTrue(ia.do_tutor[0]["web"])
@@ -230,7 +237,8 @@ class LimitesTest(TutoriaBase):
         resposta = self.pedir(IAFalsa(), tipo="CONCEITO")
         self.assertEqual(resposta.status_code, 429)
         self.assertIn("desligou", resposta.json()["erro"])
-        self.assertNotContains(self.client.get(reverse("entregas:resolver", args=[self.pratica.pk])), "Preciso de ajuda")
+        pagina = self.client.get(reverse("entregas:resolver", args=[self.pratica.pk]))
+        self.assertNotContains(pagina, "Preciso de ajuda")
 
 
 class AcessoTest(TutoriaBase):
@@ -319,7 +327,9 @@ class LeituraDaRespostaDoGeminiTest(SimpleTestCase):
             grounding_chunks=[SimpleNamespace(web=web), SimpleNamespace(web=None)],
             search_entry_point=SimpleNamespace(rendered_content="<div>sugestões</div>"),
         )
-        resposta_falsa = SimpleNamespace(text=" Texto da IA ", candidates=[SimpleNamespace(grounding_metadata=metadados)])
+        resposta_falsa = SimpleNamespace(
+            text=" Texto da IA ", candidates=[SimpleNamespace(grounding_metadata=metadados)]
+        )
         cliente = mock.Mock()
         cliente.models.generate_content.return_value = resposta_falsa
         with mock.patch("tutoria.gemini._cliente", return_value=cliente):

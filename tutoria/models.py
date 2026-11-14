@@ -32,7 +32,9 @@ class PedidoDeAjuda(models.Model):
     erro_enviado = models.TextField(blank=True)
     resposta = models.TextField(blank=True)
     fontes = models.JSONField(default=list, blank=True)
-    sugestoes_de_busca = models.TextField(blank=True, help_text="HTML das sugestões do Google, exigido ao usar a busca.")
+    sugestoes_de_busca = models.TextField(
+        blank=True, help_text="HTML das sugestões do Google, exigido ao usar a busca."
+    )
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.RESPONDIDO)
     criado_em = models.DateTimeField(auto_now_add=True)
 

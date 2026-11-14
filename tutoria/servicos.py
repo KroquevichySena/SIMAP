@@ -19,7 +19,6 @@ import io
 import re
 import tokenize
 from dataclasses import dataclass
-from typing import Optional
 
 from django.conf import settings
 from django.db.models import Max
@@ -124,7 +123,7 @@ class Situacao:
     """O que o aluno ainda pode pedir nesta atividade."""
 
     restantes_hoje: int
-    proximo_nivel: Optional[int]  # None = não há mais dicas disponíveis
+    proximo_nivel: int | None  # None = não há mais dicas disponíveis
     espera_segundos: int
     ajuda_ligada: bool
 
@@ -198,7 +197,7 @@ def sem_comentarios(codigo):
             t._replace(string="") if t.type == tokenize.COMMENT else t
             for t in tokenize.generate_tokens(io.StringIO(codigo).readline)
         ]
-        return "\n".join(l.rstrip() for l in tokenize.untokenize(pedacos).split("\n"))
+        return "\n".join(linha.rstrip() for linha in tokenize.untokenize(pedacos).split("\n"))
     except (tokenize.TokenError, IndentationError, SyntaxError):
         # Código que nem compila: tira o que vem depois de "#" fora de aspas, linha a linha.
         return "\n".join(_cortar_comentario(linha) for linha in codigo.splitlines())
@@ -245,9 +244,9 @@ def montar_pedido(atividade, tipo, nivel, codigo="", erro="", dicas_anteriores=(
 def parece_solucao(texto):
     """Heurística: a resposta tem código demais para ser só uma dica?"""
     for bloco, _ in _BLOCO_DE_CODIGO.findall(texto):
-        if len([l for l in bloco.splitlines() if l.strip()]) > MAXIMO_LINHAS_DE_CODIGO:
+        if len([linha for linha in bloco.splitlines() if linha.strip()]) > MAXIMO_LINHAS_DE_CODIGO:
             return True
-    linhas_de_codigo = [l for l in texto.splitlines() if _PARECE_CODIGO.match(l)]
+    linhas_de_codigo = [linha for linha in texto.splitlines() if _PARECE_CODIGO.match(linha)]
     return len(linhas_de_codigo) > MAXIMO_LINHAS_DE_CODIGO
 
 
