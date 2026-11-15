@@ -47,7 +47,7 @@ O sistema tem três perfis:
 | **Entregas** | Envio de respostas e anexos, análise consultiva pelo Google Gemini (resumo e pontos de atenção), nota e devolutiva publicadas só após a validação do docente |
 | **Ajuda da IA ao aluno** | Dicas em níveis, explicação de conceitos, busca de material e leitura de erros do código, sem entregar a solução |
 | **Chamada** | Chamada por QR code projetado, com código que expira, renovação, confirmação pelo celular, presenças em análise e lista de faltas |
-| **Comunicação** | Avisos e comentários na turma, mensagens, anexos validados e notificações |
+| **Comunicação** | Avisos e comentários na turma, mensagens, anexos validados, notificações internas e e-mails automáticos de atenção e feedback (RF33) |
 | **Painéis** | Painel do docente com indicadores da turma e destaque dos alunos em atenção; painel do discente com a própria frequência, entregas e progresso |
 | **Auditoria** | Registro das ações relevantes, com filtros e exportação em CSV, e limpeza pelo prazo de retenção |
 
@@ -240,6 +240,22 @@ Essa validação é uma defesa em camadas e não substitui um antivírus. Refer�
 ---
 
 ## 7. Testes e qualidade
+
+**E-mails automáticos (RF33):** depois de atualizar, execute `python manage.py migrate`.
+O aluno é avisado após salvar a avaliação oficial; revisões que alteram a nota ou o
+feedback também geram aviso. Para acompanhar alunos em atenção e reprocessar envios
+pendentes, mantenha em outro terminal:
+
+```bash
+python manage.py notificar_acompanhamento --intervalo 60
+```
+
+Esse processo precisa continuar em execução. Em produção, use um worker supervisionado
+ou agende `python manage.py notificar_acompanhamento` periodicamente, sem `--intervalo`.
+Abrir o painel não dispara e-mails. O envio usa `EMAIL_BACKEND`; no modo console, a
+mensagem aparece no terminal e não chega a uma caixa postal. Para links nos avisos,
+configure `SIMAP_PUBLIC_URL` com o endereço do sistema.
+Veja [regras e verificação do RF33](docs/RF33_NOTIFICACOES.md).
 
 Os testes usam um banco SQLite em memória, criado do zero e descartado no fim. Não precisam de `.env` nem de PostgreSQL:
 
