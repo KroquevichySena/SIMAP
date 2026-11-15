@@ -1,0 +1,21 @@
+{% extends 'erro_base.html' %}
+
+{% block codigo %}500 Internal Server Error{% endblock %}
+{% block titulo %}Achamos um bug, e dessa vez não foi no seu código 🐞{% endblock %}
+{% block texto %}Algo deu errado do nosso lado. Tente de novo em alguns instantes. Se continuar, avise o professor.{% endblock %}
+
+{% block ilustracao %}
+<svg viewBox="0 0 220 160" width="220" height="160">
+    <g class="erro-bug">
+        <path class="erro-perna" d="M84 78 l-22 -10 M84 96 l-24 0 M86 114 l-22 12 M136 78 l22 -10 M136 96 l24 0 M134 114 l22 12"/>
+        <path class="erro-perna" d="M100 52 l-10 -16 M120 52 l10 -16"/>
+        <ellipse class="erro-corpo" cx="110" cy="98" rx="30" ry="38"/>
+        <path class="erro-asa" d="M110 62 v72"/>
+        <circle class="erro-cabeca" cx="110" cy="58" r="14"/>
+        <circle cx="105" cy="56" r="2.5" fill="#fff"/>
+        <circle cx="115" cy="56" r="2.5" fill="#fff"/>
+    </g>
+    <text x="40" y="40" class="erro-chave">{</text>
+    <text x="168" y="40" class="erro-chave">}</text>
+</svg>
+{% endblock %}

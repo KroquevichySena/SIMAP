@@ -1,0 +1,21 @@
+{% extends 'erro_base.html' %}
+
+{% block codigo %}403 Forbidden{% endblock %}
+{% block titulo %}Você não pode espiar aí, hein! 👀{% endblock %}
+{% block texto %}Esta página é de outro perfil ou de outra turma. Se você acha que deveria ter acesso, fale com o professor ou com a coordenação.{% endblock %}
+
+{% block ilustracao %}
+<svg viewBox="0 0 220 160" width="220" height="160">
+    <circle class="erro-olho" cx="82" cy="70" r="22"/>
+    <circle class="erro-olho" cx="138" cy="70" r="22"/>
+    <g class="erro-pupilas">
+        <circle cx="82" cy="72" r="9" fill="#0f172a"/>
+        <circle cx="138" cy="72" r="9" fill="#0f172a"/>
+        <circle cx="85" cy="68" r="3" fill="#fff"/>
+        <circle cx="141" cy="68" r="3" fill="#fff"/>
+    </g>
+    <path class="erro-mao" d="M44 92 q4 -14 12 -14 q6 0 6 10 M176 92 q-4 -14 -12 -14 q-6 0 -6 10"/>
+    <rect class="erro-muro" x="20" y="88" width="180" height="56" rx="6"/>
+    <path class="erro-tijolo" d="M20 106 h180 M20 125 h180 M65 88 v18 M125 88 v18 M95 106 v19 M155 106 v19 M50 125 v19 M110 125 v19 M170 125 v19"/>
+</svg>
+{% endblock %}
