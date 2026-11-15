@@ -1221,13 +1221,30 @@ body.simap-app {
 .simap-termos {
     flex-shrink: 0;
     width: 100%;
-    max-width: 900px;
+    max-width: 1120px;
     margin-inline: auto;
     padding: 32px clamp(20px, 4vw, 48px);
     color: #334155;
     font-size: 14px;
     line-height: 1.8;
     overflow-wrap: anywhere;
+}
+
+.simap-termos-cabecalho {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.simap-termos-selo {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    background-color: #eff6ff;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .02em;
 }
 
 .simap-termos h1 {
@@ -1240,12 +1257,49 @@ body.simap-app {
 }
 
 .simap-termos-versao {
-    margin: 12px 0 28px;
+    margin: 8px 0 0;
     color: var(--muted);
     font-size: 13px;
 }
 
+.simap-termos-resumo {
+    margin: 24px 0 32px;
+    padding: 20px 24px;
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    background-color: #eff6ff;
+}
+
+.simap-termos-resumo h2 {
+    margin: 0 0 4px;
+    color: var(--foreground);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.simap-termos-resumo p {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.simap-termos-resumo ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #1e293b;
+}
+
+.simap-termos-grade {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+}
+
 .simap-termos-indice {
+    position: sticky;
+    top: 24px;
     padding: 20px;
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -1259,21 +1313,58 @@ body.simap-app {
     font-weight: 700;
 }
 
+.simap-termos-indice ol {
+    margin: 0;
+    padding-left: 22px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.simap-termos-indice li {
+    padding-block: 5px;
+}
+
 .simap-termos-indice a {
-    display: block;
-    padding-block: 8px;
+    color: #334155;
+    text-decoration: none;
+}
+
+.simap-termos-indice a:hover {
     color: var(--primary);
+    text-decoration: underline;
+}
+
+.simap-termos-texto > .simap-termos-clausula:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
 }
 
 .simap-termos-clausula {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin: 36px 0 20px;
     padding-top: 24px;
     border-top: 1px solid var(--border);
     color: var(--foreground);
     font-size: 20px;
     font-weight: 700;
-    line-height: 1.5;
+    line-height: 1.4;
     scroll-margin-top: 24px;
+}
+
+.simap-termos-clausula span {
+    flex-shrink: 0;
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: var(--primary);
+    color: #fff;
+    font-size: 15px;
 }
 
 .simap-termos-subtitulo {
@@ -1281,6 +1372,34 @@ body.simap-app {
     color: var(--foreground);
     font-size: 15px;
     font-weight: 600;
+}
+
+.simap-termos-aceite {
+    margin: 0 0 24px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: #1e293b;
+    font-style: italic;
+}
+
+.simap-termos-rodape {
+    margin: 32px 0 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.simap-termos-rodape p {
+    margin: 0 0 4px;
+}
+
+@media (max-width: 991px) {
+    .simap-termos-grade { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .simap-termos-indice { position: static; }
 }
 
 .simap-auditoria-filtros {
