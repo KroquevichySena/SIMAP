@@ -99,3 +99,11 @@ class AceitePrimeiroAcessoForm(forms.Form):
         if versao != settings.TERMOS_DE_USO_VERSAO:
             raise forms.ValidationError("Os termos foram atualizados. Recarregue esta página antes de aceitar.")
         return versao
+
+
+class ConfirmacaoGestaoUsuarioForm(forms.Form):
+    confirmar = forms.BooleanField(
+        label="Confirmo que desejo realizar esta ação nesta conta.",
+        error_messages={"required": "Confirme a ação antes de continuar."},
+        widget=forms.CheckboxInput(attrs={"class": "simap-checkbox"}),
+    )

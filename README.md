@@ -148,6 +148,16 @@ Ela não acessa as funções de docente ou discente. No primeiro login, aceita o
 de uso e passa a ver o menu **Usuários**, onde cadastra docentes e discentes.
 Esse formulário não cria outras contas de coordenação nem permite elevar privilégios.
 
+Na listagem de Usuários, a coordenação pode **desativar**, **reativar** ou solicitar
+a **exclusão** de uma conta acadêmica, sempre com confirmação e POST protegido por
+CSRF. Desativar bloqueia o login e as sessões na próxima requisição, preservando
+senha, vínculos e histórico. Reativar não altera a situação das matrículas.
+A exclusão definitiva pela tela do SIMAP só é permitida para contas que nunca
+entraram e não possuem vínculos ou registros que seriam removidos (incluindo
+aceites dos termos). Contas com histórico devem ser desativadas. Registros de
+auditoria são preservados. Contas da coordenação e contas com flags administrativas
+não podem ser removidas nem desativadas por essa tela.
+
 O Admin exibe os três perfis. Para entrar nele, a conta precisa do perfil Coordenação
 e também das permissões técnicas do Django (`is_staff` e permissões, ou superusuário).
 Somente escolher um perfil não concede automaticamente privilégios de superusuário.

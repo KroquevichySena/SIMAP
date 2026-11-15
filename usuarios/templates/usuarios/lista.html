@@ -21,13 +21,21 @@
         <div class="simap-tabela-rolagem" role="region" aria-labelledby="titulo-usuarios" tabindex="0">
             <table class="simap-tabela">
                 <caption class="visually-hidden">Contas de docentes e discentes, sem contas administrativas.</caption>
-                <thead><tr><th scope="col">Nome / usuário</th><th scope="col">Perfil</th><th scope="col">E-mail</th><th scope="col">RGM</th><th scope="col">Situação</th></tr></thead>
+                <thead><tr><th scope="col">Nome / usuário</th><th scope="col">Perfil</th><th scope="col">E-mail</th><th scope="col">RGM</th><th scope="col">Situação</th><th scope="col">Ações</th></tr></thead>
                 <tbody>{% for conta in usuarios %}
                     <tr>
                         <th scope="row" class="simap-turma-nome">{{ conta.get_full_name|default:conta.username }}<span class="simap-turma-data">{{ conta.username }}</span></th>
                         <td><span class="simap-etiqueta{% if conta.is_docente %} simap-etiqueta-azul{% endif %}">{{ conta.get_perfil_display }}</span></td>
                         <td>{{ conta.email|default:"Não informado" }}</td><td class="simap-rgm">{{ conta.rgm|default:"—" }}</td>
                         <td><span class="simap-situacao {% if conta.is_active %}simap-situacao-ativa{% else %}simap-situacao-inativa{% endif %}">{% if conta.is_active %}Ativa{% else %}Inativa{% endif %}</span></td>
+                        <td class="simap-tabela-acoes">
+                            {% if conta.is_active %}
+                                <a class="simap-link-acao me-3" href="{% url 'usuario_acao' conta.pk 'desativar' %}">Desativar<span class="visually-hidden"> {{ conta.username }}</span></a>
+                            {% else %}
+                                <a class="simap-link-acao me-3" href="{% url 'usuario_acao' conta.pk 'reativar' %}">Reativar<span class="visually-hidden"> {{ conta.username }}</span></a>
+                            {% endif %}
+                            <a class="simap-link-acao text-danger" href="{% url 'usuario_acao' conta.pk 'excluir' %}">Excluir<span class="visually-hidden"> {{ conta.username }}</span></a>
+                        </td>
                     </tr>
                 {% endfor %}</tbody>
             </table>

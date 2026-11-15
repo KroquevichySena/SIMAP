@@ -10,6 +10,7 @@ urlpatterns = [
     path("trocar-senha-temporaria/", views.TrocarSenhaTemporariaView.as_view(), name="trocar_senha_temporaria"),
     path("usuarios/", views.UsuarioListView.as_view(), name="usuarios_lista"),
     path("usuarios/novo/", views.UsuarioCreateView.as_view(), name="usuario_criar"),
+    path("usuarios/<int:pk>/<str:acao>/", views.UsuarioAcaoView.as_view(), name="usuario_acao"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("termos-de-uso/", views.TermosDeUsoView.as_view(), name="termos_de_uso"),
     path(
