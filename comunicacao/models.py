@@ -11,6 +11,7 @@ mural. Uma publicação pode ser de três tipos, conforme os campos preenchidos:
 Respostas e anexos ficam pendurados na publicação, e as notificações avisam
 cada pessoa do que é novo para ela.
 """
+
 import os
 import uuid
 
@@ -18,6 +19,52 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
+
+
+class EstadoAlertaAtencao(models.Model):
+    """Memória da última verificação; uma nova entrada em atenção inicia outro episódio."""
+
+    matricula = models.OneToOneField("turmas.Matricula", on_delete=models.CASCADE)
+    docente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    em_atencao = models.BooleanField(default=False)
+    episodio = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"Acompanhamento da matrícula #{self.matricula_id}"
+
+
+class EmailAcademico(models.Model):
+    """Fila persistente do RF33; não guarda nota, feedback ou corpo do e-mail."""
+
+    class Tipo(models.TextChoices):
+        FEEDBACK = "FEEDBACK", "Feedback publicado"
+        ATENCAO = "ATENCAO", "Aluno em atenção"
+
+    class Status(models.TextChoices):
+        PENDENTE = "PENDENTE", "Pendente"
+        ENVIANDO = "ENVIANDO", "Em envio"
+        ENVIADO = "ENVIADO", "Aceito pelo backend de e-mail"
+        CANCELADO = "CANCELADO", "Não se aplica mais"
+
+    chave = models.CharField(max_length=128, unique=True)
+    tipo = models.CharField(max_length=10, choices=Tipo.choices)
+    destinatario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    avaliacao = models.ForeignKey("entregas.AvaliacaoOficial", on_delete=models.CASCADE, null=True, blank=True)
+    matricula = models.ForeignKey("turmas.Matricula", on_delete=models.CASCADE, null=True, blank=True)
+    assinatura = models.CharField(max_length=64, blank=True)
+    episodio = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDENTE, db_index=True)
+    tentativas = models.PositiveIntegerField(default=0)
+    reserva = models.UUIDField(null=True, blank=True)
+    reservado_em = models.DateTimeField(null=True, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    enviado_em = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["pk"]
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} #{self.pk}: {self.get_status_display()}"
 
 
 def caminho_do_anexo(instancia, nome_arquivo):
@@ -80,16 +127,26 @@ class Publicacao(models.Model):
         "turmas.Turma", on_delete=models.CASCADE, related_name="publicacoes", verbose_name="Turma"
     )
     atividade = models.ForeignKey(
-        "core.Atividade", on_delete=models.CASCADE, null=True, blank=True,
-        related_name="comentarios", verbose_name="Atividade",
+        "core.Atividade",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="comentarios",
+        verbose_name="Atividade",
     )
     autor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        related_name="publicacoes", verbose_name="Autor",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="publicacoes",
+        verbose_name="Autor",
     )
     destinatario = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
-        related_name="mensagens_recebidas", verbose_name="Destinatário",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="mensagens_recebidas",
+        verbose_name="Destinatário",
         help_text="Preenchido só nas mensagens privadas.",
     )
     texto = models.TextField("Mensagem")
@@ -140,8 +197,10 @@ class Resposta(models.Model):
         Publicacao, on_delete=models.CASCADE, related_name="respostas", verbose_name="Publicação"
     )
     autor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        related_name="respostas_comunicacao", verbose_name="Autor",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="respostas_comunicacao",
+        verbose_name="Autor",
     )
     texto = models.TextField("Resposta")
     criada_em = models.DateTimeField("Respondida em", auto_now_add=True)
@@ -161,12 +220,8 @@ class Resposta(models.Model):
 class Anexo(ArquivoSeguro):
     """Arquivo enviado numa publicação ou numa resposta, já validado."""
 
-    publicacao = models.ForeignKey(
-        Publicacao, on_delete=models.CASCADE, null=True, blank=True, related_name="anexos"
-    )
-    resposta = models.ForeignKey(
-        Resposta, on_delete=models.CASCADE, null=True, blank=True, related_name="anexos"
-    )
+    publicacao = models.ForeignKey(Publicacao, on_delete=models.CASCADE, null=True, blank=True, related_name="anexos")
+    resposta = models.ForeignKey(Resposta, on_delete=models.CASCADE, null=True, blank=True, related_name="anexos")
 
     class Meta(ArquivoSeguro.Meta):
         verbose_name = "Anexo"
@@ -198,8 +253,10 @@ class Notificacao(models.Model):
         PRAZO = "PRAZO", "Prazo terminando"
 
     destinatario = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        related_name="notificacoes", verbose_name="Destinatário",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notificacoes",
+        verbose_name="Destinatário",
     )
     tipo = models.CharField("Tipo", max_length=12, choices=Tipo.choices)
     mensagem = models.CharField("Mensagem", max_length=255)

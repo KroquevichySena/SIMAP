@@ -196,6 +196,8 @@ GEMINI_API_URL = env(
 MAILGUN_API_KEY = env("MAILGUN_API_KEY", default="")
 MAILGUN_DOMAIN = env("MAILGUN_DOMAIN", default="")
 MAILGUN_API_URL = env("MAILGUN_API_URL", default="https://api.mailgun.net")
+# Base confiável para os links dos avisos (nunca obtida do Host da requisição).
+SIMAP_PUBLIC_URL = env("SIMAP_PUBLIC_URL", default="")
 
 # E-mail. Sem nada no .env, as mensagens só aparecem no terminal; em produção
 # o .env aponta para o backend do Mailgun.
