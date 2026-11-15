@@ -258,7 +258,15 @@ pip install -r requirements-dev.txt
 ruff check .
 ```
 
-**Integração contínua:** a cada Pull Request para a `main`, o GitHub Actions (`.github/workflows/ci.yml`) roda em paralelo os testes unitários, os testes de integração (incluindo a checagem de migrations pendentes) e o linter.
+**Cobertura de testes:** as regras estão em `.coveragerc`. O mínimo exigido é 50% nos testes unitários.
+
+```bash
+pip install -r requirements-dev.txt
+coverage run manage.py test --settings=SIMAP.settings_test --tipo unitarios
+coverage report
+```
+
+**Integração contínua:** a cada Pull Request para a `main`, o GitHub Actions (`.github/workflows/ci.yml`) roda em paralelo os testes unitários com a medição de cobertura, os testes de integração (incluindo a checagem de migrations pendentes) e o linter. O PR falha se a cobertura dos testes unitários ficar abaixo de 50%.
 
 ---
 
