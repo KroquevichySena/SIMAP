@@ -259,6 +259,11 @@ class BaixarAnexoSubmissaoView(LoginRequiredMixin, View):
         )
         submissao = anexo.submissao
         docente_id = submissao.atividade.trilha.turma.docente_id
-        if request.user.pk not in (submissao.aluno_id, docente_id):
+        permitido = (
+            request.user.is_discente and request.user.pk == submissao.aluno_id
+        ) or (
+            request.user.is_docente and request.user.pk == docente_id
+        )
+        if not permitido:
             raise Http404
         return resposta_de_download(anexo, mostrar_na_tela=request.GET.get("ver") == "1")

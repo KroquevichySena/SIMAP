@@ -35,7 +35,7 @@ class BaseAuditoriaTestCase(TestCase):
             username="aluno.carla", password=SENHA, perfil="DISCENTE"
         )
         cls.coordenador = Usuario.objects.create_superuser(
-            username="coord", password=SENHA, perfil="DOCENTE"
+            username="coord", password=SENHA, perfil="COORDENACAO"
         )
         cls.turma = Turma.objects.create(
             nome="Algoritmos I", periodo="2026.2", docente=cls.docente

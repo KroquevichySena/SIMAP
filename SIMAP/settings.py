@@ -35,7 +35,7 @@ CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 
 # Os apps do Django que o projeto usa, e os nossos.
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "SIMAP.apps.SimapAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -62,6 +62,7 @@ MIDDLEWARE = [
     # A auditoria vem depois da autenticação porque precisa saber quem é o usuário
     "auditoria.middleware.AuditoriaMiddleware",
     "usuarios.middleware.AceiteTermosMiddleware",
+    "usuarios.middleware.AcessoAdminMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

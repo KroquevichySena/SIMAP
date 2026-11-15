@@ -1,5 +1,5 @@
 """
-Quem pode entrar em cada tela, de acordo com o perfil (docente ou discente).
+Quem pode entrar em cada tela, de acordo com o perfil acadêmico.
 
 Essa é a primeira barreira. A segunda fica no get_queryset() de cada view,
 que confere se o objeto aberto pertence mesmo a quem está pedindo.

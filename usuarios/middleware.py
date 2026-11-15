@@ -1,7 +1,20 @@
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.utils.deprecation import MiddlewareMixin
 
 from .acesso import aceitou_versao_atual, destino_seguro, url_primeiro_acesso, url_troca_senha
+
+
+class AcessoAdminMiddleware(MiddlewareMixin):
+    """Bloqueia todas as telas do Admin para perfis acadêmicos, mesmo com flags indevidas."""
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        rota = request.resolver_match
+        if (
+            request.user.is_authenticated and rota and "admin" in rota.app_names
+            and not request.user.is_coordenacao
+        ):
+            raise PermissionDenied("O painel administrativo é exclusivo da coordenação.")
 
 
 class AceiteTermosMiddleware(MiddlewareMixin):
