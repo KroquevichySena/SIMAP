@@ -1,0 +1,18 @@
+# Configuração da cobertura de testes (coverage.py), usada pela pipeline de CI e localmente:
+#     pip install -r requirements-dev.txt
+#     coverage run manage.py test --settings=SIMAP.settings_test --tipo unitarios
+#     coverage report
+[run]
+source = .
+omit =
+    venv/*
+    */migrations/*
+    */test*.py
+    */tests/*
+    # nome dado ao código do aluno quando os testes do editor o executam
+    *seu_codigo.py
+
+[report]
+# O plano de ensino pede cobertura mínima de 50% nos testes unitários.
+fail_under = 50
+precision = 1
