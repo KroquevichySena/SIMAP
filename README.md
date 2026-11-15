@@ -30,7 +30,7 @@ O sistema tem três perfis:
 
 | Perfil | Quem é | O que faz |
 |---|---|---|
-| **Coordenação** | Conta administrativa (superusuário sem perfil discente) | Cadastra docentes e discentes e consulta a auditoria |
+| **Coordenação** | Perfil próprio `COORDENACAO`, separado de docente e discente | Cadastra docentes e discentes e consulta a auditoria |
 | **Docente** | Professor da disciplina | Cria turmas, matrículas, trilhas e atividades; faz a chamada; corrige as entregas; acompanha o painel da turma |
 | **Discente** | Aluno matriculado | Realiza as atividades, confirma presença, pede ajuda à IA e acompanha a própria evolução |
 
@@ -143,7 +143,21 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-A conta criada pelo `createsuperuser` é a **Coordenação**. Não atribua a ela o perfil DISCENTE. No primeiro login, ela aceita os termos de uso e passa a ver o menu **Usuários**, onde cadastra docentes e discentes.
+A conta criada pelo `createsuperuser` recebe o perfil **Coordenação** automaticamente.
+Ela não acessa as funções de docente ou discente. No primeiro login, aceita os termos
+de uso e passa a ver o menu **Usuários**, onde cadastra docentes e discentes.
+Esse formulário não cria outras contas de coordenação nem permite elevar privilégios.
+
+O Admin exibe os três perfis. Para entrar nele, a conta precisa do perfil Coordenação
+e também das permissões técnicas do Django (`is_staff` e permissões, ou superusuário).
+Somente escolher um perfil não concede automaticamente privilégios de superusuário.
+Uma conta com perfil docente ou discente não acessa o Admin, mesmo com flags indevidas.
+
+Ao atualizar, execute `python manage.py migrate`. A migração `usuarios.0004` converte
+as contas superusuárias antigas que não sejam discentes para o perfil Coordenação.
+Senhas, aceites e vínculos são preservados. Se uma dessas contas era responsável por
+turmas, transfira-as para um docente em **Admin → Turmas → Docente**. Enquanto isso,
+os dados continuam preservados no Admin, mas a coordenação não atua como professor.
 
 **Dados de demonstração (opcional).** O comando abaixo cria um docente, alunos, uma turma e trilhas com atividades de exemplo. Ele se recusa a rodar em produção:
 
