@@ -63,41 +63,39 @@
           <div class="dropdown">
             <button
               type="button"
-              class="btn btn-sm btn-outline-light simap-notificacoes"
+              id="simap-notificacoes-toggle"
+              class="simap-notificacoes"
               data-bs-toggle="dropdown"
               aria-expanded="false"
+              aria-controls="simap-notificacoes-lista"
+              aria-label="Notificações{% if notificacoes_nao_lidas %}, {{ notificacoes_nao_lidas }} não lidas{% endif %}"
             >
-              Notificações
-              {% if notificacoes_nao_lidas %}
-                <span class="badge bg-danger">
-                  {{ notificacoes_nao_lidas }}
-                  <span class="visually-hidden">não lidas</span>
-                </span>
-              {% endif %}
+              <span class="simap-notificacoes-sino" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></span>
+              <span class="simap-notificacoes-rotulo">Notificações</span>
+              {% if notificacoes_nao_lidas %}<span class="simap-notificacoes-contador" aria-hidden="true">{% if notificacoes_nao_lidas > 99 %}99+{% else %}{{ notificacoes_nao_lidas }}{% endif %}</span>{% endif %}
+              <svg class="simap-notificacoes-seta" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg>
             </button>
 
-            <ul class="dropdown-menu simap-notificacoes-lista">
+            <ul class="dropdown-menu simap-notificacoes-lista" id="simap-notificacoes-lista" aria-labelledby="simap-notificacoes-toggle">
+              <li class="simap-notificacoes-cabecalho"><strong>Seus avisos</strong><span>{% if notificacoes_nao_lidas %}{{ notificacoes_nao_lidas }} não lida{{ notificacoes_nao_lidas|pluralize }}{% else %}Tudo atualizado{% endif %}</span></li>
               {% for notificacao in notificacoes_recentes %}
                 <li>
                   <a
-                    class="dropdown-item small text-wrap"
+                    class="dropdown-item simap-notificacoes-item"
                     href="{% url 'comunicacao:notificacao_abrir' notificacao.pk %}"
                   >
-                    {{ notificacao.mensagem }}
+                    <span class="simap-notificacoes-ponto" aria-hidden="true"></span>
+                    <span><span class="simap-notificacoes-mensagem">{{ notificacao.mensagem }}</span><time datetime="{{ notificacao.criada_em|date:'c' }}">{{ notificacao.criada_em|date:"d/m · H:i" }}</time></span>
                   </a>
                 </li>
               {% empty %}
-                <li>
-                  <span class="dropdown-item-text small text-muted">
-                    Nenhuma notificação nova.
-                  </span>
-                </li>
+                <li class="simap-notificacoes-vazio"><strong>Você está em dia</strong><span>Nenhuma notificação nova.</span></li>
               {% endfor %}
 
-              <li><hr class="dropdown-divider"></li>
               <li>
-                <a class="dropdown-item small" href="{% url 'comunicacao:notificacoes' %}">
+                <a class="simap-notificacoes-todas" href="{% url 'comunicacao:notificacoes' %}">
                   Ver todas as notificações
+                  <span aria-hidden="true">→</span>
                 </a>
               </li>
             </ul>
