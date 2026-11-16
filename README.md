@@ -6,6 +6,50 @@ Projeto Final de Curso — Engenharia de Software, Universidade de Mogi das Cruz
 
 ---
 
+## Acompanhamento do PFC (entrega de 16/11/2026)
+
+### Etapa de 09/11
+
+| Exigência | Situação |
+|---|---|
+| Diagrama de classes e BPMN | Entregues na monografia; em atualização para refletir o sistema atual |
+| Integração ou consumo de API | Cumprido: Google Gemini (correção e ajuda ao aluno) e Mailgun (e-mail) |
+| Formulários com validação | Cumprido |
+| Pelo menos 75% dos casos de uso, com front-end e back-end integrados | Cumprido |
+| Documentação das regras de negócio | Cumprido na pasta `docs/`; ampliada neste README em 14/11 (seção 6) |
+| Validação pelo orientador | Não houve apontamentos nem validação registrada na entrega de 09/11 |
+
+### Desenvolvido desde 09/11
+
+| PR | Entrega |
+|---|---|
+| #21, #22 | Identidade visual do SIMAP aplicada a todas as telas |
+| #23 | Cadastro de usuários pela Coordenação e primeiro acesso |
+| #24 | Validação de segurança dos arquivos enviados |
+| #25, #26 | Chamada por QR code com ciclo, renovação, identificação de aparelho e localização |
+| #27 | Painel como página inicial de docentes e discentes |
+| #28 | Integração contínua no GitHub Actions (testes e Ruff a cada PR) |
+| #20, #29, #30 | Ajuda da IA ao aluno durante as atividades |
+| #31 | Senha temporária com troca obrigatória e limite de atenção por turma |
+| #32 | README com instruções de execução e roteiro de verificação |
+| #33 | Termos de uso 1.3 (LGPD), com novo aceite de todos os usuários |
+| #34 | Páginas de erro 403, 404 e 500 |
+
+Situação atual: 371 testes automatizados passando, análise estática sem alertas e verificação ponta a ponta dos três perfis em 15/11 (35 fluxos e 58 telas, sem erros).
+
+### Pendências
+
+| Item | Prazo | Situação |
+|---|---|---|
+| Testes unitários com cobertura mínima de 50% (coverage.py) | 23/11 | Meta atingida em 15/11: 55% só com os testes unitários e 91% com todos os testes; falta incluir o coverage no projeto e no CI |
+| Manual do sistema (apêndice da monografia) | 23/11 | Não iniciado |
+| Implantação em contêiner (Docker, Gunicorn, Render) | 23/11 | Não iniciado; depende de autorização |
+| Migração da correção por IA para o pacote `google-genai` | 23/11 | Não iniciado |
+
+Não verificado em ambiente real: Gemini e Mailgun com chaves de produção, e a chamada por QR no celular com localização (exige HTTPS).
+
+---
+
 ## Sumário
 
 1. [Visão geral](#1-visão-geral)
