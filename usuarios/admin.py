@@ -26,7 +26,7 @@ class UsuarioAdmin(UserAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        if not change and not obj.is_coordenacao:
+        if not change:
             obj.troca_senha_obrigatoria = True
         super().save_model(request, obj, form, change)
 

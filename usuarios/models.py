@@ -2,15 +2,19 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from .managers import UsuarioManager
+
 
 class Usuario(AbstractUser):
     PERFIL_CHOICES = [
+        ('COORDENACAO', 'Coordenação'),
         ('DOCENTE', 'Docente'),
         ('DISCENTE', 'Discente'),
     ]
 
     rgm = models.CharField(max_length=20, blank=True)
-    perfil = models.CharField(max_length=10, choices=PERFIL_CHOICES)
+    perfil = models.CharField(max_length=12, choices=PERFIL_CHOICES)
+    objects = UsuarioManager()
     troca_senha_obrigatoria = models.BooleanField(
         "Troca de senha pendente", default=False,
         help_text="Exige uma nova senha pessoal antes de acessar as funcionalidades.",
@@ -26,8 +30,8 @@ class Usuario(AbstractUser):
 
     @property
     def is_coordenacao(self) -> bool:
-        """Coordenação é uma conta administrativa ativa, nunca um discente."""
-        return self.is_active and self.is_superuser and not self.is_discente
+        """O perfil de negócio é explícito e independente dos privilégios do Django."""
+        return self.is_active and self.perfil == 'COORDENACAO'
 
     @property
     def pode_consultar_auditoria(self) -> bool:

@@ -17,6 +17,8 @@ class CadastroUsuarioForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Esta tela cadastra contas acadêmicas; não concede a gestão da plataforma.
+        self.fields["perfil"].choices = [("DOCENTE", "Docente"), ("DISCENTE", "Discente")]
         for nome in ("first_name", "last_name", "email", "perfil"):
             self.fields[nome].required = True
         self.fields["password1"].label = "Senha temporária"
@@ -76,8 +78,7 @@ class SenhaTemporariaAdminForm(AdminPasswordChangeForm):
     """Uma senha definida pela coordenação no Admin também é temporária."""
 
     def save(self, commit=True):
-        if not self.user.is_coordenacao:
-            self.user.troca_senha_obrigatoria = True
+        self.user.troca_senha_obrigatoria = True
         return super().save(commit=commit)
 
 
@@ -101,3 +102,11 @@ class AceitePrimeiroAcessoForm(forms.Form):
         if versao != settings.TERMOS_DE_USO_VERSAO:
             raise forms.ValidationError("Os termos foram atualizados. Recarregue esta página antes de aceitar.")
         return versao
+
+
+class ConfirmacaoGestaoUsuarioForm(forms.Form):
+    confirmar = forms.BooleanField(
+        label="Confirmo que desejo realizar esta ação nesta conta.",
+        error_messages={"required": "Confirme a ação antes de continuar."},
+        widget=forms.CheckboxInput(attrs={"class": "simap-checkbox"}),
+    )

@@ -5,14 +5,18 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponseRedirect
+from django.db.models.deletion import ProtectedError, RestrictedError
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 
 from auditoria.contexto import obter_ip
 
 from .acesso import aceitou_versao_atual, destino_apos_login, destino_seguro
-from .forms import AceitePrimeiroAcessoForm, CadastroUsuarioForm, TrocaSenhaTemporariaForm
+from .forms import AceitePrimeiroAcessoForm, CadastroUsuarioForm, ConfirmacaoGestaoUsuarioForm, TrocaSenhaTemporariaForm
+from .gestao import contas_academicas, possui_historico
 from .mixins import CoordenacaoRequiredMixin
 from .models import AceiteTermos, Usuario
 
@@ -66,7 +70,8 @@ class PrimeiroAcessoView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         AceiteTermos.objects.get_or_create(
-            usuario=self.request.user, versao=form.cleaned_data["versao"],
+            usuario=self.request.user,
+            versao=form.cleaned_data["versao"],
             defaults={"ip_address": obter_ip(self.request)},
         )
         return HttpResponseRedirect(destino_seguro(self.request))
@@ -79,17 +84,17 @@ class UsuarioListView(CoordenacaoRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        usuarios = Usuario.objects.filter(
-            perfil__in=["DOCENTE", "DISCENTE"], is_superuser=False, is_staff=False
-        ).order_by("first_name", "last_name", "username")
+        usuarios = contas_academicas().order_by("first_name", "last_name", "username")
         perfil = self.request.GET.get("perfil", "")
         if perfil in {"DOCENTE", "DISCENTE"}:
             usuarios = usuarios.filter(perfil=perfil)
         texto = self.request.GET.get("q", "").strip()
         if texto:
             usuarios = usuarios.filter(
-                Q(username__icontains=texto) | Q(first_name__icontains=texto)
-                | Q(last_name__icontains=texto) | Q(email__icontains=texto)
+                Q(username__icontains=texto)
+                | Q(first_name__icontains=texto)
+                | Q(last_name__icontains=texto)
+                | Q(email__icontains=texto)
                 | Q(rgm__icontains=texto)
             )
         return usuarios
@@ -123,6 +128,65 @@ class UsuarioCreateView(CoordenacaoRequiredMixin, CreateView):
             "e fará o próprio aceite dos termos.",
         )
         return resposta
+
+
+class UsuarioAcaoView(CoordenacaoRequiredMixin, View):
+    acoes = {"desativar": "Desativar usuário", "reativar": "Reativar usuário", "excluir": "Excluir usuário"}
+
+    def _conta(self, pk, acao, bloquear=False):
+        if acao not in self.acoes:
+            raise Http404
+        contas = contas_academicas()
+        if bloquear:
+            contas = contas.select_for_update()
+        return get_object_or_404(contas, pk=pk)
+
+    def _pagina(self, request, conta, acao, form):
+        return render(
+            request,
+            "usuarios/confirmar_acao.html",
+            {
+                "conta": conta,
+                "acao": acao,
+                "titulo": self.acoes[acao],
+                "form": form,
+                "exclusao_bloqueada": acao == "excluir" and possui_historico(conta),
+            },
+        )
+
+    def get(self, request, pk, acao):
+        conta = self._conta(pk, acao)
+        return self._pagina(request, conta, acao, ConfirmacaoGestaoUsuarioForm())
+
+    def post(self, request, pk, acao):
+        form = ConfirmacaoGestaoUsuarioForm(request.POST)
+        with transaction.atomic():
+            conta = self._conta(pk, acao, bloquear=True)
+            if form.is_valid():
+                if acao == "excluir":
+                    if possui_historico(conta):
+                        form.add_error(
+                            None,
+                            "Esta conta possui vínculos ou registros de uso. Desative-a para preservar o histórico.",
+                        )
+                    else:
+                        try:
+                            with transaction.atomic():
+                                conta.delete()
+                        except (ProtectedError, RestrictedError):
+                            form.add_error(None, "A conta possui vínculos que impedem a exclusão. Use a desativação.")
+                        else:
+                            messages.success(
+                                request, "Conta sem histórico excluída. Os registros de auditoria foram preservados."
+                            )
+                            return redirect("usuarios_lista")
+                else:
+                    conta.is_active = acao == "reativar"
+                    conta.save(update_fields=["is_active"])
+                    estado = "reativada" if conta.is_active else "desativada"
+                    messages.success(request, f"Conta {estado}. Os vínculos e registros foram preservados.")
+                    return redirect("usuarios_lista")
+        return self._pagina(request, conta, acao, form)
 
 
 class TermosDeUsoView(TemplateView):

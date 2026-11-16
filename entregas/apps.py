@@ -9,6 +9,7 @@ class EntregasConfig(AppConfig):
         # Quando o registro sai do banco, o arquivo também sai do disco.
         from comunicacao.arquivos import conectar_limpeza_do_disco
 
+        from . import sinais  # noqa: F401
         from .models import AnexoSubmissao
 
         conectar_limpeza_do_disco(AnexoSubmissao)

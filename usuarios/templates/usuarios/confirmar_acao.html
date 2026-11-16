@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }} - SIMAP{% endblock %}
+{% block content %}
+<div class="simap-pagina simap-formulario-pagina">
+    <a class="simap-voltar" href="{% url 'usuarios_lista' %}">← Voltar para usuários</a>
+    <header class="simap-cabecalho"><div><h1>{{ titulo }}</h1><p class="simap-subtitulo">Confira a conta e as consequências antes de confirmar.</p></div></header>
+    <section class="simap-cartao" aria-labelledby="titulo-conta">
+        <div class="simap-cartao-cabecalho"><h2 id="titulo-conta">{{ conta.get_full_name|default:conta.username }}</h2><span class="simap-contagem">{{ conta.get_perfil_display }}</span></div>
+        <form method="post" class="simap-formulario" novalidate>
+            {% csrf_token %}
+            {% include 'usuarios/_erros_acesso.html' %}
+            <p><strong>Usuário de acesso:</strong> {{ conta.username }}</p>
+            <div class="simap-nota-formulario">
+                {% if exclusao_bloqueada %}
+                    <strong>Esta conta possui histórico</strong>
+                    <p>Contas já utilizadas ou vinculadas a turmas, matrículas e outros registros não podem ser excluídas por esta tela. Desative a conta para bloquear o acesso e preservar os dados.</p>
+                {% elif acao == 'excluir' %}
+                    <strong>Exclusão definitiva</strong>
+                    <p>Esta conta ainda não foi utilizada e não possui vínculos. A exclusão não pode ser desfeita. Os registros de auditoria permanecem preservados.</p>
+                {% elif acao == 'desativar' %}
+                    <strong>O histórico será preservado</strong>
+                    <p>A conta perderá o acesso ao sistema, inclusive na próxima requisição de uma sessão já aberta. Turmas, matrículas, entregas e demais registros serão mantidos. Você poderá reativá-la depois.</p>
+                {% else %}
+                    <strong>Restaurar o acesso</strong>
+                    <p>A conta voltará a poder entrar no sistema com suas credenciais. A situação das matrículas e os demais registros não serão alterados.</p>
+                {% endif %}
+            </div>
+            {% if not exclusao_bloqueada %}
+                {% include 'partials/_campo_formulario.html' with campo=form.confirmar %}
+            {% endif %}
+            <div class="simap-formulario-acoes">
+                {% if not exclusao_bloqueada %}
+                    <button type="submit" class="simap-botao {% if acao == 'excluir' %}simap-botao-perigo{% else %}simap-botao-primario{% endif %}">{{ titulo }}</button>
+                {% elif conta.is_active %}
+                    <a href="{% url 'usuario_acao' conta.pk 'desativar' %}" class="simap-botao simap-botao-primario">Desativar esta conta</a>
+                {% else %}
+                    <p class="simap-ajuda-campo">A conta já está desativada e seu histórico está preservado.</p>
+                {% endif %}
+                <a href="{% url 'usuarios_lista' %}" class="simap-botao simap-botao-secundario">Voltar sem alterar</a>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -22,8 +22,8 @@ class PermissoesAuditoriaTest(TestCase):
             ])
         ]
         cls.coordenadores = [
-            Usuario.objects.create_superuser(username=f"coord-{indice}", perfil=perfil)
-            for indice, perfil in enumerate(["", "DOCENTE"])
+            Usuario.objects.create_superuser(username=f"coord-{indice}")
+            for indice in range(2)
         ]
         cls.docente = Usuario.objects.create_user(username="docente", perfil="DOCENTE")
         cls.registro = RegistroAuditoria.objects.create(

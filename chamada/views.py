@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from turmas.models import Matricula
+from turmas.permissoes import docente_required
 
 from .forms import AbrirChamadaForm, ConfirmarPresencaForm
 from .models import Chamada, Registro_de_Presenca
@@ -112,6 +113,7 @@ def estado_chamada(request, pk):
 
 
 @login_required
+@docente_required
 @require_POST
 def renovar_chamada(request, pk):
     chamada = _chamada_do_professor(request, pk)
@@ -126,6 +128,7 @@ def renovar_chamada(request, pk):
 
 
 @login_required
+@docente_required
 @require_POST
 def finalizar_chamada(request, pk):
     chamada = _chamada_do_professor(request, pk)
@@ -136,6 +139,7 @@ def finalizar_chamada(request, pk):
 
 
 @login_required
+@docente_required
 @require_POST
 def decidir_presenca(request, pk):
     presenca = get_object_or_404(

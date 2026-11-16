@@ -443,8 +443,10 @@ class BaixarMaterialView(LoginRequiredMixin, View):
     @staticmethod
     def _pode_baixar(usuario, material):
         turma = material.turma
-        if turma.docente_id == usuario.pk:
+        if usuario.is_docente and turma.docente_id == usuario.pk:
             return True
+        if not usuario.is_discente:
+            return False
         trilha = material.trilha or material.atividade.trilha
         if not (trilha.publicada and turma.ativa):
             return False

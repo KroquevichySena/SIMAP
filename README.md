@@ -30,7 +30,7 @@ O sistema tem três perfis:
 
 | Perfil | Quem é | O que faz |
 |---|---|---|
-| **Coordenação** | Conta administrativa (superusuário sem perfil discente) | Cadastra docentes e discentes e consulta a auditoria |
+| **Coordenação** | Perfil próprio `COORDENACAO`, separado de docente e discente | Cadastra docentes e discentes e consulta a auditoria |
 | **Docente** | Professor da disciplina | Cria turmas, matrículas, trilhas e atividades; faz a chamada; corrige as entregas; acompanha o painel da turma |
 | **Discente** | Aluno matriculado | Realiza as atividades, confirma presença, pede ajuda à IA e acompanha a própria evolução |
 
@@ -47,7 +47,7 @@ O sistema tem três perfis:
 | **Entregas** | Envio de respostas e anexos, análise consultiva pelo Google Gemini (resumo e pontos de atenção), nota e devolutiva publicadas só após a validação do docente |
 | **Ajuda da IA ao aluno** | Dicas em níveis, explicação de conceitos, busca de material e leitura de erros do código, sem entregar a solução |
 | **Chamada** | Chamada por QR code projetado, com código que expira, renovação, confirmação pelo celular, presenças em análise e lista de faltas |
-| **Comunicação** | Avisos e comentários na turma, mensagens, anexos validados e notificações |
+| **Comunicação** | Avisos e comentários na turma, mensagens, anexos validados, notificações internas e e-mails automáticos de atenção e feedback (RF33) |
 | **Painéis** | Painel do docente com indicadores da turma e destaque dos alunos em atenção; painel do discente com a própria frequência, entregas e progresso |
 | **Auditoria** | Registro das ações relevantes, com filtros e exportação em CSV, e limpeza pelo prazo de retenção |
 
@@ -143,14 +143,47 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-A conta criada pelo `createsuperuser` é a **Coordenação**. Não atribua a ela o perfil DISCENTE. No primeiro login, ela aceita os termos de uso e passa a ver o menu **Usuários**, onde cadastra docentes e discentes.
+A conta criada pelo `createsuperuser` recebe o perfil **Coordenação** automaticamente.
+Ela não acessa as funções de docente ou discente. No primeiro login, aceita os termos
+de uso e passa a ver o menu **Usuários**, onde cadastra docentes e discentes.
+Esse formulário não cria outras contas de coordenação nem permite elevar privilégios.
 
-**Dados de demonstração (opcional).** O comando abaixo cria um docente, alunos, uma turma e trilhas com atividades de exemplo. Ele se recusa a rodar em produção:
+Na listagem de Usuários, a coordenação pode **desativar**, **reativar** ou solicitar
+a **exclusão** de uma conta acadêmica, sempre com confirmação e POST protegido por
+CSRF. Desativar bloqueia o login e as sessões na próxima requisição, preservando
+senha, vínculos e histórico. Reativar não altera a situação das matrículas.
+A exclusão definitiva pela tela do SIMAP só é permitida para contas que nunca
+entraram e não possuem vínculos ou registros que seriam removidos (incluindo
+aceites dos termos). Contas com histórico devem ser desativadas. Registros de
+auditoria são preservados. Contas da coordenação e contas com flags administrativas
+não podem ser removidas nem desativadas por essa tela.
+
+O Admin exibe os três perfis. Para entrar nele, a conta precisa do perfil Coordenação
+e também das permissões técnicas do Django (`is_staff` e permissões, ou superusuário).
+Somente escolher um perfil não concede automaticamente privilégios de superusuário.
+Uma conta com perfil docente ou discente não acessa o Admin, mesmo com flags indevidas.
+
+Ao atualizar, execute `python manage.py migrate`. A migração `usuarios.0004` converte
+as contas superusuárias antigas que não sejam discentes para o perfil Coordenação.
+Senhas, aceites e vínculos são preservados. Se uma dessas contas era responsável por
+turmas, transfira-as para um docente em **Admin → Turmas → Docente**. Enquanto isso,
+os dados continuam preservados no Admin, mas a coordenação não atua como professor.
+
+**Dados de demonstração (opcional).** O comando abaixo cria coordenação, docente,
+alunos, uma turma e trilhas com atividades fictícias. Os usuários têm prefixo `demo.`,
+RGMs `DEMO-` e e-mails reservados `@example.test`. Ele se recusa a rodar em produção:
 
 ```bash
 python manage.py popular_dados
-python manage.py popular_dados --limpar   # apaga e recria os dados de exemplo
+python manage.py popular_dados --limpar   # recria somente a turma DEMO; preserva contas e senhas
 ```
+
+A senha temporária exclusiva do cenário está na constante `SENHA_PADRAO` do comando
+(somente desenvolvimento); ela não é impressa no resumo. Troque-a no primeiro
+acesso. Contas existentes mantêm suas senhas ao repetir o comando. Use um banco
+separado para a apresentação e nunca inclua senhas, QR codes, tokens ou dados
+pessoais reais nas evidências. A limpeza é recusada se a turma DEMO contiver dados
+de outras contas. Dados antigos criados por versões anteriores não são apagados.
 
 ### 4.5 Rodar
 
@@ -175,7 +208,7 @@ Siga na ordem, porque cada etapa usa os dados da anterior. Para usar dois perfis
 
 | # | Perfil | O que fazer | Resultado esperado |
 |---|---|---|---|
-| 1 | Coordenação | **Usuários → Novo usuário**: cadastrar 1 docente e 2 discentes (com RGM) | Contas criadas com senha temporária |
+| 1 | Coordenação | **Usuários → Cadastrar usuário**: cadastrar 1 docente e 2 discentes (com RGM) | Contas criadas com senha temporária |
 | 2 | Docente | Entrar com a senha temporária | Pede a troca da senha e depois o aceite dos termos |
 | 3 | Docente | **Turmas → Nova turma** e matricular os 2 discentes | Turma ativa com 2 matrículas |
 | 4 | Docente | **Trilhas** e **Atividades**: criar uma trilha publicada com uma atividade prática (código inicial e casos de teste) | Atividade visível para os alunos da turma |
@@ -186,7 +219,7 @@ Siga na ordem, porque cada etapa usa os dados da anterior. Para usar dois perfis
 | 9 | Discente | Abrir `http://127.0.0.1:8000/chamada/p/<código>/` (ou digitar o código em **Confirmar presença**) e confirmar | "Presença registrada"; o contador e a lista do docente atualizam |
 | 10 | Docente | Esperar o QR expirar, **Renovar QR** e depois **Finalizar chamada** | Código novo na renovação; lista de faltas ao finalizar |
 | 11 | Docente e discente | **Comunicação**: publicar um aviso, comentar e anexar um arquivo | Aviso, comentário e notificação no sino |
-| 12 | Docente | **Painel**: ver os indicadores e ajustar o limite de atenção da turma | Alunos abaixo do limite destacados |
+| 12 | Docente | **Painel**: ver os indicadores; em **Turmas → Configurar turma**, ajustar o limite de atenção | Alunos abaixo do limite destacados |
 | 13 | Discente | **Painel**: ver a própria evolução | Frequência, entregas e progresso apenas do próprio aluno |
 | 14 | Coordenação | **Auditoria**: filtrar e exportar em CSV | Registros de login, aceite dos termos e ações |
 | 15 | Qualquer | **Esqueci minha senha** na tela de login | Link de recuperação no terminal (ou por e-mail, com Mailgun) |
@@ -240,6 +273,22 @@ Essa validação é uma defesa em camadas e não substitui um antivírus. Refer�
 ---
 
 ## 7. Testes e qualidade
+
+**E-mails automáticos (RF33):** depois de atualizar, execute `python manage.py migrate`.
+O aluno é avisado após salvar a avaliação oficial; revisões que alteram a nota ou o
+feedback também geram aviso. Para acompanhar alunos em atenção e reprocessar envios
+pendentes, mantenha em outro terminal:
+
+```bash
+python manage.py notificar_acompanhamento --intervalo 60
+```
+
+Esse processo precisa continuar em execução. Em produção, use um worker supervisionado
+ou agende `python manage.py notificar_acompanhamento` periodicamente, sem `--intervalo`.
+Abrir o painel não dispara e-mails. O envio usa `EMAIL_BACKEND`; no modo console, a
+mensagem aparece no terminal e não chega a uma caixa postal. Para links nos avisos,
+configure `SIMAP_PUBLIC_URL` com o endereço do sistema.
+Veja [regras e verificação do RF33](docs/RF33_NOTIFICACOES.md).
 
 Os testes usam um banco SQLite em memória, criado do zero e descartado no fim. Não precisam de `.env` nem de PostgreSQL:
 

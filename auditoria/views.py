@@ -1,7 +1,7 @@
 """
 Tela para consultar a auditoria.
 
-Só a coordenação (superusuários) pode ver. O log guarda dados pessoais de
+Só o perfil Coordenação pode ver. O log guarda dados pessoais de
 todo mundo, como IP, navegador e as páginas que cada um acessou, então não
 faz sentido um docente ou um aluno enxergar isso. É o princípio da
 necessidade da LGPD: só vê quem realmente precisa.

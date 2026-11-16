@@ -35,7 +35,7 @@ CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 
 # Os apps do Django que o projeto usa, e os nossos.
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "SIMAP.apps.SimapAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -62,6 +62,7 @@ MIDDLEWARE = [
     # A auditoria vem depois da autenticação porque precisa saber quem é o usuário
     "auditoria.middleware.AuditoriaMiddleware",
     "usuarios.middleware.AceiteTermosMiddleware",
+    "usuarios.middleware.AcessoAdminMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -196,6 +197,8 @@ GEMINI_API_URL = env(
 MAILGUN_API_KEY = env("MAILGUN_API_KEY", default="")
 MAILGUN_DOMAIN = env("MAILGUN_DOMAIN", default="")
 MAILGUN_API_URL = env("MAILGUN_API_URL", default="https://api.mailgun.net")
+# Base confiável para os links dos avisos (nunca obtida do Host da requisição).
+SIMAP_PUBLIC_URL = env("SIMAP_PUBLIC_URL", default="")
 
 # E-mail. Sem nada no .env, as mensagens só aparecem no terminal; em produção
 # o .env aponta para o backend do Mailgun.

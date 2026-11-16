@@ -189,7 +189,8 @@ class SenhaTemporariaTest(TestCase):
     def test_atualizacao_marca_contas_antigas_e_preserva_coordenacao(self):
         Usuario = get_user_model()
         docente = Usuario.objects.create_user(username="docente", perfil="DOCENTE")
-        coord = Usuario.objects.create_superuser(username="coord", perfil="DOCENTE")
+        # A migração 0003 ainda deve reconhecer a representação antiga.
+        coord = Usuario.objects.create_user(username="coord", perfil="DOCENTE", is_superuser=True, is_staff=True)
         migracao = importlib.import_module("usuarios.migrations.0003_usuario_troca_senha_obrigatoria")
         migracao.exigir_troca_das_contas_existentes(apps, SimpleNamespace(connection=connection))
         docente.refresh_from_db()
