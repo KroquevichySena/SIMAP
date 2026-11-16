@@ -1,0 +1,14 @@
+{% extends 'base_publico.html' %}
+
+{% block content %}
+<section class="simap-erro">
+    <div class="simap-erro-ilustracao" aria-hidden="true">{% block ilustracao %}{% endblock %}</div>
+    <p class="simap-erro-codigo">{% block codigo %}{% endblock %}</p>
+    <h1 class="simap-erro-titulo">{% block titulo %}{% endblock %}</h1>
+    <p class="simap-erro-texto">{% block texto %}{% endblock %}</p>
+    <div class="simap-erro-acoes">
+        <a class="simap-botao simap-botao-primario" href="/">Voltar para o início</a>
+        <a class="simap-botao simap-botao-secundario" href="javascript:history.back()">Voltar à página anterior</a>
+    </div>
+</section>
+{% endblock %}

@@ -84,7 +84,10 @@ class SenhaTemporariaAdminForm(AdminPasswordChangeForm):
 
 class AceitePrimeiroAcessoForm(forms.Form):
     aceite_termos = forms.BooleanField(
-        label="Li e aceito os Termos de Uso e a Política de Privacidade",
+        label=(
+            "Li e aceito os Termos de Uso e a Política de Privacidade, inclusive o envio das minhas "
+            "submissões e dos meus pedidos de ajuda ao serviço de inteligência artificial (Cláusula 12)"
+        ),
         error_messages={"required": "É necessário aceitar os termos para continuar."},
         widget=forms.CheckboxInput(attrs={"class": "simap-checkbox"}),
     )

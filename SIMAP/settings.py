@@ -139,7 +139,7 @@ PASSWORD_RESET_TIMEOUT = 60 * 60
 # Versão vigente dos Termos de Uso e Política de Privacidade.
 # Fonte única: alimenta o texto exibido em usuarios/termos_de_uso.html e a
 # checagem de reaceite no primeiro acesso e no middleware de usuários.
-TERMOS_DE_USO_VERSAO = "1.2"
+TERMOS_DE_USO_VERSAO = "1.3"
 
 # Idioma e fuso horário.
 LANGUAGE_CODE = "pt-br"

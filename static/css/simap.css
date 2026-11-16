@@ -1221,13 +1221,30 @@ body.simap-app {
 .simap-termos {
     flex-shrink: 0;
     width: 100%;
-    max-width: 900px;
+    max-width: 1120px;
     margin-inline: auto;
     padding: 32px clamp(20px, 4vw, 48px);
     color: #334155;
     font-size: 14px;
     line-height: 1.8;
     overflow-wrap: anywhere;
+}
+
+.simap-termos-cabecalho {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.simap-termos-selo {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    background-color: #eff6ff;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .02em;
 }
 
 .simap-termos h1 {
@@ -1240,12 +1257,49 @@ body.simap-app {
 }
 
 .simap-termos-versao {
-    margin: 12px 0 28px;
+    margin: 8px 0 0;
     color: var(--muted);
     font-size: 13px;
 }
 
+.simap-termos-resumo {
+    margin: 24px 0 32px;
+    padding: 20px 24px;
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    background-color: #eff6ff;
+}
+
+.simap-termos-resumo h2 {
+    margin: 0 0 4px;
+    color: var(--foreground);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.simap-termos-resumo p {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.simap-termos-resumo ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #1e293b;
+}
+
+.simap-termos-grade {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+}
+
 .simap-termos-indice {
+    position: sticky;
+    top: 24px;
     padding: 20px;
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -1259,21 +1313,58 @@ body.simap-app {
     font-weight: 700;
 }
 
+.simap-termos-indice ol {
+    margin: 0;
+    padding-left: 22px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.simap-termos-indice li {
+    padding-block: 5px;
+}
+
 .simap-termos-indice a {
-    display: block;
-    padding-block: 8px;
+    color: #334155;
+    text-decoration: none;
+}
+
+.simap-termos-indice a:hover {
     color: var(--primary);
+    text-decoration: underline;
+}
+
+.simap-termos-texto > .simap-termos-clausula:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
 }
 
 .simap-termos-clausula {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin: 36px 0 20px;
     padding-top: 24px;
     border-top: 1px solid var(--border);
     color: var(--foreground);
     font-size: 20px;
     font-weight: 700;
-    line-height: 1.5;
+    line-height: 1.4;
     scroll-margin-top: 24px;
+}
+
+.simap-termos-clausula span {
+    flex-shrink: 0;
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: var(--primary);
+    color: #fff;
+    font-size: 15px;
 }
 
 .simap-termos-subtitulo {
@@ -1281,6 +1372,34 @@ body.simap-app {
     color: var(--foreground);
     font-size: 15px;
     font-weight: 600;
+}
+
+.simap-termos-aceite {
+    margin: 0 0 24px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: #1e293b;
+    font-style: italic;
+}
+
+.simap-termos-rodape {
+    margin: 32px 0 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.simap-termos-rodape p {
+    margin: 0 0 4px;
+}
+
+@media (max-width: 991px) {
+    .simap-termos-grade { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .simap-termos-indice { position: static; }
 }
 
 .simap-auditoria-filtros {
@@ -1708,4 +1827,40 @@ body.simap-app {
 }
 @media (prefers-reduced-motion: reduce) {
     .sm *, .sm *::before, .sm *::after { animation: none !important; transition: none !important; }
+}
+
+/* páginas de erro (403, 404, 500) */
+.simap-erro { max-width: 560px; margin: 48px auto; padding: 0 16px; text-align: center; }
+.simap-erro-ilustracao svg { max-width: 100%; height: auto; }
+.simap-erro-codigo { margin: 16px 0 4px; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #2563eb; }
+.simap-erro-titulo { font-size: 28px; font-weight: 800; color: #0f172a; margin: 0 0 12px; }
+.simap-erro-texto { color: #64748b; margin: 0 0 28px; }
+.simap-erro-acoes { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.simap-erro-acoes .simap-botao { text-decoration: none; }
+
+.simap-erro .erro-olho { fill: #fff; stroke: #0f172a; stroke-width: 3; }
+.simap-erro .erro-muro { fill: #2563eb; }
+.simap-erro .erro-tijolo { stroke: #1d4ed8; stroke-width: 2; fill: none; }
+.simap-erro .erro-mao { stroke: #0f172a; stroke-width: 3; fill: #fde68a; stroke-linecap: round; }
+.simap-erro .erro-pupilas { animation: erro-espiar 3s ease-in-out infinite; }
+
+.simap-erro .erro-folha { fill: #eff6ff; stroke: #bfdbfe; stroke-width: 2; }
+.simap-erro .erro-linha { stroke: #93c5fd; stroke-width: 6; stroke-linecap: round; }
+.simap-erro .erro-lente { fill: rgba(255, 255, 255, .85); stroke: #0f172a; stroke-width: 5; }
+.simap-erro .erro-cabo { stroke: #0f172a; stroke-width: 9; stroke-linecap: round; }
+.simap-erro .erro-interrogacao { font: 800 26px Inter, sans-serif; fill: #2563eb; }
+.simap-erro .erro-lupa { animation: erro-procurar 4s ease-in-out infinite; }
+
+.simap-erro .erro-corpo { fill: #ef4444; }
+.simap-erro .erro-cabeca { fill: #0f172a; }
+.simap-erro .erro-asa { stroke: #991b1b; stroke-width: 3; }
+.simap-erro .erro-perna { stroke: #0f172a; stroke-width: 4; stroke-linecap: round; fill: none; }
+.simap-erro .erro-chave { font: 800 44px "Courier New", monospace; fill: #94a3b8; }
+.simap-erro .erro-bug { transform-origin: 110px 98px; animation: erro-tremer .6s ease-in-out infinite alternate; }
+
+@keyframes erro-espiar { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-8px); } 60% { transform: translateX(8px); } }
+@keyframes erro-procurar { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-50px, -30px); } 50% { transform: translate(-20px, 20px); } 75% { transform: translate(-60px, 10px); } }
+@keyframes erro-tremer { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .simap-erro .erro-pupilas, .simap-erro .erro-lupa, .simap-erro .erro-bug { animation: none; }
 }

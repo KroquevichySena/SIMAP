@@ -1,0 +1,17 @@
+{% extends 'erro_base.html' %}
+
+{% block codigo %}404 Not Found{% endblock %}
+{% block titulo %}Procuramos em todas as linhas e nada 🔍{% endblock %}
+{% block texto %}Esta página não existe ou mudou de endereço. Confira o link ou volte para o início.{% endblock %}
+
+{% block ilustracao %}
+<svg viewBox="0 0 220 160" width="220" height="160">
+    <rect class="erro-folha" x="40" y="24" width="110" height="120" rx="10"/>
+    <path class="erro-linha" d="M58 50 h60 M58 68 h74 M58 86 h46 M58 104 h66 M58 122 h38"/>
+    <g class="erro-lupa">
+        <circle cx="150" cy="86" r="26" class="erro-lente"/>
+        <path d="M169 105 l22 22" class="erro-cabo"/>
+        <text x="150" y="94" text-anchor="middle" class="erro-interrogacao">?</text>
+    </g>
+</svg>
+{% endblock %}
