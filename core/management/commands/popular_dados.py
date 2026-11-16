@@ -26,17 +26,17 @@ SENHA_PADRAO = "DemonstracaoLocal2026!"
 GRUPO_DEMO = "SIMAP - demonstracao ficticia"
 TURMA_DEMO = "DEMO - Algoritmos e Programação I"
 PERIODO_DEMO = "2026.2"
-COORDENACAO = ("demo.coordenacao", "Coordenação", "Demonstração")
+COORDENACAO = ("demo.coordenacao", "Marina", "Albuquerque")
 
 DOCENTES = [
-    ("demo.docente", "Docente", "Demonstração"),
+    ("demo.docente", "Helena", "Duarte"),
 ]
 
 DISCENTES = [
-    ("demo.aluno01", "Aluno", "Demonstração 01", "DEMO-0001"),
-    ("demo.aluno02", "Aluno", "Demonstração 02", "DEMO-0002"),
-    ("demo.aluno03", "Aluno", "Demonstração 03", "DEMO-0003"),
-    ("demo.aluno04", "Aluno", "Demonstração 04", "DEMO-0004"),
+    ("demo.aluno01", "Ana", "Martins", "DEMO-0001"),
+    ("demo.aluno02", "Bruno", "Costa", "DEMO-0002"),
+    ("demo.aluno03", "Clara", "Mendes", "DEMO-0003"),
+    ("demo.aluno04", "Diego", "Ribeiro", "DEMO-0004"),
 ]
 
 TRILHAS = [
