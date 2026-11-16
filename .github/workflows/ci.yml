@@ -36,15 +36,21 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
 
       - name: Instalar as dependências
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt -r requirements-dev.txt
 
       # Só as classes SimpleTestCase: regra pura, sem banco e sem servidor.
       # --failfast: para no primeiro teste que falhar.
       - name: Executar os testes unitários
-        run: python manage.py test --settings=SIMAP.settings_test --tipo unitarios --failfast --verbosity 2
+        run: coverage run manage.py test --settings=SIMAP.settings_test --tipo unitarios --failfast --verbosity 2
+
+      # Regras em .coveragerc. Falha se a cobertura ficar abaixo de 50%.
+      - name: Conferir a cobertura dos testes unitários
+        run: coverage report
 
   testes-integracao:
     name: Testes de integração
