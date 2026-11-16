@@ -148,9 +148,71 @@ body.simap-app {
 .simap-notificacoes {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     width: 100%;
-    gap: 8px;
+    min-height: 48px;
+    padding: 8px 10px;
+    gap: 10px;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    background: var(--sidebar-hover);
+    color: #e2e8f0;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s;
+}
+
+.simap-notificacoes:hover,
+.simap-notificacoes[aria-expanded="true"] {
+    border-color: #64748b;
+    background: #26364e;
+    color: #fff;
+}
+
+.simap-notificacoes svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.simap-notificacoes-sino {
+    display: grid;
+    place-items: center;
+    flex: 0 0 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #334155;
+    color: #bfdbfe;
+}
+
+.simap-notificacoes-rotulo {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.simap-notificacoes-contador {
+    min-width: 22px;
+    padding: 2px 5px;
+    border-radius: 6px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.simap-notificacoes-seta {
+    flex: 0 0 16px;
+    transition: transform .15s;
+}
+
+.simap-notificacoes[aria-expanded="true"] .simap-notificacoes-seta {
+    transform: rotate(180deg);
 }
 
 .simap-notificacoes-lista {
@@ -158,10 +220,87 @@ body.simap-app {
     position: static !important;
     transform: none !important;
     width: 100%;
-    max-height: 360px;
+    max-height: min(360px, 60vh);
     overflow-y: auto;
     margin-top: 8px !important;
     border-color: var(--border);
+    border-radius: 12px;
+    padding: 0;
+    color: var(--foreground);
+    box-shadow: 0 8px 24px #0000001a;
+}
+
+.simap-notificacoes-cabecalho {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+
+.simap-notificacoes-cabecalho > span,
+.simap-notificacoes-item time {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.simap-notificacoes-lista .simap-notificacoes-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--foreground);
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.simap-notificacoes-ponto {
+    flex: 0 0 6px;
+    height: 6px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+}
+
+.simap-notificacoes-mensagem {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.simap-notificacoes-vazio {
+    display: grid;
+    gap: 5px;
+    padding: 24px 12px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.simap-notificacoes-vazio > span {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.simap-notificacoes-todas {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 13px 14px;
+    color: var(--primary);
+    background: #f8fafc;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.simap-notificacoes-todas:hover,
+.simap-notificacoes-lista .simap-notificacoes-item:hover,
+.simap-notificacoes-lista .simap-notificacoes-item:focus {
+    background: #eff6ff;
+    color: var(--primary);
 }
 
 .simap-sair {
