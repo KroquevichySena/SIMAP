@@ -169,12 +169,21 @@ Senhas, aceites e vínculos são preservados. Se uma dessas contas era responsá
 turmas, transfira-as para um docente em **Admin → Turmas → Docente**. Enquanto isso,
 os dados continuam preservados no Admin, mas a coordenação não atua como professor.
 
-**Dados de demonstração (opcional).** O comando abaixo cria um docente, alunos, uma turma e trilhas com atividades de exemplo. Ele se recusa a rodar em produção:
+**Dados de demonstração (opcional).** O comando abaixo cria coordenação, docente,
+alunos, uma turma e trilhas com atividades fictícias. Os usuários têm prefixo `demo.`,
+RGMs `DEMO-` e e-mails reservados `@example.test`. Ele se recusa a rodar em produção:
 
 ```bash
 python manage.py popular_dados
-python manage.py popular_dados --limpar   # apaga e recria os dados de exemplo
+python manage.py popular_dados --limpar   # recria somente a turma DEMO; preserva contas e senhas
 ```
+
+A senha temporária exclusiva do cenário está na constante `SENHA_PADRAO` do comando
+(somente desenvolvimento); ela não é impressa no resumo. Troque-a no primeiro
+acesso. Contas existentes mantêm suas senhas ao repetir o comando. Use um banco
+separado para a apresentação e nunca inclua senhas, QR codes, tokens ou dados
+pessoais reais nas evidências. A limpeza é recusada se a turma DEMO contiver dados
+de outras contas. Dados antigos criados por versões anteriores não são apagados.
 
 ### 4.5 Rodar
 
@@ -199,7 +208,7 @@ Siga na ordem, porque cada etapa usa os dados da anterior. Para usar dois perfis
 
 | # | Perfil | O que fazer | Resultado esperado |
 |---|---|---|---|
-| 1 | Coordenação | **Usuários → Novo usuário**: cadastrar 1 docente e 2 discentes (com RGM) | Contas criadas com senha temporária |
+| 1 | Coordenação | **Usuários → Cadastrar usuário**: cadastrar 1 docente e 2 discentes (com RGM) | Contas criadas com senha temporária |
 | 2 | Docente | Entrar com a senha temporária | Pede a troca da senha e depois o aceite dos termos |
 | 3 | Docente | **Turmas → Nova turma** e matricular os 2 discentes | Turma ativa com 2 matrículas |
 | 4 | Docente | **Trilhas** e **Atividades**: criar uma trilha publicada com uma atividade prática (código inicial e casos de teste) | Atividade visível para os alunos da turma |
@@ -210,7 +219,7 @@ Siga na ordem, porque cada etapa usa os dados da anterior. Para usar dois perfis
 | 9 | Discente | Abrir `http://127.0.0.1:8000/chamada/p/<código>/` (ou digitar o código em **Confirmar presença**) e confirmar | "Presença registrada"; o contador e a lista do docente atualizam |
 | 10 | Docente | Esperar o QR expirar, **Renovar QR** e depois **Finalizar chamada** | Código novo na renovação; lista de faltas ao finalizar |
 | 11 | Docente e discente | **Comunicação**: publicar um aviso, comentar e anexar um arquivo | Aviso, comentário e notificação no sino |
-| 12 | Docente | **Painel**: ver os indicadores e ajustar o limite de atenção da turma | Alunos abaixo do limite destacados |
+| 12 | Docente | **Painel**: ver os indicadores; em **Turmas → Configurar turma**, ajustar o limite de atenção | Alunos abaixo do limite destacados |
 | 13 | Discente | **Painel**: ver a própria evolução | Frequência, entregas e progresso apenas do próprio aluno |
 | 14 | Coordenação | **Auditoria**: filtrar e exportar em CSV | Registros de login, aceite dos termos e ações |
 | 15 | Qualquer | **Esqueci minha senha** na tela de login | Link de recuperação no terminal (ou por e-mail, com Mailgun) |
