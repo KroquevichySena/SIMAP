@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import AdminPasswordChangeForm, PasswordChangeForm, SetPasswordForm, UserCreationForm
+from django.utils.html import format_html
 
 from .models import Usuario
 
@@ -23,9 +24,10 @@ class CadastroUsuarioForm(UserCreationForm):
             self.fields[nome].required = True
         self.fields["password1"].label = "Senha temporária"
         self.fields["password2"].label = "Confirme a senha temporária"
-        self.fields[
-            "password1"
-        ].help_text += " A pessoa deverá substituí-la por uma senha diferente no primeiro acesso."
+        self.fields["password1"].help_text = format_html(
+            "{}<p>{}</p>", self.fields["password1"].help_text,
+            "A pessoa deverá substituí-la por uma senha diferente no primeiro acesso.",
+        )
         for campo in self.fields.values():
             campo.widget.attrs["class"] = "simap-input"
 
