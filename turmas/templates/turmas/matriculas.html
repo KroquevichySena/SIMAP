@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load mascaras_tags %}
 
 {% block title %}Alunos - {{ turma.nome }} - SIMAP{% endblock %}
 
@@ -89,7 +90,7 @@
                                             <span class="simap-turma-data">{{ matricula.discente.username }}</span>
                                         {% endif %}
                                     </th>
-                                    <td class="simap-rgm">{{ matricula.discente.rgm|default:"Não informado" }}</td>
+                                    <td class="simap-rgm">{{ matricula.discente.rgm|rgm_mascarado|default:"Não informado" }}</td>
                                     <td class="simap-periodo">{{ matricula.data_matricula|date:"d/m/Y" }}</td>
                                     <td>
                                         <span class="simap-situacao {% if matricula.status == 'ATIVA' %}simap-situacao-ativa{% else %}simap-situacao-inativa{% endif %}">

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load mascaras_tags %}
 {% block title %}Usuários - SIMAP{% endblock %}
 {% block content %}
 <div class="simap-pagina">
@@ -26,7 +27,7 @@
                     <tr>
                         <th scope="row" class="simap-turma-nome">{{ conta.get_full_name|default:conta.username }}<span class="simap-turma-data">{{ conta.username }}</span></th>
                         <td><span class="simap-etiqueta{% if conta.is_docente %} simap-etiqueta-azul{% endif %}">{{ conta.get_perfil_display }}</span></td>
-                        <td>{{ conta.email|default:"Não informado" }}</td><td class="simap-rgm">{{ conta.rgm|default:"—" }}</td>
+                        <td>{{ conta.email|email_mascarado|default:"Não informado" }}</td><td class="simap-rgm">{{ conta.rgm|rgm_mascarado|default:"—" }}</td>
                         <td><span class="simap-situacao {% if conta.is_active %}simap-situacao-ativa{% else %}simap-situacao-inativa{% endif %}">{% if conta.is_active %}Ativa{% else %}Inativa{% endif %}</span></td>
                         <td class="simap-tabela-acoes">
                             {% if conta.is_active %}

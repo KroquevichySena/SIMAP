@@ -10,6 +10,8 @@
             {% csrf_token %}
             {% include 'usuarios/_erros_acesso.html' %}
             <p><strong>Usuário de acesso:</strong> {{ conta.username }}</p>
+            {# Aqui o dado vai completo: a coordenação confere a conta antes de alterá-la. #}
+            <p><strong>E-mail:</strong> {{ conta.email|default:"Não informado" }} · <strong>RGM:</strong> {{ conta.rgm|default:"Não informado" }}</p>
             <div class="simap-nota-formulario">
                 {% if exclusao_bloqueada %}
                     <strong>Esta conta possui histórico</strong>
