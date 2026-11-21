@@ -109,3 +109,49 @@ class PrimeiroAcessoTest(TestCase):
         for url in [reverse("admin:index"), reverse("auditoria:registro_list"), "/entregas/anexos/999/"]:
             with self.subTest(url=url):
                 self.assertRedirects(self.client.get(url), url_primeiro_acesso(url))
+
+
+class DestinoPorPerfilTest(TestCase):
+    """Um link de outro perfil no "next" leva ao painel, sem aviso de erro no caminho."""
+
+    def setUp(self):
+        Usuario = get_user_model()
+        self.docente = Usuario.objects.create_user(username="prof.qr", password="SenhaTeste123", perfil="DOCENTE")
+        self.aluno = Usuario.objects.create_user(username="aluno.qr", password="SenhaTeste123", perfil="DISCENTE")
+        for usuario in (self.docente, self.aluno):
+            AceiteTermos.objects.create(usuario=usuario, versao=settings.TERMOS_DE_USO_VERSAO)
+
+    def entrar(self, usuario, destino):
+        return self.client.post(reverse("login"), {
+            "username": usuario.username, "password": "SenhaTeste123", "next": destino,
+        })
+
+    def test_docente_vindo_do_link_de_presenca_vai_ao_painel_sem_aviso_de_discente(self):
+        for nome in ("chamada:confirmar_presenca", "chamada:confirmar_leitura"):
+            with self.subTest(rota=nome):
+                r = self.entrar(self.docente, reverse(nome))
+                self.assertRedirects(r, reverse("core:dashboard"), fetch_redirect_response=False)
+                pagina = self.client.get(r.url, follow=True)
+                self.assertNotContains(pagina, "Apenas discentes")
+                self.client.logout()
+
+    def test_leitura_do_qr_guardada_antes_do_login_e_descartada_para_docente(self):
+        sessao = self.client.session
+        sessao["leitura_chamada"] = {"chamada": 1, "lido_em": "2026-11-21T10:00:00", "origem": "QR"}
+        sessao.save()
+        r = self.entrar(self.docente, reverse("chamada:confirmar_leitura"))
+        self.assertEqual(r.url, reverse("core:dashboard"))
+        self.assertNotIn("leitura_chamada", self.client.session)
+
+    def test_discente_continua_indo_para_a_confirmacao_de_presenca(self):
+        destino = reverse("chamada:confirmar_presenca")
+        self.assertRedirects(self.entrar(self.aluno, destino), destino, fetch_redirect_response=False)
+
+    def test_discente_com_link_de_tela_do_professor_vai_ao_painel(self):
+        r = self.entrar(self.aluno, reverse("chamada:abrir_chamada"))
+        self.assertEqual(r.url, reverse("core:dashboard"))
+
+    def test_aceite_pendente_tambem_nao_leva_docente_a_tela_de_discente(self):
+        AceiteTermos.objects.filter(usuario=self.docente).delete()
+        destino = reverse("chamada:confirmar_presenca")
+        self.assertEqual(self.entrar(self.docente, destino).url, url_primeiro_acesso(reverse("core:dashboard")))
