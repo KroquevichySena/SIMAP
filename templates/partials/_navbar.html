@@ -49,6 +49,9 @@
           <li class="nav-item">
             <a class="nav-link{% if rota == 'usuarios_lista' or rota == 'usuario_criar' %} active{% endif %}" href="{% url 'usuarios_lista' %}"{% if rota == 'usuarios_lista' or rota == 'usuario_criar' %} aria-current="page"{% endif %}>Usuários</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link{% if rota == 'lista_instituicoes' or rota == 'criar_instituicao' or rota == 'editar_instituicao' or rota == 'criar_turma_instituicao' %} active{% endif %}" href="{% url 'lista_instituicoes' %}"{% if rota == 'lista_instituicoes' or rota == 'criar_instituicao' or rota == 'editar_instituicao' or rota == 'criar_turma_instituicao' %} aria-current="page"{% endif %}>Instituições</a>
+          </li>
         {% endif %}
 
         {% if user.pode_consultar_auditoria %}
