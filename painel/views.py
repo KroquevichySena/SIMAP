@@ -8,7 +8,7 @@ from turmas.models import Turma
 
 from .servicos import (
     METRICAS,
-    dados_do_grafico,
+    dados_do_painel_docente,
     historico_do_aluno,
     indicadores_da_turma,
     indicadores_do_aluno,
@@ -37,10 +37,7 @@ class PainelDocenteView(DocenteRequiredMixin, TemplateView):
         if turma is None:
             return ctx
 
-        linhas = indicadores_da_turma(turma)
-        ctx["linhas"] = linhas
-        ctx["resumo"] = resumo_da_turma(linhas)
-        ctx["dados_grafico"] = dados_do_grafico(turma, linhas)
+        ctx.update(dados_do_painel_docente(turma))
         return ctx
 
 

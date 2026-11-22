@@ -120,8 +120,8 @@ def _indicadores(matricula, dados, limite):
     }
 
 
-def indicadores_da_turma(turma):
-    dados = _dados_da_turma(turma)
+def indicadores_da_turma(turma, *, dados=None):
+    dados = _dados_da_turma(turma) if dados is None else dados
     limite = float(turma.limite_atencao)
     matriculas = (
         Matricula.objects.filter(turma=turma, status="ATIVA")
@@ -155,8 +155,8 @@ def resumo_da_turma(linhas):
     return resumo
 
 
-def evolucao_da_turma(turma):
-    dados = _dados_da_turma(turma)
+def evolucao_da_turma(turma, *, dados=None):
+    dados = _dados_da_turma(turma) if dados is None else dados
     matriculas = dict(
         Matricula.objects.filter(turma=turma, status="ATIVA").values_list(
             "discente_id", "data_matricula"
@@ -196,7 +196,7 @@ def evolucao_da_turma(turma):
     return evolucao
 
 
-def dados_do_grafico(turma, linhas):
+def dados_do_grafico(turma, linhas, *, dados=None):
     alunos = [
         {
             "id": linha["discente"].pk,
@@ -210,12 +210,23 @@ def dados_do_grafico(turma, linhas):
         }
         for linha in linhas
     ]
-    evolucao = evolucao_da_turma(turma)
+    evolucao = evolucao_da_turma(turma, dados=dados)
     evolucao["notas"] = [float(nota) if nota is not None else None for nota in evolucao["notas"]]
     return {
         "alunos": alunos,
         "evolucao": evolucao,
         "limite": float(turma.limite_atencao),
+    }
+
+
+def dados_do_painel_docente(turma):
+    """Reutiliza os dados entre indicadores e grafico somente nesta consulta."""
+    dados = _dados_da_turma(turma)
+    linhas = indicadores_da_turma(turma, dados=dados)
+    return {
+        "linhas": linhas,
+        "resumo": resumo_da_turma(linhas),
+        "dados_grafico": dados_do_grafico(turma, linhas, dados=dados),
     }
 
 
