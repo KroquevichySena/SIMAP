@@ -32,6 +32,7 @@ logger = logging.getLogger("simap.auditoria")
 MODELOS_PADRAO = [
     "usuarios.Usuario",
     "usuarios.AceiteTermos",
+    "usuarios.VersaoTermos",
     "turmas.Turma",
     "turmas.Matricula",
     "core.TrilhaAprendizagem",

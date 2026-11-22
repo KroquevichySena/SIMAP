@@ -1,11 +1,11 @@
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, OuterRef, Q, Subquery
 from django.db.models.deletion import ProtectedError, RestrictedError
+from django.db.models.functions import Coalesce
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -15,10 +15,17 @@ from django.views.generic import CreateView, FormView, ListView, TemplateView
 from auditoria.contexto import obter_ip
 
 from .acesso import aceitou_versao_atual, destino_apos_login, destino_seguro
-from .forms import AceitePrimeiroAcessoForm, CadastroUsuarioForm, ConfirmacaoGestaoUsuarioForm, TrocaSenhaTemporariaForm
+from .forms import (
+    AceitePrimeiroAcessoForm,
+    CadastroUsuarioForm,
+    ConfirmacaoGestaoUsuarioForm,
+    NovaVersaoTermosForm,
+    TrocaSenhaTemporariaForm,
+)
 from .gestao import contas_academicas, possui_historico
 from .mixins import CoordenacaoRequiredMixin
-from .models import AceiteTermos, Usuario
+from .models import AceiteTermos, Usuario, VersaoTermos
+from .termos import formatar, linhas, numero_vigente, versao_vigente
 
 
 class LoginView(auth_views.LoginView):
@@ -65,7 +72,11 @@ class PrimeiroAcessoView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
         contexto["next"] = destino_seguro(self.request)
-        contexto["versao_atual"] = settings.TERMOS_DE_USO_VERSAO
+        versao = versao_vigente()
+        contexto["versao_atual"] = numero_vigente()
+        # Quem já aceitou uma versão anterior vê o que mudou antes de aceitar de novo.
+        if versao and AceiteTermos.objects.filter(usuario=self.request.user).exists():
+            contexto["o_que_mudou"] = linhas(versao.o_que_mudou)
         return contexto
 
     def form_valid(self, form):
@@ -190,7 +201,18 @@ class UsuarioAcaoView(CoordenacaoRequiredMixin, View):
 
 
 class TermosDeUsoView(TemplateView):
+    """Mostra a versão vigente; com um número na URL, a coordenação consulta uma versão anterior."""
+
     template_name = "usuarios/termos_de_uso.html"
+
+    def get(self, request, *args, numero=None, **kwargs):
+        if numero is None:
+            self.versao = versao_vigente()
+        elif request.user.is_authenticated and request.user.is_coordenacao:
+            self.versao = get_object_or_404(VersaoTermos, numero=numero)
+        else:
+            raise Http404
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -203,5 +225,82 @@ class TermosDeUsoView(TemplateView):
             )
             else "base_publico.html"
         )
-        context["versao_atual"] = settings.TERMOS_DE_USO_VERSAO
+        context["versao"] = self.versao
+        context["versao_atual"] = self.versao.numero if self.versao else numero_vigente()
+        context["consulta_historico"] = self.kwargs.get("numero") is not None
+        if context["consulta_historico"]:
+            context["versao_vigente_numero"] = numero_vigente()
+        if self.versao:
+            context["resumo"] = linhas(self.versao.resumo)
+            context["o_que_mudou"] = linhas(self.versao.o_que_mudou)
+            context["documento"] = formatar(self.versao.texto)
         return context
+
+
+class VersoesTermosView(CoordenacaoRequiredMixin, ListView):
+    """Histórico das versões dos termos, com quantas contas aceitaram cada uma."""
+
+    template_name = "usuarios/versoes_termos.html"
+    context_object_name = "versoes"
+
+    def get_queryset(self):
+        aceites = (
+            AceiteTermos.objects.filter(versao=OuterRef("numero"))
+            .values("versao").annotate(total=Count("pk")).values("total")
+        )
+        return (
+            VersaoTermos.objects.select_related("publicada_por")
+            .annotate(total_aceites=Coalesce(Subquery(aceites), 0))
+            .order_by("-pk")
+        )
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto["contas_ativas"] = Usuario.objects.filter(is_active=True).count()
+        return contexto
+
+
+class NovaVersaoTermosView(CoordenacaoRequiredMixin, View):
+    """
+    Publica uma nova versão em dois passos: primeiro a pré-visualização, depois
+    a confirmação. O formulário começa com o texto da versão vigente.
+    """
+
+    template_name = "usuarios/nova_versao_termos.html"
+
+    def get(self, request):
+        vigente = versao_vigente()
+        inicial = {}
+        if vigente:
+            partes = vigente.numero.split(".")
+            if all(parte.isdigit() for parte in partes):
+                partes[-1] = str(int(partes[-1]) + 1)
+            inicial = {"numero": ".".join(partes), "resumo": vigente.resumo, "texto": vigente.texto}
+        return self._pagina(request, NovaVersaoTermosForm(initial=inicial))
+
+    def post(self, request):
+        publicar = request.POST.get("acao") == "publicar"
+        form = NovaVersaoTermosForm(request.POST, publicar=publicar)
+        if not form.is_valid():
+            return self._pagina(request, form, previa=form.is_bound and "texto" in form.cleaned_data)
+        if not publicar:
+            return self._pagina(request, form, previa=True)
+        with transaction.atomic():
+            versao = form.save(commit=False)
+            versao.publicada_por = request.user
+            versao.save()
+        messages.success(
+            request, f"Versão {versao.numero} publicada. Cada usuário precisará aceitá-la no próximo acesso."
+        )
+        return redirect("versoes_termos")
+
+    def _pagina(self, request, form, previa=False):
+        contexto = {"form": form, "vigente": versao_vigente()}
+        if previa:
+            dados = form.cleaned_data
+            contexto["previa"] = {
+                "documento": formatar(dados.get("texto", "")),
+                "resumo": linhas(dados.get("resumo", "")),
+                "o_que_mudou": linhas(dados.get("o_que_mudou", "")),
+            }
+        return render(request, self.template_name, contexto)

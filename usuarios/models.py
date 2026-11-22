@@ -62,3 +62,48 @@ class AceiteTermos(models.Model):
 
     def __str__(self):
         return f"{self.usuario} aceitou a versão {self.versao} em {self.aceito_em:%d/%m/%Y %H:%M}"
+
+
+class VersaoTermos(models.Model):
+    """
+    Uma versão publicada dos Termos de Uso e da Política de Privacidade.
+
+    A versão vigente é sempre a última publicada. Uma versão publicada não é
+    editada nem apagada: para mudar o texto, publica-se uma nova, e assim fica
+    guardado exatamente o que cada pessoa aceitou (ver AceiteTermos.versao).
+    """
+
+    numero = models.CharField('Número da versão', max_length=10, unique=True)
+    resumo = models.TextField(
+        'Em resumo', blank=True, help_text='Um ponto por linha. Aparece em destaque antes do texto integral.',
+    )
+    texto = models.TextField('Texto integral')
+    o_que_mudou = models.TextField(
+        'O que mudou nesta versão', blank=True,
+        help_text='Mostrado a quem precisa aceitar de novo. Um ponto por linha.',
+    )
+    publicada_em = models.DateTimeField('Publicada em', auto_now_add=True)
+    publicada_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='versoes_termos_publicadas', verbose_name='Publicada por',
+    )
+
+    # O texto fica guardado nesta própria tabela; a auditoria registra só quem
+    # publicou e quando, sem duplicar o documento inteiro.
+    AUDITORIA_CAMPOS_OCULTOS = ('resumo', 'texto', 'o_que_mudou')
+
+    class Meta:
+        ordering = ['-pk']
+        verbose_name = 'versão dos termos'
+        verbose_name_plural = 'versões dos termos'
+
+    def __str__(self):
+        return f"Versão {self.numero}"
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise ValueError("Uma versão publicada dos termos não pode ser alterada. Publique uma nova versão.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError("Uma versão publicada dos termos não pode ser apagada.")

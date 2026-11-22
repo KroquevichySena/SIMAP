@@ -4,6 +4,9 @@
 <section class="simap-cartao simap-auth" aria-label="Aceite dos termos">
     {% include 'usuarios/_cabecalho_acesso.html' with titulo="Antes de continuar" descricao="Leia e aceite a versão vigente dos termos para usar o SIMAP. Esse aceite será registrado na sua conta." %}
     <p class="simap-ajuda-campo mb-3">Conta: <strong>{{ user.get_full_name|default:user.username }}</strong> · Versão {{ versao_atual }}</p>
+    {% if o_que_mudou %}
+        <div class="simap-nota-formulario mb-3"><strong>O que mudou nesta versão</strong><ul class="mb-0">{% for item in o_que_mudou %}<li>{{ item }}</li>{% endfor %}</ul></div>
+    {% endif %}
     <a class="simap-auth-link" href="{% url 'termos_de_uso' %}" target="_blank" rel="noopener noreferrer">Ler Termos de Uso e Política de Privacidade<span class="visually-hidden"> (abre em nova aba)</span></a>
     <form method="post" class="simap-auth-form mt-3" novalidate>
         {% csrf_token %}

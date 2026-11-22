@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Termos de uso - SIMAP{% endblock %}
+
+{% block content %}
+    <div class="simap-pagina">
+        <header class="simap-cabecalho">
+            <div>
+                <h1>Termos de uso</h1>
+                <p class="simap-subtitulo">Versões publicadas dos Termos de Uso e da Política de Privacidade. A mais recente é a vigente, e cada nova versão exige novo aceite de todos os usuários.</p>
+            </div>
+            <div class="simap-acoes">
+                <a href="{% url 'nova_versao_termos' %}" class="simap-botao simap-botao-primario">
+                    <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" /></svg>
+                    Nova versão
+                </a>
+            </div>
+        </header>
+
+        <section class="simap-cartao" aria-labelledby="titulo-versoes">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-versoes">Histórico de versões</h2>
+                <span class="simap-contagem">{{ versoes|length }} vers{{ versoes|length|pluralize:"ão,ões" }}</span>
+            </div>
+
+            {% if versoes %}
+                <div class="simap-tabela-rolagem" role="region" aria-labelledby="titulo-versoes" tabindex="0">
+                    <table class="simap-tabela">
+                        <caption class="visually-hidden">Número, data de publicação, autor e aceites de cada versão dos termos.</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Versão</th>
+                                <th scope="col">Publicada em</th>
+                                <th scope="col">Publicada por</th>
+                                <th scope="col">Aceites</th>
+                                <th scope="col"><span class="visually-hidden">Ações</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for versao in versoes %}
+                                <tr>
+                                    <th scope="row">
+                                        {{ versao.numero }}
+                                        {% if forloop.first %}<span class="simap-situacao simap-situacao-ativa">Vigente</span>{% endif %}
+                                    </th>
+                                    <td>{{ versao.publicada_em|date:"d/m/Y H:i" }}</td>
+                                    <td>{% if versao.publicada_por %}{{ versao.publicada_por.get_full_name|default:versao.publicada_por.username }}{% else %}Versão inicial{% endif %}</td>
+                                    <td>{% if forloop.first %}{{ versao.total_aceites }} de {{ contas_ativas }} contas ativas{% else %}{{ versao.total_aceites }}{% endif %}</td>
+                                    <td class="simap-tabela-acoes">
+                                        <a class="simap-link-acao" href="{% url 'termos_de_uso_versao' versao.numero %}">Ver texto<span class="visually-hidden"> da versão {{ versao.numero }}</span></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="simap-vazio">
+                    <h3>Nenhuma versão cadastrada</h3>
+                    <p>Use “Nova versão” para publicar os termos.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}

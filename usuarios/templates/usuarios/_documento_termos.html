@@ -1,0 +1,48 @@
+{# Corpo dos termos: resumo, o que mudou, índice, texto e rodapé. Usado na página e na pré-visualização. #}
+    {% if resumo %}
+    <section class="simap-termos-resumo" aria-labelledby="titulo-resumo">
+        <h2 id="titulo-resumo">Em resumo</h2>
+        <p>Este quadro facilita a leitura e não substitui o texto integral, que prevalece em caso de dúvida.</p>
+        <ul>{% for item in resumo %}
+            <li>{{ item }}</li>{% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    {% if o_que_mudou %}
+    <section class="simap-termos-resumo" aria-labelledby="titulo-mudancas">
+        <h2 id="titulo-mudancas">O que mudou nesta versão</h2>
+        <ul>{% for item in o_que_mudou %}
+            <li>{{ item }}</li>{% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <div class="simap-termos-grade">
+    <nav class="simap-termos-indice" aria-label="Índice dos termos">
+        <h2>Neste documento</h2>
+        <ol>{% for clausula in documento.indice %}
+            <li><a href="#clausula-{{ clausula.numero }}">{{ clausula.titulo }}</a></li>{% endfor %}
+        </ol>
+    </nav>
+
+    <div class="simap-termos-texto">
+
+    {{ documento.corpo }}
+
+    {% if documento.rodape %}
+    <footer class="simap-termos-rodape">
+        {{ documento.rodape }}
+    </footer>
+    {% endif %}
+
+    {% if not em_previa %}
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'core:dashboard' %}" class="simap-botao simap-botao-secundario">← Voltar</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="simap-botao simap-botao-secundario">← Voltar para o login</a>
+        {% endif %}
+    {% endif %}
+
+    </div>
+    </div>

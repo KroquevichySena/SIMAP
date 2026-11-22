@@ -136,9 +136,9 @@ SESSION_SAVE_EVERY_REQUEST = True  # cada clique renova o prazo
 
 PASSWORD_RESET_TIMEOUT = 60 * 60
 
-# Versão vigente dos Termos de Uso e Política de Privacidade.
-# Fonte única: alimenta o texto exibido em usuarios/termos_de_uso.html e a
-# checagem de reaceite no primeiro acesso e no middleware de usuários.
+# Versão inicial dos Termos de Uso e Política de Privacidade. As versões são
+# publicadas pela coordenação (usuarios.VersaoTermos) e a vigente é a última;
+# este valor só vale enquanto nenhuma versão estiver cadastrada no banco.
 TERMOS_DE_USO_VERSAO = "1.3"
 
 # Idioma e fuso horário.

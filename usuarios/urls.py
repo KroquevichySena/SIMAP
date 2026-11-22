@@ -13,6 +13,9 @@ urlpatterns = [
     path("usuarios/<int:pk>/<str:acao>/", views.UsuarioAcaoView.as_view(), name="usuario_acao"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("termos-de-uso/", views.TermosDeUsoView.as_view(), name="termos_de_uso"),
+    path("termos-de-uso/versoes/", views.VersoesTermosView.as_view(), name="versoes_termos"),
+    path("termos-de-uso/versoes/nova/", views.NovaVersaoTermosView.as_view(), name="nova_versao_termos"),
+    path("termos-de-uso/versoes/<str:numero>/", views.TermosDeUsoView.as_view(), name="termos_de_uso_versao"),
     path(
         "recuperar-senha/",
         auth_views.PasswordResetView.as_view(template_name="usuarios/recuperar_senha.html"),

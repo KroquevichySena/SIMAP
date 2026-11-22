@@ -1,0 +1,5 @@
+O SIMAP é usado apenas para o acompanhamento pedagógico de disciplinas de programação, e os dados não são vendidos nem usados para publicidade.
+A análise das entregas e a ajuda ao aluno usam inteligência artificial de terceiro (Google Gemini). O resultado é sempre consultivo, e a nota é sempre atribuída pelo Docente.
+Na chamada por QR code, a localização do celular é usada apenas no momento da confirmação, e somente a distância até a instituição é guardada. Recusar a localização não impede o registro da presença.
+O código das atividades práticas é executado no próprio navegador do aluno, nunca no servidor.
+Cada aluno vê apenas os próprios dados de desempenho, e cada Docente, apenas os das suas Turmas.

@@ -1,13 +1,13 @@
 """Login e aceite separado, com bloqueio dos demais endpoints até o consentimento."""
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from auditoria.models import Acao, RegistroAuditoria
 
 from .acesso import url_primeiro_acesso
-from .models import AceiteTermos
+from .models import AceiteTermos, VersaoTermos
 
 
 class PrimeiroAcessoTest(TestCase):
@@ -69,12 +69,12 @@ class PrimeiroAcessoTest(TestCase):
     def test_nova_versao_exige_aceite_inclusive_em_sessao_existente(self):
         self.entrar()
         self.aceitar()
-        with override_settings(TERMOS_DE_USO_VERSAO="nova"):
-            self.assertRedirects(self.client.get(self.destino), url_primeiro_acesso(self.destino))
-            r = self.aceitar(versao="antiga")
-            self.assertEqual(r.status_code, 200)
-            self.assertFalse(AceiteTermos.objects.filter(usuario=self.usuario, versao="nova").exists())
-            self.assertRedirects(self.aceitar(), self.destino)
+        VersaoTermos.objects.create(numero="1.4", texto="# Cláusula")
+        self.assertRedirects(self.client.get(self.destino), url_primeiro_acesso(self.destino))
+        r = self.aceitar()
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(AceiteTermos.objects.filter(usuario=self.usuario, versao="1.4").exists())
+        self.assertRedirects(self.aceitar(versao="1.4"), self.destino)
 
     def test_bloqueia_get_e_post_diretos_sem_reexecutar_operacao(self):
         self.client.force_login(self.usuario)
