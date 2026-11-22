@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import SenhaTemporariaAdminForm
+from .mascaras import mascarar_email, mascarar_rgm
 from .models import AceiteTermos, Usuario
 
 
@@ -12,7 +13,10 @@ class UsuarioAdmin(UserAdmin):
     do SIMAP (perfil e RGM), em vez de reescrever o formulário inteiro.
     """
 
-    list_display = ("username", "first_name", "last_name", "email", "perfil", "is_active", "is_staff")
+    # Na lista o e-mail e o RGM aparecem mascarados; o formulário de edição mostra o dado completo.
+    list_display = (
+        "username", "first_name", "last_name", "email_na_lista", "rgm_na_lista", "perfil", "is_active", "is_staff",
+    )
     list_filter = ("perfil", "is_staff", "is_superuser", "is_active")
     search_fields = ("username", "first_name", "last_name", "email", "rgm")
     change_password_form = SenhaTemporariaAdminForm
@@ -24,6 +28,14 @@ class UsuarioAdmin(UserAdmin):
     add_fieldsets = UserAdmin.add_fieldsets + (
         ("SIMAP", {"fields": ("perfil", "rgm")}),
     )
+
+    @admin.display(description="E-mail", ordering="email")
+    def email_na_lista(self, obj):
+        return mascarar_email(obj.email) or "-"
+
+    @admin.display(description="RGM", ordering="rgm")
+    def rgm_na_lista(self, obj):
+        return mascarar_rgm(obj.rgm) or "-"
 
     def save_model(self, request, obj, form, change):
         if not change:
