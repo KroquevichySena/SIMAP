@@ -1,0 +1,38 @@
+# Somente desenvolvimento/teste local com banco ficticio; nao aponta para Neon.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: simap_docker_test
+      POSTGRES_USER: simap_test
+      POSTGRES_PASSWORD: ${SIMAP_TEST_DB_PASSWORD:?Execute docker/preparar_ambiente_local.py}
+    volumes:
+      - dados_teste_pg16:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U simap_test -d simap_docker_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  web:
+    image: simap-proposta-docker:local
+    build: .
+    environment:
+      SECRET_KEY: ${SIMAP_TEST_SECRET:?Execute docker/preparar_ambiente_local.py}
+      DATABASE_URL: ${SIMAP_TEST_DATABASE_URL:?Execute docker/preparar_ambiente_local.py}
+      DEBUG: "True"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      CSRF_TRUSTED_ORIGINS: http://localhost:18080,http://127.0.0.1:18080
+      SECURE_SSL_REDIRECT: "False"
+      RUN_MIGRATIONS: "1"
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+      SIMAP_PUBLIC_URL: http://localhost:18080
+    ports:
+      - "127.0.0.1:18080:8000"
+    volumes:
+      - anexos_teste:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  dados_teste_pg16:
+  anexos_teste:
