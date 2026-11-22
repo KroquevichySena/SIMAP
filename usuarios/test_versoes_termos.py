@@ -1,6 +1,6 @@
 """Versões dos termos publicadas pela coordenação, com reaceite e histórico preservado."""
 from django.contrib.auth import get_user_model
-from django.test import SimpleTestCase, TestCase
+from django.test import Client, SimpleTestCase, TestCase
 from django.urls import reverse
 
 from auditoria.models import Acao, RegistroAuditoria
@@ -158,3 +158,34 @@ class PublicacaoPelaCoordenacaoTest(TestCase):
         self.assertEqual(registro.usuario, self.coord)
         self.assertEqual(registro.dados["numero"], "1.4")
         self.assertEqual(registro.dados["texto"], "[conteúdo não registrado]")
+
+
+class BloqueioImediatoTest(TestCase):
+    """As páginas abertas descobrem a nova versão sem esperar o próximo clique."""
+
+    def setUp(self):
+        self.aluno = get_user_model().objects.create_user("aluno", perfil="DISCENTE")
+        registrar_aceites_atuais([self.aluno])
+
+    def test_consulta_da_versao_vigente_e_publica_e_nao_toca_na_sessao(self):
+        resposta = Client().get(reverse("termos_vigente"))
+        self.assertEqual(resposta.json(), {"versao": "1.3"})
+        self.assertIn("no-cache", resposta["Cache-Control"])
+        self.assertNotIn("sessionid", resposta.cookies)
+        VersaoTermos.objects.create(numero="1.4", texto="# Cláusula")
+        self.assertEqual(Client().get(reverse("termos_vigente")).json(), {"versao": "1.4"})
+
+    def test_consulta_nao_entra_na_auditoria(self):
+        Client().get(reverse("termos_vigente"))
+        self.assertFalse(RegistroAuditoria.objects.filter(caminho=reverse("termos_vigente")).exists())
+
+    def test_pagina_logada_informa_a_versao_aceita_e_carrega_o_bloqueio(self):
+        self.client.force_login(self.aluno)
+        pagina = self.client.get(reverse("comunicacao:notificacoes"))
+        self.assertContains(pagina, 'data-termos-versao="1.3"')
+        self.assertContains(pagina, f'data-termos-vigente="{reverse("termos_vigente")}"')
+        self.assertContains(pagina, "js/termos_vigentes.js")
+
+    def test_pagina_sem_login_nao_carrega_o_bloqueio(self):
+        pagina = Client().get(reverse("login"))
+        self.assertNotContains(pagina, "termos_vigentes.js")

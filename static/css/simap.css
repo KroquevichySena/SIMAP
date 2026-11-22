@@ -2003,3 +2003,34 @@ body.simap-app {
 @media (prefers-reduced-motion: reduce) {
     .simap-erro .erro-pupilas, .simap-erro .erro-lupa, .simap-erro .erro-bug { animation: none; }
 }
+
+/* Bloqueio da página quando uma nova versão dos termos é publicada (static/js/termos_vigentes.js). */
+.simap-termos-bloqueio {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.72);
+}
+
+.simap-termos-bloqueio-cartao {
+    max-width: 480px;
+    padding: 28px;
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+}
+
+.simap-termos-bloqueio-cartao h2 {
+    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.simap-termos-bloqueio-cartao p {
+    margin-bottom: 20px;
+    color: var(--muted);
+}

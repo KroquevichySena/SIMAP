@@ -6,10 +6,11 @@ from django.db import transaction
 from django.db.models import Count, OuterRef, Q, Subquery
 from django.db.models.deletion import ProtectedError, RestrictedError
 from django.db.models.functions import Coalesce
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
+from django.views.decorators.cache import never_cache
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 
 from auditoria.contexto import obter_ip
@@ -304,3 +305,9 @@ class NovaVersaoTermosView(CoordenacaoRequiredMixin, View):
                 "o_que_mudou": linhas(dados.get("o_que_mudou", "")),
             }
         return render(request, self.template_name, contexto)
+
+
+@never_cache
+def versao_vigente_json(request):
+    """Número da versão vigente, consultado pelas páginas abertas (static/js/termos_vigentes.js)."""
+    return JsonResponse({"versao": numero_vigente()})
