@@ -1,7 +1,7 @@
 # Pipeline de integração contínua do SIMAP.
 #
 # Roda a cada Pull Request aberto ou atualizado para a main, num ambiente
-# limpo (ubuntu-latest), com três checagens independentes que aparecem como
+# limpo (ubuntu-latest), com checagens independentes que aparecem como
 # checks separados no PR e rodam em paralelo.
 name: CI
 
@@ -23,6 +23,45 @@ env:
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
 
 jobs:
+  imagem-docker:
+    name: Build Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Construir imagem sem credenciais de producao
+        run: docker build -t simap-ci:local .
+
+  regressao-postgresql:
+    name: Regressao PostgreSQL 16
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+      - name: Validar chamada, login e painel no PostgreSQL real
+        run: >-
+          python manage.py test chamada.test_bloqueio_postgresql chamada.test_qr
+          usuarios.test_fluxo_login usuarios.test_senha_temporaria painel.test_desempenho_painel
+          --settings=SIMAP.settings_test_postgres --verbosity 2 --noinput
+
   testes-unitarios:
     name: Testes unitários
     runs-on: ubuntu-latest

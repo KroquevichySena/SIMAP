@@ -8,7 +8,7 @@
 
     <div class="simap-menu">
       <ul class="simap-menu-links">
-        {% if user.is_authenticated %}
+        {% if user.is_docente or user.is_discente %}
           <li class="nav-item">
             <a class="nav-link{% if namespace == 'painel' or rota == 'dashboard' %} active{% endif %}" href="{% url 'core:dashboard' %}"{% if namespace == 'painel' or rota == 'dashboard' %} aria-current="page"{% endif %}>Painel</a>
           </li>

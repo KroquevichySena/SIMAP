@@ -55,7 +55,11 @@ def registrar_presenca(chamada_id, aluno, lido_em, origem, dispositivo="", local
     with transaction.atomic():
         # select_for_update segura a chamada até o fim: dois alunos ao mesmo
         # tempo não passam juntos pela conferência do limite.
-        chamada = Chamada.objects.select_for_update().select_related("turma__instituicao").get(pk=chamada_id)
+        chamada = (
+            Chamada.objects.select_for_update(of=("self",))
+            .select_related("turma__instituicao")
+            .get(pk=chamada_id)
+        )
 
         if chamada.finalizada_em:
             raise PresencaRecusada("Esta chamada já foi finalizada pelo professor.")
