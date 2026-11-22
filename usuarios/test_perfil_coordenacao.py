@@ -39,6 +39,7 @@ class PerfilCoordenacaoTest(TestCase):
         self.assertRedirects(self.client.get(reverse("core:dashboard")), reverse("usuarios_lista"))
         resposta = self.client.get(reverse("usuarios_lista"))
         self.assertContains(resposta, "Coordenação")
+        self.assertNotContains(resposta, ">Painel</a>")
         self.assertNotContains(resposta, f'href="{reverse("lista_turmas")}"')
         self.assertNotContains(resposta, f'href="{reverse("chamada:abrir_chamada")}"')
         self.assertEqual(self.client.get(reverse("auditoria:registro_list")).status_code, 200)
