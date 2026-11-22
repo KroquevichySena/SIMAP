@@ -8,6 +8,17 @@ from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import AceiteTermos
 
+# Telas que só fazem sentido para um perfil. Um link guardado no "next" (por
+# exemplo, o QR code da chamada lido pelo celular do professor) não deve levar
+# quem entrou para uma tela de outro perfil, que só mostraria um aviso de erro.
+ROTAS_DE_UM_PERFIL = {
+    "chamada:confirmar_presenca": "DISCENTE",
+    "chamada:confirmar_leitura": "DISCENTE",
+    "chamada:abrir_chamada": "DOCENTE",
+    "chamada:ao_vivo": "DOCENTE",
+    "chamada:projecao": "DOCENTE",
+}
+
 
 def aceitou_versao_atual(usuario):
     return AceiteTermos.objects.filter(
@@ -25,6 +36,12 @@ def destino_seguro(request, destino=None):
     try:
         rota = resolve(urlsplit(destino).path)
         if rota.url_name in {"primeiro_acesso", "trocar_senha_temporaria", "login", "logout"}:
+            return padrao
+        perfil = ROTAS_DE_UM_PERFIL.get(rota.view_name)
+        usuario = getattr(request, "user", None)
+        if perfil and usuario is not None and usuario.is_authenticated and usuario.perfil != perfil:
+            # A leitura do QR guardada antes do login não serve para outro perfil.
+            request.session.pop("leitura_chamada", None)
             return padrao
     except Resolver404:
         pass
