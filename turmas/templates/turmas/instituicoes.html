@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Instituições - SIMAP{% endblock %}
+
+{% block content %}
+    <div class="simap-pagina">
+        <header class="simap-cabecalho">
+            <div>
+                <h1>Instituições</h1>
+                <p class="simap-subtitulo">Locais de aula usados para conferir a localização na chamada por QR Code.</p>
+            </div>
+            <div class="simap-acoes">
+                <a href="{% url 'criar_instituicao' %}" class="simap-botao simap-botao-primario">
+                    <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" /></svg>
+                    Nova instituição
+                </a>
+            </div>
+        </header>
+
+        <section class="simap-cartao" aria-labelledby="titulo-lista-instituicoes">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-lista-instituicoes">Instituições cadastradas</h2>
+                <span class="simap-contagem">{{ instituicoes|length }} instituiç{{ instituicoes|length|pluralize:"ão,ões" }}</span>
+            </div>
+
+            {% if instituicoes %}
+                <div class="simap-tabela-rolagem" role="region" aria-labelledby="titulo-lista-instituicoes" tabindex="0">
+                    <table class="simap-tabela">
+                        <caption class="visually-hidden">Nome, localização, raio aceito e turmas de cada instituição.</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Localização</th>
+                                <th scope="col">Raio</th>
+                                <th scope="col">Turmas</th>
+                                <th scope="col"><span class="visually-hidden">Ações</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for instituicao in instituicoes %}
+                                <tr>
+                                    <th scope="row">{{ instituicao.nome }}</th>
+                                    <td>
+                                        {% if instituicao.tem_localizacao %}
+                                            <span class="simap-situacao simap-situacao-ativa">Configurada</span>
+                                        {% else %}
+                                            <span class="simap-situacao simap-situacao-inativa">Sem localização</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ instituicao.raio_metros }} m</td>
+                                    <td>{{ instituicao.total_turmas }}</td>
+                                    <td class="simap-tabela-acoes">
+                                        <a class="simap-link-acao" href="{% url 'editar_instituicao' instituicao.pk %}">Editar<span class="visually-hidden"> {{ instituicao.nome }}</span></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="simap-vazio">
+                    <h3>Nenhuma instituição cadastrada</h3>
+                    <p>Use “Nova instituição” para cadastrar o local de aula e vincular as turmas.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}

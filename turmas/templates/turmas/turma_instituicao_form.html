@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova turma em {{ instituicao.nome }} - SIMAP{% endblock %}
+
+{% block content %}
+    <div class="simap-pagina simap-formulario-pagina">
+        <a class="simap-voltar" href="{% url 'editar_instituicao' instituicao.pk %}">
+            <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+            Voltar para {{ instituicao.nome }}
+        </a>
+
+        <header class="simap-cabecalho">
+            <div>
+                <h1>Nova turma</h1>
+                <p class="simap-subtitulo">A turma será cadastrada na instituição {{ instituicao.nome }}.</p>
+            </div>
+        </header>
+
+        <section class="simap-cartao" aria-labelledby="titulo-dados-turma">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-dados-turma">Dados da turma</h2>
+                <span class="simap-contagem">* Campos obrigatórios</span>
+            </div>
+
+            <form method="post" class="simap-formulario">
+                {% csrf_token %}
+                {% include 'turmas/_erros_formulario.html' %}
+
+                {% include 'turmas/_campo_formulario.html' with campo=form.nome %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.periodo %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.docente %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.ativa %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.limite_atencao %}
+
+                <div class="simap-formulario-acoes">
+                    <button type="submit" class="simap-botao simap-botao-primario">Salvar turma</button>
+                    <a href="{% url 'editar_instituicao' instituicao.pk %}" class="simap-botao simap-botao-secundario">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </div>
+{% endblock %}

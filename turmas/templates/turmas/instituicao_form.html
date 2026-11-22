@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar instituição{% else %}Nova instituição{% endif %} - SIMAP{% endblock %}
+
+{% block content %}
+    <div class="simap-pagina simap-formulario-pagina">
+        <a class="simap-voltar" href="{% url 'lista_instituicoes' %}">
+            <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+            Voltar para instituições
+        </a>
+
+        <header class="simap-cabecalho">
+            <div>
+                <h1>{% if object %}Editar instituição{% else %}Nova instituição{% endif %}</h1>
+                <p class="simap-subtitulo">As coordenadas podem ser copiadas do Google Maps: clique no local e copie o texto que aparece.</p>
+            </div>
+        </header>
+
+        <section class="simap-cartao" aria-labelledby="titulo-dados-instituicao">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-dados-instituicao">Dados da instituição</h2>
+                <span class="simap-contagem">* Campos obrigatórios</span>
+            </div>
+
+            <form method="post" class="simap-formulario">
+                {% csrf_token %}
+                {% include 'turmas/_erros_formulario.html' %}
+
+                {% include 'turmas/_campo_formulario.html' with campo=form.nome %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.coordenadas %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.raio_metros %}
+                {% include 'turmas/_campo_formulario.html' with campo=form.precisao_minima %}
+
+                <fieldset class="simap-campo{% if form.turmas.errors %} simap-campo-invalido{% endif %}">
+                    <legend class="fs-6 fw-semibold">{{ form.turmas.label }}</legend>
+                    <p class="simap-ajuda-campo">{{ form.turmas.help_text }}</p>
+
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                        <input type="search" id="busca-turmas" class="simap-input flex-grow-1" placeholder="Buscar turma, período ou docente" aria-label="Buscar turma" aria-controls="lista-turmas">
+                        {% if object %}
+                            <a href="{% url 'criar_turma_instituicao' object.pk %}" class="simap-botao simap-botao-secundario">
+                                <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" /></svg>
+                                Nova turma
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% if not object %}
+                        <p class="simap-ajuda-campo">Salve a instituição para cadastrar turmas novas dentro dela.</p>
+                    {% endif %}
+
+                    <div id="lista-turmas">
+                        {% for opcao in form.turmas %}
+                            <div class="simap-campo-checkbox" data-busca="{{ opcao.choice_label|lower }}">
+                                {{ opcao.tag }}
+                                <label for="{{ opcao.id_for_label }}">{{ opcao.choice_label }}</label>
+                            </div>
+                        {% empty %}
+                            <p>Nenhuma turma disponível. Use “Nova turma” para cadastrar.</p>
+                        {% endfor %}
+                    </div>
+                    <p id="busca-sem-resultado" class="simap-ajuda-campo" hidden>Nenhuma turma encontrada.</p>
+                    {% if form.turmas.errors %}
+                        <ul class="simap-erros-campo">{% for erro in form.turmas.errors %}<li>{{ erro }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </fieldset>
+
+                <div class="simap-formulario-acoes">
+                    <button type="submit" class="simap-botao simap-botao-primario">Salvar instituição</button>
+                    <a href="{% url 'lista_instituicoes' %}" class="simap-botao simap-botao-secundario">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        // Filtra a lista na própria tela; as turmas escondidas continuam marcadas ou não.
+        (function () {
+            const busca = document.getElementById("busca-turmas");
+            const itens = document.querySelectorAll("#lista-turmas [data-busca]");
+            const vazio = document.getElementById("busca-sem-resultado");
+            busca.addEventListener("input", function () {
+                const termo = busca.value.trim().toLowerCase();
+                let visiveis = 0;
+                itens.forEach(function (item) {
+                    const mostra = item.dataset.busca.includes(termo);
+                    item.hidden = !mostra;
+                    if (mostra) visiveis++;
+                });
+                vazio.hidden = visiveis > 0 || itens.length === 0;
+            });
+        })();
+    </script>
+{% endblock %}
