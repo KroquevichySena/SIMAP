@@ -13,13 +13,17 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--limite", type=int, default=200, help="Máximo de avisos processados por execução.")
         parser.add_argument(
+            "--falhar-em-erro", action="store_true",
+            help="Retorna erro ao agendador se algum envio falhar; os avisos continuam pendentes.",
+        )
+        parser.add_argument(
             "--intervalo",
             type=int,
             default=0,
             help="Segundos entre verificações. Zero executa uma vez; use 60 para acompanhar continuamente.",
         )
 
-    def handle(self, *args, limite, intervalo, **options):
+    def handle(self, *args, limite, intervalo, falhar_em_erro, **options):
         if limite < 1:
             raise CommandError("--limite precisa ser pelo menos 1.")
         if intervalo < 0:
@@ -32,6 +36,8 @@ class Command(BaseCommand):
                     f"Novos alertas de atenção: {novos}. Resultados dos envios: {resultados}. "
                     "O destino real depende do EMAIL_BACKEND configurado."
                 )
+                if falhar_em_erro and resultados.get("falha", 0):
+                    raise CommandError("Há falhas de envio. Os avisos permanecem pendentes para nova tentativa.")
                 if intervalo == 0:
                     return
                 time.sleep(intervalo)
