@@ -23,6 +23,9 @@ turmas e notas não são de pessoas reais.
 3. Se esqueceu a senha, clique em **Esqueceu a senha?** e informe o e-mail cadastrado.
    O link recebido vale por 1 hora e só pode ser usado uma vez.
 
+Se você abriu um link enviado por alguém (por exemplo, o link de presença) e ele é de uma
+tela de outro perfil, depois do login o SIMAP leva você ao seu próprio painel.
+
 ![Tela de login](manual/01_login.png)
 
 ### 1.2 Primeiro acesso
@@ -32,11 +35,31 @@ A conta é criada pela coordenação com uma **senha temporária**. No primeiro 
 1. Informe a senha temporária e escolha a sua senha pessoal (mínimo de 10 caracteres,
    não pode ser só números nem parecida com seus dados).
 2. Leia e aceite os **Termos de Uso e a Política de Privacidade**. Sem o aceite, o sistema
-   não libera as outras páginas. Quando os termos mudam de versão, o aceite é pedido de novo.
+   não libera as outras páginas.
 
 ![Troca da senha temporária](manual/02_troca_senha.png)
 
-### 1.3 Navegação
+### 1.3 Quando os termos de uso mudam
+
+A coordenação pode publicar uma nova versão dos termos. Quando isso acontece:
+
+1. Se você estiver usando o SIMAP, a tela é bloqueada em alguns segundos com o aviso
+   **Os termos de uso foram atualizados**. Não é preciso recarregar a página.
+2. Clique em **Ler e aceitar os termos**. A tela mostra a versão nova e o quadro
+   **O que mudou nesta versão**; o link **Ler Termos de Uso e Política de Privacidade**
+   abre o texto completo.
+3. Marque a caixa de aceite e clique em **Aceitar e continuar**. Você volta para a página
+   em que estava.
+
+Enquanto a nova versão não for aceita, nenhuma página do sistema é liberada. Quem não
+estava usando o sistema vê a mesma tela no próximo acesso. No editor de código, o rascunho
+é salvo automaticamente, mas o que for digitado depois do aviso pode não ser salvo.
+
+![Aviso de nova versão dos termos](manual/22_bloqueio_termos.png)
+
+![Aceite da nova versão, com o que mudou](manual/23_reaceite_termos.png)
+
+### 1.4 Navegação
 
 O menu lateral muda conforme o perfil. Em todos eles há o sino de **Notificações**,
 o nome do usuário e o botão **Sair**. A sessão expira após 8 horas sem uso.
@@ -49,6 +72,11 @@ o nome do usuário e o botão **Sair**. A sessão expira após 8 horas sem uso.
 
 Em **Usuários** ficam as contas de docentes e discentes. É possível filtrar por perfil e
 buscar por nome, usuário, e-mail ou RGM.
+
+Para proteger os dados pessoais, a lista mostra o e-mail e o RGM **mascarados** (por exemplo,
+`an***@umc.br` e `***2733`). A busca aceita o dado completo, e a tela de confirmação de
+desativar, reativar ou excluir mostra o e-mail e o RGM inteiros, para conferir a conta
+antes de alterá-la.
 
 - **Desativar / Reativar:** bloqueia ou libera o acesso sem apagar nada.
 - **Excluir:** só é permitido para contas sem histórico. Contas que já entraram no sistema
@@ -67,7 +95,60 @@ buscar por nome, usuário, e-mail ou RGM.
 
 ![Cadastro de usuário](manual/04_usuario_novo.png)
 
-### 2.3 Auditoria
+### 2.3 Instituições
+
+A instituição é o local das aulas. A chamada por QR Code usa as coordenadas dela para
+conferir se o aluno está perto da sala.
+
+1. Em **Instituições**, clique em **Nova instituição**.
+2. Informe o **nome** e as **coordenadas**. Elas podem ser copiadas do Google Maps: clique no
+   local e copie o texto que aparece, com a latitude primeiro (por exemplo,
+   `-23.517250, -46.182917`). Deixe em branco para não conferir a localização na chamada.
+3. Confira o **raio aceito** (de 50 a 1000 metros; padrão 150) e a **precisão mínima aceita**
+   (padrão 100 metros). Se o GPS do celular errar mais que isso, a presença vai para análise.
+4. Clique em **Salvar instituição**. Em seguida, marque em **Turmas desta instituição** as
+   turmas que têm aula nesse local e salve de novo. A busca acima da lista filtra por turma,
+   período ou docente.
+5. Para cadastrar uma turma já ligada à instituição, use **Nova turma** e escolha o docente
+   responsável.
+
+Cada turma pertence a uma instituição só. Na lista aparecem apenas as turmas desta instituição
+e as que ainda não têm nenhuma. Turmas sem instituição com coordenadas fazem a chamada sem
+conferir a localização.
+
+![Lista de instituições](manual/18_instituicoes.png)
+
+![Cadastro da instituição e vínculo das turmas](manual/19_instituicao_form.png)
+
+### 2.4 Termos de uso
+
+Em **Termos de uso** a coordenação publica as versões dos Termos de Uso e da Política de
+Privacidade. O histórico mostra cada versão, quando e por quem foi publicada e quantas contas
+já a aceitaram (na vigente, o total em relação às contas ativas). **Ver texto** abre o texto
+de qualquer versão, inclusive as anteriores.
+
+![Histórico de versões dos termos](manual/20_versoes_termos.png)
+
+Para publicar uma nova versão:
+
+1. Clique em **Nova versão**. O formulário já vem com o texto da versão vigente e o próximo
+   número (por exemplo, 1.4).
+2. Preencha **O que mudou nesta versão**, um ponto por linha. É o quadro que os usuários veem
+   antes de aceitar.
+3. Ajuste **Em resumo** e o **Texto integral**. O texto usa marcações simples:
+   `# ` abre uma cláusula (numerada sozinha), `## ` um subtítulo, `- ` um item de lista,
+   `> ` uma citação, `---` o rodapé, e `**negrito**` ou `*itálico*`. Deixe uma linha em
+   branco entre os parágrafos.
+4. Clique em **Pré-visualizar** para ver a página como os usuários vão ver.
+5. Marque a confirmação e clique em **Publicar versão**.
+
+Depois de publicada, a versão **não pode ser alterada nem apagada**; para corrigir, publique
+outra. Todas as contas, inclusive a da coordenação, precisam aceitar a nova versão, como
+descrito em [1.3](#13-quando-os-termos-de-uso-mudam).
+
+![Pré-visualização de uma nova versão](manual/21_nova_versao_termos.png)
+
+### 2.5 Auditoria
 
 Em **Auditoria** a coordenação consulta quem fez cada ação, quando e de onde, com filtros
 e exportação em CSV. Os registros não podem ser alterados e são apagados automaticamente
@@ -215,6 +296,13 @@ entram; procure a coordenação.
 
 **A trilha não aparece para o aluno.** Confira se a trilha e a atividade estão publicadas e
 se a matrícula do aluno está ativa.
+
+**A tela ficou escura com o aviso "Os termos de uso foram atualizados".** A coordenação
+publicou uma nova versão dos termos. Clique em **Ler e aceitar os termos** e aceite a nova
+versão para voltar à página.
+
+**A chamada não está conferindo a localização.** A turma não está ligada a uma instituição
+com coordenadas. A coordenação faz o vínculo em **Instituições**.
 
 **A presença ficou "em análise".** A localização não foi confirmada ou o celular já tinha
 sido usado por outro aluno. O professor decide se aceita.
