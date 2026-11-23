@@ -71,7 +71,7 @@ do backend permanecem no ambiente. No sandbox Mailgun, autorize os destinatário
 
 ## Agendamento no GitHub Actions
 
-O workflow `.github/workflows/rf33.yml` verifica o RF33 nos minutos 7 e 37 de cada
+O workflow `.github/workflows/rf33.yml` verifica o RF33 nos minutos 17 e 47 de cada
 hora (UTC). Ele roda somente na `main` do repositorio original, nunca em PRs ou
 forks. Tambem permite executar manualmente em Actions, pelo botao Run workflow.
 O arquivo precisa estar integrado na main para aparecer e ser agendado.

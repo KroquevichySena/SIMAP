@@ -6,7 +6,7 @@ Projeto Final de Curso — Engenharia de Software, Universidade de Mogi das Cruz
 
 ---
 
-## Acompanhamento do PFC (entrega de 16/11/2026)
+## Acompanhamento do PFC (entrega de 23/11/2026)
 
 ### Etapa de 09/11
 
@@ -34,19 +34,41 @@ Projeto Final de Curso — Engenharia de Software, Universidade de Mogi das Cruz
 | #32 | README com instruções de execução e roteiro de verificação |
 | #33 | Termos de uso 1.3 (LGPD), com novo aceite de todos os usuários |
 | #34 | Páginas de erro 403, 404 e 500 |
+| #35 | Variáveis do Gunicorn documentadas no `.env.example` |
+| #36 | Relatório de acompanhamento da entrega de 16/11 neste README |
+| #37 | Cobertura dos testes unitários medida no CI, com mínimo de 50% |
+| #38, #39 | Perfil próprio da Coordenação, e-mails automáticos de acompanhamento (RF33), dados de demonstração e ajustes nas notificações |
+| #40 | Ajustes finais nos nomes fictícios e na ajuda da senha |
 
-Situação atual: 371 testes automatizados passando, análise estática sem alertas e verificação ponta a ponta dos três perfis em 15/11 (35 fluxos e 58 telas, sem erros).
+Na entrega de 16/11: verificação ponta a ponta dos três perfis em 15/11 (35 fluxos e 58 telas, sem erros).
+
+### Desenvolvido após 16/11, com autorização do orientador
+
+| PR | Entrega |
+|---|---|
+| #41 | Manual do usuário com as telas dos três perfis ([docs/MANUAL_DO_USUARIO.md](docs/MANUAL_DO_USUARIO.md)) |
+| #42 | Cadastro de instituições pela Coordenação e vínculo com as turmas |
+| #43 | Correção da chamada no PostgreSQL, otimização do painel do docente e implantação em contêiner (Docker e Gunicorn) |
+| #44 | Testes unitários dos serviços principais |
+| #45 | Login por link de outro perfil leva ao painel, sem aviso de erro |
+| #46 | E-mail e RGM mascarados nas listagens administrativas |
+| #47 | Versões dos termos de uso publicadas pela Coordenação, com reaceite imediato |
+| #48 | Manual do usuário atualizado com instituições, versões dos termos e máscara de dados |
+| #49, #50 | Agendamento dos e-mails do RF33 pelo GitHub Actions |
+
+Situação atual: 608 testes automatizados passando (11 deles só rodam no PostgreSQL) e análise estática sem alertas. O sistema está publicado no Render, com o banco no Neon (PostgreSQL 16).
 
 ### Pendências
 
 | Item | Prazo | Situação |
 |---|---|---|
-| Testes unitários com cobertura mínima de 50% (coverage.py) | 23/11 | Meta atingida em 15/11: 55% só com os testes unitários e 91% com todos os testes; falta incluir o coverage no projeto e no CI |
-| Manual do sistema (apêndice da monografia) | 23/11 | Não iniciado |
-| Implantação em contêiner (Docker, Gunicorn, Render) | 23/11 | Não iniciado; depende de autorização |
-| Migração da correção por IA para o pacote `google-genai` | 23/11 | Não iniciado |
+| Testes unitários com cobertura mínima de 50% (coverage.py) | 23/11 | Concluído: cobertura medida no CI a cada PR (#37), com testes unitários adicionais dos serviços principais (#44) |
+| Manual do sistema (apêndice da monografia) | 23/11 | Concluído (#41) e atualizado com as telas das entregas #42 a #47 (#48) |
+| Implantação em contêiner (Docker, Gunicorn, Render) | 23/11 | Concluído: Docker e Gunicorn (#43) e sistema publicado no Render |
+| Migração da correção por IA para o pacote `google-genai` | 23/11 | Pendente: a ajuda ao aluno já usa `google-genai`; a análise das entregas (`entregas/ia_services.py`) ainda usa o pacote anterior |
+| Agendamento automático do RF33 (GitHub Actions) | 23/11 | Em verificação: as execuções manuais funcionam e enviam os e-mails, mas o disparo automático pelo cron ainda não ocorreu |
 
-Não verificado em ambiente real: Gemini e Mailgun com chaves de produção, e a chamada por QR no celular com localização (exige HTTPS).
+Verificado no ambiente publicado em 23/11: ajuda da IA (Gemini) e e-mails pelo Mailgun sandbox (recuperação de senha, feedback e alerta de atenção). Ainda não verificada: a chamada por QR no celular com localização.
 
 ---
 
@@ -74,7 +96,7 @@ O sistema tem três perfis:
 
 | Perfil | Quem é | O que faz |
 |---|---|---|
-| **Coordenação** | Perfil próprio `COORDENACAO`, separado de docente e discente | Cadastra docentes e discentes e consulta a auditoria |
+| **Coordenação** | Perfil próprio `COORDENACAO`, separado de docente e discente | Cadastra docentes, discentes e instituições, publica as versões dos termos de uso e consulta a auditoria |
 | **Docente** | Professor da disciplina | Cria turmas, matrículas, trilhas e atividades; faz a chamada; corrige as entregas; acompanha o painel da turma |
 | **Discente** | Aluno matriculado | Realiza as atividades, confirma presença, pede ajuda à IA e acompanha a própria evolução |
 
@@ -84,8 +106,8 @@ O sistema tem três perfis:
 
 | Módulo | O que o sistema faz |
 |---|---|
-| **Acesso** | Login, cadastro de usuários pela Coordenação com senha temporária, troca obrigatória da senha no primeiro acesso, aceite versionado dos termos de uso, recuperação de senha por e-mail |
-| **Turmas** | Criação de turmas, matrículas, alteração da situação da matrícula, limite de atenção da turma |
+| **Acesso** | Login, cadastro de usuários pela Coordenação com senha temporária, troca obrigatória da senha no primeiro acesso, versões dos termos de uso publicadas pela Coordenação com aceite obrigatório, recuperação de senha por e-mail |
+| **Turmas** | Criação de turmas, matrículas, alteração da situação da matrícula, limite de atenção da turma, instituição da turma cadastrada pela Coordenação |
 | **Trilhas e atividades** | Trilhas e atividades em rascunho ou publicadas, ordem de exibição, material de apoio, vídeos do YouTube, prazos e conclusão das atividades |
 | **Editor de código** | Execução de Python no navegador do aluno (Pyodide), casos de teste do professor, rascunho salvo automaticamente |
 | **Entregas** | Envio de respostas e anexos, análise consultiva pelo Google Gemini (resumo e pontos de atenção), nota e devolutiva publicadas só após a validação do docente |
@@ -189,10 +211,13 @@ python manage.py createsuperuser
 
 A conta criada pelo `createsuperuser` recebe o perfil **Coordenação** automaticamente.
 Ela não acessa as funções de docente ou discente. No primeiro login, aceita os termos
-de uso e passa a ver o menu **Usuários**, onde cadastra docentes e discentes.
+de uso e passa a ver os menus **Usuários**, onde cadastra docentes e discentes,
+**Instituições** e **Termos de uso**.
 Esse formulário não cria outras contas de coordenação nem permite elevar privilégios.
 
-Na listagem de Usuários, a coordenação pode **desativar**, **reativar** ou solicitar
+Na listagem de Usuários, o e-mail e o RGM aparecem mascarados (por exemplo,
+`an***@umc.br` e `***2733`); a busca aceita o dado completo, e a tela de confirmação
+de cada ação mostra o dado inteiro para conferência. A coordenação pode **desativar**, **reativar** ou solicitar
 a **exclusão** de uma conta acadêmica, sempre com confirmação e POST protegido por
 CSRF. Desativar bloqueia o login e as sessões na próxima requisição, preservando
 senha, vínculos e histórico. Reativar não altera a situação das matrículas.
@@ -243,6 +268,46 @@ Acesse `http://127.0.0.1:8000/`. Cada perfil entra na sua área: a Coordenação
 |---|---|
 | `python manage.py notificar_prazos` | Notifica os alunos sobre atividades com prazo próximo ainda não entregues (`--horas` define a janela, padrão 24) |
 | `python manage.py limpar_auditoria` | Remove registros de auditoria mais antigos que o prazo de retenção (`--simular` só mostra a quantidade; `--dias` muda o prazo) |
+| `python manage.py notificar_acompanhamento` | Envia os e-mails automáticos de acompanhamento (RF33) e reprocessa os pendentes (`--intervalo 60` mantém o processo rodando) |
+
+**E-mails automáticos (RF33):** depois de atualizar, execute `python manage.py migrate`.
+O aluno é avisado após salvar a avaliação oficial; revisões que alteram a nota ou o
+feedback também geram aviso. Para acompanhar alunos em atenção e reprocessar envios
+pendentes, mantenha em outro terminal:
+
+```bash
+python manage.py notificar_acompanhamento --intervalo 60
+```
+
+Esse processo precisa continuar em execução. Em produção, o comando é agendado pelo
+GitHub Actions (workflow **RF33 - alertas por e-mail**, nos minutos 17 e 47 de cada hora,
+em UTC), que acessa o mesmo banco do site e envia pelo Mailgun. O workflow também pode ser
+executado manualmente em **Actions → RF33 - alertas por e-mail → Run workflow**.
+Abrir o painel não dispara e-mails. O envio usa `EMAIL_BACKEND`; no modo console, a
+mensagem aparece no terminal e não chega a uma caixa postal. Para links nos avisos,
+configure `SIMAP_PUBLIC_URL` com o endereço do sistema.
+Veja [regras e verificação do RF33](docs/RF33_NOTIFICACOES.md).
+
+### 4.7 Publicação
+
+O sistema está publicado em <https://simap.onrender.com>. A aplicação roda no **Render**,
+pela imagem do `Dockerfile` (Gunicorn), e o banco fica no **Neon** (PostgreSQL 16), os dois
+na mesma região (Virginia, EUA). A proximidade importa: cada página faz várias consultas,
+e a distância entre aplicação e banco multiplica o tempo de resposta.
+
+- Configure as variáveis de produção no painel do Render, nunca no repositório: `SECRET_KEY`,
+  `DATABASE_URL` (com `?sslmode=require`), `DEBUG=False`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`,
+  `SECURE_SSL_REDIRECT=True`, `SIMAP_PUBLIC_URL` e as chaves das integrações.
+- **As migrations rodam em cada publicação**: com `RUN_MIGRATIONS=1` no Render, o contêiner executa
+  `python manage.py migrate` antes de iniciar o Gunicorn. Se uma migration falhar, a publicação não
+  sobe e o Render mantém a versão anterior no ar. Isso é seguro enquanto houver uma única instância;
+  com mais de uma, as migrations devem rodar uma vez só, antes da publicação. Veja [docs/DOCKER.md](docs/DOCKER.md).
+- O Gunicorn usa os padrões da imagem: um worker, duas threads e tempo limite de 120 segundos
+  (`WEB_CONCURRENCY`, `GUNICORN_THREADS` e `GUNICORN_TIMEOUT` mudam esses valores).
+- Os e-mails usam o Mailgun em modo **sandbox**: só destinatários autorizados no Mailgun recebem.
+  Recuperação de senha, feedback e alerta de atenção foram validados nessas caixas.
+- No plano gratuito, o serviço hiberna após 15 minutos sem acesso (o primeiro acesso seguinte
+  leva cerca de um minuto) e os arquivos enviados não são preservados entre publicações.
 
 ---
 
@@ -267,6 +332,8 @@ Siga na ordem, porque cada etapa usa os dados da anterior. Para usar dois perfis
 | 13 | Discente | **Painel**: ver a própria evolução | Frequência, entregas e progresso apenas do próprio aluno |
 | 14 | Coordenação | **Auditoria**: filtrar e exportar em CSV | Registros de login, aceite dos termos e ações |
 | 15 | Qualquer | **Esqueci minha senha** na tela de login | Link de recuperação no terminal (ou por e-mail, com Mailgun) |
+| 16 | Coordenação | **Instituições**: cadastrar a instituição com as coordenadas e vincular a turma | Turma ligada à instituição usada na conferência de localização da chamada |
+| 17 | Coordenação | **Termos de uso → Nova versão**: pré-visualizar e publicar a versão seguinte | Quem estiver com o sistema aberto é bloqueado em alguns segundos e precisa aceitar a nova versão para continuar |
 
 > A leitura do QR pelo **celular** e a conferência de localização exigem o sistema publicado com HTTPS. Em `127.0.0.1`, o celular não alcança o computador e o navegador bloqueia o GPS.
 
@@ -279,6 +346,9 @@ Siga na ordem, porque cada etapa usa os dados da anterior. Para usar dois perfis
 - A Coordenação cadastra docentes e discentes em `/contas/usuarios/`. O cadastro exige nome, sobrenome, usuário, e-mail, perfil e senha temporária; o RGM é obrigatório para discentes. As contas criadas não recebem privilégios administrativos.
 - A Coordenação informa as credenciais por um canal privado. No primeiro acesso, a pessoa troca a senha temporária por uma pessoal, e a temporária deixa de funcionar. A recuperação de senha por e-mail também permite definir a senha pessoal.
 - Depois da troca, a pessoa lê e aceita os termos de uso em `/contas/primeiro-acesso/`. O aceite registra usuário, versão, data, hora e IP, e gera registro na auditoria. Uma nova versão dos termos exige novo aceite.
+- A Coordenação publica as versões dos termos em **Termos de uso**, com pré-visualização e confirmação. A versão vigente é sempre a última publicada; uma versão publicada não pode ser alterada nem apagada, e o histórico mostra quantas contas aceitaram cada uma. A versão 1.3 foi cadastrada por migração com o mesmo texto que estava no sistema.
+- Ao ser publicada uma nova versão, as páginas abertas consultam a versão vigente a cada 15 segundos e bloqueiam a tela até o novo aceite, mostrando o que mudou. Essa consulta não renova a sessão nem gera registro na auditoria; o servidor continua recusando qualquer requisição sem o aceite.
+- Se a pessoa entra por um link de tela de outro perfil (por exemplo, um docente pelo link de confirmação de presença), o login a leva para o próprio painel.
 - Até a troca da senha e o aceite, o sistema bloqueia todas as páginas, inclusive URLs diretas e envios de formulário, também em sessões já abertas.
 - O docente é responsável pelas matrículas das próprias turmas.
 
@@ -294,7 +364,7 @@ Siga na ordem, porque cada etapa usa os dados da anterior. Para usar dois perfis
 - O aluno tem **3 minutos** entre ler o QR e confirmar. A leitura feita antes do login não se perde.
 - **Presença recusada** (não é gravada): tempo de confirmação esgotado, chamada finalizada, matrícula inativa, presença repetida ou limite atingido.
 - **Presença em análise** (é gravada e o docente aceita ou recusa): mesmo celular de outro aluno, localização negada, imprecisa ou fora do raio da instituição.
-- O sistema guarda só a **distância** até a instituição, nunca as coordenadas do aluno. A instituição e as suas coordenadas são cadastradas pela Coordenação no `/admin`.
+- O sistema guarda só a **distância** até a instituição, nunca as coordenadas do aluno. A Coordenação cadastra a instituição e as suas coordenadas em **Instituições** e a vincula às turmas.
 - Os painéis contam apenas as presenças **confirmadas**.
 
 ### 6.4 Entregas e IA
@@ -318,22 +388,6 @@ Essa validação é uma defesa em camadas e não substitui um antivírus. Refer�
 
 ## 7. Testes e qualidade
 
-**E-mails automáticos (RF33):** depois de atualizar, execute `python manage.py migrate`.
-O aluno é avisado após salvar a avaliação oficial; revisões que alteram a nota ou o
-feedback também geram aviso. Para acompanhar alunos em atenção e reprocessar envios
-pendentes, mantenha em outro terminal:
-
-```bash
-python manage.py notificar_acompanhamento --intervalo 60
-```
-
-Esse processo precisa continuar em execução. Em produção, use um worker supervisionado
-ou agende `python manage.py notificar_acompanhamento` periodicamente, sem `--intervalo`.
-Abrir o painel não dispara e-mails. O envio usa `EMAIL_BACKEND`; no modo console, a
-mensagem aparece no terminal e não chega a uma caixa postal. Para links nos avisos,
-configure `SIMAP_PUBLIC_URL` com o endereço do sistema.
-Veja [regras e verificação do RF33](docs/RF33_NOTIFICACOES.md).
-
 Os testes usam um banco SQLite em memória, criado do zero e descartado no fim. Não precisam de `.env` nem de PostgreSQL:
 
 ```bash
@@ -343,6 +397,14 @@ python manage.py test --settings=SIMAP.settings_test --tipo integracao     # vie
 ```
 
 O resultado esperado é `OK`, sem falhas.
+
+**Testes no PostgreSQL:** alguns comportamentos, como o bloqueio de concorrência da chamada, só podem ser verificados num PostgreSQL real; esses testes são pulados no SQLite. Com um PostgreSQL 16 local (ou só para testes), rode:
+
+```bash
+python manage.py test --settings=SIMAP.settings_test_postgres
+```
+
+A conexão usa `127.0.0.1:5432` e o usuário `postgres`; para mudar, defina `SIMAP_TEST_POSTGRES_HOST`, `SIMAP_TEST_POSTGRES_PORT`, `SIMAP_TEST_POSTGRES_USER` e `SIMAP_TEST_POSTGRES_PASSWORD`. O banco de testes é criado e apagado a cada execução e nunca é o banco publicado.
 
 **Linter (Ruff):** as regras estão em `ruff.toml`.
 
@@ -359,7 +421,7 @@ coverage run manage.py test --settings=SIMAP.settings_test --tipo unitarios
 coverage report
 ```
 
-**Integração contínua:** a cada Pull Request para a `main`, o GitHub Actions (`.github/workflows/ci.yml`) roda em paralelo os testes unitários com a medição de cobertura, os testes de integração (incluindo a checagem de migrations pendentes) e o linter. O PR falha se a cobertura dos testes unitários ficar abaixo de 50%.
+**Integração contínua:** a cada Pull Request para a `main`, o GitHub Actions (`.github/workflows/ci.yml`) roda em paralelo os testes unitários com a medição de cobertura, os testes de integração (incluindo a checagem de migrations pendentes), o linter, a regressão da chamada, do login e do painel num PostgreSQL 16 e a construção da imagem Docker. O PR falha se a cobertura dos testes unitários ficar abaixo de 50%.
 
 ---
 
@@ -371,7 +433,7 @@ coverage report
 - **Autorização:** cada tela confere o perfil, e as consultas são sempre filtradas pelo usuário dono dos dados, para que ninguém acesse turmas, entregas ou chamadas de outra pessoa.
 - **Credenciais:** chaves de API e senhas ficam em variáveis de ambiente, fora do repositório.
 - **Produção:** com `DEBUG=False`, o sistema exige HTTPS, cookies seguros e HSTS.
-- **LGPD:** o sistema trata dados de identificação institucional e de desempenho acadêmico, sem dados sensíveis. Aplica o princípio da minimização (a chamada não guarda a localização do aluno; a auditoria não copia o texto das mensagens). O aluno vê apenas os próprios dados, e o docente, apenas os das suas turmas. Os termos de uso e a política de privacidade ficam acessíveis no sistema.
+- **LGPD:** o sistema trata dados de identificação institucional e de desempenho acadêmico, sem dados sensíveis. Aplica o princípio da minimização (a chamada não guarda a localização do aluno; a auditoria não copia o texto das mensagens). O aluno vê apenas os próprios dados, e o docente, apenas os das suas turmas. Nas listagens administrativas, o e-mail e o RGM aparecem mascarados. Os termos de uso e a política de privacidade ficam acessíveis no sistema; cada versão publicada é guardada com o texto integral, e cada aceite registra a versão, a data, a hora e o IP, o que permite comprovar o que cada pessoa aceitou.
 
 ---
 
@@ -392,6 +454,9 @@ coverage report
 
 | Documento | Conteúdo |
 |---|---|
+| [docs/MANUAL_DO_USUARIO.md](docs/MANUAL_DO_USUARIO.md) | Manual do usuário, com as telas dos três perfis |
+| [docs/DOCKER.md](docs/DOCKER.md) | Imagem Docker, Gunicorn e variáveis de execução |
+| [docs/RF33_NOTIFICACOES.md](docs/RF33_NOTIFICACOES.md) | Regras e verificação dos e-mails automáticos de acompanhamento |
 | [docs/INTEGRACAO_API.md](docs/INTEGRACAO_API.md) | Integrações com o Google Gemini e o Mailgun: fluxo, autenticação, tratamento de falhas e dados enviados |
 | [docs/AJUDA_IA_ALUNO.md](docs/AJUDA_IA_ALUNO.md) | Ajuda da IA ao aluno: níveis de dica, limites e configuração pelo docente |
 | [docs/EDITOR_DE_CODIGO.md](docs/EDITOR_DE_CODIGO.md) | Editor de código das atividades práticas e execução segura no navegador |
@@ -410,11 +475,12 @@ SIMAP/
 ├── SIMAP/                  # Configuração do projeto
 │   ├── settings.py         # Configurações, lidas das variáveis de ambiente
 │   ├── settings_test.py    # Configurações dos testes (banco em memória)
+│   ├── settings_test_postgres.py  # Testes num PostgreSQL real
 │   ├── test_runner.py      # Separação entre testes unitários e de integração
 │   ├── urls.py             # Rotas principais
 │   └── asgi.py / wsgi.py   # Pontos de entrada do servidor
 │
-├── usuarios/               # Contas, perfis, primeiro acesso, termos de uso, e-mail (Mailgun)
+├── usuarios/               # Contas, perfis, primeiro acesso, versões dos termos de uso, e-mail (Mailgun)
 ├── turmas/                 # Turmas, matrículas, instituição, limite de atenção
 ├── core/                   # Trilhas, atividades, materiais, vídeos, home por perfil
 │   └── management/         # Comandos popular_dados e notificar_prazos
@@ -422,18 +488,23 @@ SIMAP/
 ├── tutoria/                # Ajuda da IA ao aluno
 ├── chamada/                # Chamada por QR code e registro de presença
 ├── comunicacao/            # Avisos, comentários, mensagens, anexos e notificações
+│   └── management/         # Comando notificar_acompanhamento (RF33)
 ├── painel/                 # Painéis de desempenho do docente e do discente
 ├── auditoria/              # Registro de ações, exportação CSV e retenção
 │   └── management/         # Comando limpar_auditoria
 │
 ├── templates/              # Telas (HTML) organizadas por app, mais o layout base
 ├── static/                 # CSS e JavaScript (editor, gráficos, tutoria)
-├── docs/                   # Documentação complementar
+├── docs/                   # Documentação complementar e manual do usuário
+├── docker/                 # Script de início do contêiner
 │
 ├── .github/workflows/      # Integração contínua (testes e linter)
 ├── .env.example            # Modelo das variáveis de ambiente (sem valores reais)
 ├── requirements.txt        # Dependências do sistema
-├── requirements-dev.txt    # Ferramentas de desenvolvimento (Ruff)
+├── requirements-dev.txt    # Ferramentas de desenvolvimento (Ruff e coverage)
+├── requirements.docker.txt # Dependências da imagem Docker (inclui o Gunicorn)
+├── Dockerfile, compose.yaml # Imagem do sistema e ambiente local em contêiner
+├── .coveragerc             # Regras da medição de cobertura
 ├── ruff.toml               # Regras do linter
 ├── SIMAP_BPMN_Diagram.bpmn # Diagrama BPMN
 ├── manage.py               # Utilitário de linha de comando do Django
