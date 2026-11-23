@@ -27,14 +27,15 @@ class AceiteTermosMiddleware(MiddlewareMixin):
         caminho = request.get_full_path() if request.method in {"GET", "HEAD"} else ""
         if request.user.troca_senha_obrigatoria:
             permitidas_senha = {
-                "trocar_senha_temporaria", "termos_de_uso", "login", "logout",
+                "trocar_senha_temporaria", "termos_de_uso", "termos_vigente", "login", "logout",
                 "password_reset", "password_reset_done", "password_reset_confirm", "password_reset_complete",
             }
             if not rota or rota.url_name not in permitidas_senha:
                 return HttpResponseRedirect(url_troca_senha(destino_seguro(request, caminho)))
             return None
         permitidas = {
-            "primeiro_acesso", "trocar_senha_temporaria", "termos_de_uso", "login", "logout", "password_reset",
+            "primeiro_acesso", "trocar_senha_temporaria", "termos_de_uso", "termos_vigente", "login", "logout",
+            "password_reset",
             "password_reset_done", "password_reset_confirm", "password_reset_complete",
         }
         if rota and rota.url_name in permitidas:

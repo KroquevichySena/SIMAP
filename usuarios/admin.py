@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from .forms import SenhaTemporariaAdminForm
 from .mascaras import mascarar_email, mascarar_rgm
-from .models import AceiteTermos, Usuario
+from .models import AceiteTermos, Usuario, VersaoTermos
 
 
 @admin.register(Usuario)
@@ -73,6 +73,22 @@ class AceiteTermosAdmin(admin.ModelAdmin):
     list_display = ("usuario", "versao", "aceito_em", "ip_address")
     list_filter = ("versao",)
     search_fields = ("usuario__username", "usuario__email")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(VersaoTermos)
+class VersaoTermosAdmin(admin.ModelAdmin):
+    """Só consulta: as versões são publicadas pela tela da coordenação e nunca editadas."""
+
+    list_display = ("numero", "publicada_em", "publicada_por")
 
     def has_add_permission(self, request):
         return False

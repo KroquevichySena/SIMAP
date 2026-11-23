@@ -52,6 +52,9 @@
           <li class="nav-item">
             <a class="nav-link{% if rota == 'lista_instituicoes' or rota == 'criar_instituicao' or rota == 'editar_instituicao' or rota == 'criar_turma_instituicao' %} active{% endif %}" href="{% url 'lista_instituicoes' %}"{% if rota == 'lista_instituicoes' or rota == 'criar_instituicao' or rota == 'editar_instituicao' or rota == 'criar_turma_instituicao' %} aria-current="page"{% endif %}>Instituições</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link{% if rota == 'versoes_termos' or rota == 'nova_versao_termos' or rota == 'termos_de_uso_versao' %} active{% endif %}" href="{% url 'versoes_termos' %}"{% if rota == 'versoes_termos' or rota == 'nova_versao_termos' or rota == 'termos_de_uso_versao' %} aria-current="page"{% endif %}>Termos de uso</a>
+          </li>
         {% endif %}
 
         {% if user.pode_consultar_auditoria %}

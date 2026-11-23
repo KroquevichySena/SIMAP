@@ -1,9 +1,9 @@
 from django import forms
-from django.conf import settings
 from django.contrib.auth.forms import AdminPasswordChangeForm, PasswordChangeForm, SetPasswordForm, UserCreationForm
 from django.utils.html import format_html
 
-from .models import Usuario
+from .models import Usuario, VersaoTermos
+from .termos import FORMATO_NUMERO, chave_numero, numero_vigente
 
 
 class CadastroUsuarioForm(UserCreationForm):
@@ -97,11 +97,11 @@ class AceitePrimeiroAcessoForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["versao"].initial = settings.TERMOS_DE_USO_VERSAO
+        self.fields["versao"].initial = numero_vigente()
 
     def clean_versao(self):
         versao = self.cleaned_data["versao"]
-        if versao != settings.TERMOS_DE_USO_VERSAO:
+        if versao != numero_vigente():
             raise forms.ValidationError("Os termos foram atualizados. Recarregue esta página antes de aceitar.")
         return versao
 
@@ -112,3 +112,51 @@ class ConfirmacaoGestaoUsuarioForm(forms.Form):
         error_messages={"required": "Confirme a ação antes de continuar."},
         widget=forms.CheckboxInput(attrs={"class": "simap-checkbox"}),
     )
+
+
+class NovaVersaoTermosForm(forms.ModelForm):
+    """Publicação de uma nova versão dos termos pela coordenação."""
+
+    confirmar = forms.BooleanField(
+        required=False,
+        label="Entendo que, ao publicar, todos os usuários precisarão aceitar esta versão no próximo acesso.",
+        widget=forms.CheckboxInput(attrs={"class": "simap-checkbox"}),
+    )
+
+    class Meta:
+        model = VersaoTermos
+        fields = ["numero", "o_que_mudou", "resumo", "texto"]
+        widgets = {
+            "numero": forms.TextInput(attrs={"class": "simap-input", "placeholder": "Ex.: 1.4"}),
+            "o_que_mudou": forms.Textarea(attrs={"class": "simap-input", "rows": 4}),
+            "resumo": forms.Textarea(attrs={"class": "simap-input", "rows": 6}),
+            "texto": forms.Textarea(attrs={"class": "simap-input simap-termos-editor", "rows": 24}),
+        }
+        help_texts = {
+            "numero": "Números separados por ponto, maior que a versão vigente.",
+            "texto": (
+                "Formato: \"# \" abre uma cláusula, \"## \" um subtítulo, \"- \" um item de lista, "
+                "\"> \" uma citação e \"---\" o rodapé. Use **negrito** e *itálico*. "
+                "Uma linha em branco separa os parágrafos."
+            ),
+        }
+
+    def __init__(self, *args, publicar=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["confirmar"].required = publicar
+        self.fields["confirmar"].error_messages["required"] = "Confirme antes de publicar a nova versão."
+
+    def clean_numero(self):
+        numero = self.cleaned_data["numero"].strip()
+        if not FORMATO_NUMERO.match(numero):
+            raise forms.ValidationError("Use apenas números separados por ponto, como 1.4 ou 2.0.")
+        vigente = numero_vigente()
+        if FORMATO_NUMERO.match(vigente) and chave_numero(numero) <= chave_numero(vigente):
+            raise forms.ValidationError(f"A nova versão precisa ser maior que a vigente ({vigente}).")
+        return numero
+
+    def clean_texto(self):
+        texto = self.cleaned_data["texto"]
+        if not any(linha.startswith("# ") for linha in texto.splitlines()):
+            raise forms.ValidationError("O texto precisa ter ao menos uma cláusula, começando com \"# \".")
+        return texto

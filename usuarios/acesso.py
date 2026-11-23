@@ -7,6 +7,7 @@ from django.urls import Resolver404, resolve, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import AceiteTermos
+from .termos import numero_vigente_expr
 
 # Telas que só fazem sentido para um perfil. Um link guardado no "next" (por
 # exemplo, o QR code da chamada lido pelo celular do professor) não deve levar
@@ -21,9 +22,7 @@ ROTAS_DE_UM_PERFIL = {
 
 
 def aceitou_versao_atual(usuario):
-    return AceiteTermos.objects.filter(
-        usuario=usuario, versao=settings.TERMOS_DE_USO_VERSAO
-    ).exists()
+    return AceiteTermos.objects.filter(usuario=usuario, versao=numero_vigente_expr()).exists()
 
 
 def destino_seguro(request, destino=None):

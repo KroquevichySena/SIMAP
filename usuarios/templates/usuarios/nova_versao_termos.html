@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova versão dos termos - SIMAP{% endblock %}
+
+{% block content %}
+    <div class="simap-pagina simap-formulario-pagina">
+        <a class="simap-voltar" href="{% url 'versoes_termos' %}">
+            <svg class="simap-icone" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+            Voltar para o histórico
+        </a>
+
+        <header class="simap-cabecalho">
+            <div>
+                <h1>Nova versão dos termos</h1>
+                <p class="simap-subtitulo">O formulário começa com o texto da versão vigente{% if vigente %} ({{ vigente.numero }}){% endif %}. Depois de publicada, a versão não pode ser alterada nem apagada.</p>
+            </div>
+        </header>
+
+        {% if previa %}
+            <section class="simap-cartao" aria-labelledby="titulo-previa">
+                <div class="simap-cartao-cabecalho">
+                    <h2 id="titulo-previa">Pré-visualização da versão {{ form.numero.value }}</h2>
+                    <span class="simap-contagem">É assim que os usuários verão o texto</span>
+                </div>
+                <div class="simap-termos">
+                    {% include 'usuarios/_documento_termos.html' with documento=previa.documento resumo=previa.resumo o_que_mudou=previa.o_que_mudou em_previa=True %}
+                </div>
+            </section>
+        {% endif %}
+
+        <section class="simap-cartao" aria-labelledby="titulo-dados-versao">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-dados-versao">Dados da versão</h2>
+                <span class="simap-contagem">* Campos obrigatórios</span>
+            </div>
+
+            <form method="post" class="simap-formulario" novalidate>
+                {% csrf_token %}
+                {% include 'usuarios/_erros_acesso.html' %}
+                {% include 'partials/_campo_formulario.html' with campo=form.numero %}
+                {% include 'partials/_campo_formulario.html' with campo=form.o_que_mudou %}
+                {% include 'partials/_campo_formulario.html' with campo=form.resumo %}
+                {% include 'partials/_campo_formulario.html' with campo=form.texto %}
+
+                {% if previa %}
+                    {% include 'partials/_campo_formulario.html' with campo=form.confirmar %}
+                {% endif %}
+
+                <div class="simap-formulario-acoes">
+                    <button type="submit" name="acao" value="previsualizar" class="simap-botao {% if previa %}simap-botao-secundario{% else %}simap-botao-primario{% endif %}">{% if previa %}Atualizar pré-visualização{% else %}Pré-visualizar{% endif %}</button>
+                    {% if previa %}
+                        <button type="submit" name="acao" value="publicar" class="simap-botao simap-botao-primario">Publicar versão {{ form.numero.value }}</button>
+                    {% endif %}
+                    <a href="{% url 'versoes_termos' %}" class="simap-botao simap-botao-secundario">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </div>
+{% endblock %}
