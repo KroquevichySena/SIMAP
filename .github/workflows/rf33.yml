@@ -2,8 +2,8 @@ name: RF33 - alertas por e-mail
 
 on:
   schedule:
-    # UTC: minutos 7 e 37 de cada hora; evita o inicio da hora.
-    - cron: '7,37 * * * *'
+    # UTC: minutos 17 e 47 de cada hora; evita o inicio da hora.
+    - cron: '17,47 * * * *'
   workflow_dispatch:
 
 permissions:
