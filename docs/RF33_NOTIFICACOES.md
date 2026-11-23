@@ -69,6 +69,61 @@ O parâmetro `--limite` limita o lote de avisos processados (padrão: 200).
 Use um worker supervisionado ou um agendador em produção. Credenciais e configuração
 do backend permanecem no ambiente. No sandbox Mailgun, autorize os destinatários.
 
+## Agendamento no GitHub Actions
+
+O workflow `.github/workflows/rf33.yml` verifica o RF33 nos minutos 7 e 37 de cada
+hora (UTC). Ele roda somente na `main` do repositorio original, nunca em PRs ou
+forks. Tambem permite executar manualmente em Actions, pelo botao Run workflow.
+O arquivo precisa estar integrado na main para aparecer e ser agendado.
+
+O runner acessa diretamente o mesmo PostgreSQL Neon do site e envia pelo Mailgun.
+Nao depende do Render estar acordado nem do computador da equipe. Nao executa
+migrations, nao limpa auditoria e nao muda configuracoes do Render.
+
+Antes de ativar, abra Settings > Secrets and variables > Actions > New repository
+secret no GitHub e cadastre os valores diretamente, sem colar em chats ou commits:
+
+| Secret | Valor |
+| --- | --- |
+| `RF33_SECRET_KEY` | Valor de SECRET_KEY configurado no ambiente do SIMAP |
+| `RF33_DATABASE_URL` | Conexao do banco Neon PostgreSQL 16 atualmente usado pelo Render, com SSL |
+| `RF33_MAILGUN_API_KEY` | Chave de envio do mesmo dominio Mailgun do site |
+| `RF33_MAILGUN_DOMAIN` | Dominio de envio, sem protocolo |
+| `RF33_DEFAULT_FROM_EMAIL` | Mesmo remetente de DEFAULT_FROM_EMAIL no Render |
+| `RF33_MAILGUN_API_URL` | Base da API, sem barra final: https://api.mailgun.net (US) ou https://api.eu.mailgun.net (EU) |
+
+Os cinco primeiros sao obrigatorios. MAILGUN_API_URL usa US quando omitido;
+dominios EU exigem configurar o sexto Secret. A chave do Gemini nao e necessaria.
+Secrets do Render nao sao compartilhados automaticamente com o GitHub.
+Somente mantenedores autorizados devem alterar o workflow e o codigo da main:
+este job possui acesso ao banco real. Evite agendadores duplicados.
+
+O runner usa Python 3.12 padrao em ubuntu-latest. Em repositorios publicos,
+os runners padrao do GitHub Actions sao gratuitos; limites do Neon e Mailgun
+continuam aplicaveis. Nao selecionar runners maiores pagos.
+
+O agendamento pode atrasar e, em repositorios publicos sem atividade por 60 dias,
+pode ser desativado pelo GitHub. Nao e um mecanismo de notificacao imediata.
+Documentacao: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows
+
+Depois do merge e da configuracao dos Secrets:
+
+1. Prepare uma turma ficticia com aluno em atencao e e-mail do docente autorizado.
+2. Abra Actions > RF33 - alertas por e-mail > Run workflow, selecionando main.
+3. Confira o resumo com contagens e o e-mail recebido pelo docente.
+4. Repita: enquanto o mesmo episodio persistir, nao deve haver novo alerta.
+5. Confira depois uma execucao com evento schedule: o teste manual, sozinho,
+   nao comprova que o agendamento automatico aconteceu.
+
+O workflow nao sobrepoe execucoes. As credenciais ficam apenas na etapa de envio,
+e os logs publicos mostram contagens, sem tracebacks de banco ou provedores.
+A opcao `--falhar-em-erro` marca a execucao como falha quando o provedor falha;
+os avisos permanecem pendentes para nova tentativa. Pendencias sem e-mail ou
+aguardando publicacao aparecem no resumo e exigem verificar cadastro/visibilidade.
+Uma execucao verde nao comprova chegada na caixa de entrada: conferir o resumo
+e os eventos do Mailgun. Uma falha pode ocorrer depois de alguns envios terem
+sido realizados; nao significa rollback de e-mails.
+
 ## Verificação com dados fictícios
 
 1. Cadastre professor e aluno com e-mails de teste, matricule e publique uma atividade.

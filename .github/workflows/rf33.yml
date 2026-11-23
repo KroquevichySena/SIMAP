@@ -1,0 +1,49 @@
+name: RF33 - alertas por e-mail
+
+on:
+  schedule:
+    # UTC: minutos 7 e 37 de cada hora; evita o inicio da hora.
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Nao interromper um envio em andamento nem executar dois lotes em paralelo.
+concurrency:
+  group: rf33-producao
+  cancel-in-progress: false
+
+jobs:
+  acompanhamento:
+    if: github.repository == 'KroquevichySena/SIMAP' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Instalar dependencias
+        run: python -m pip install -r requirements.txt
+      - name: Verificar atencao e processar avisos pendentes
+        env:
+          SECRET_KEY: ${{ secrets.RF33_SECRET_KEY }}
+          DATABASE_URL: ${{ secrets.RF33_DATABASE_URL }}
+          MAILGUN_API_KEY: ${{ secrets.RF33_MAILGUN_API_KEY }}
+          MAILGUN_DOMAIN: ${{ secrets.RF33_MAILGUN_DOMAIN }}
+          MAILGUN_API_URL: ${{ secrets.RF33_MAILGUN_API_URL || 'https://api.mailgun.net' }}
+          DEFAULT_FROM_EMAIL: ${{ secrets.RF33_DEFAULT_FROM_EMAIL }}
+          EMAIL_BACKEND: usuarios.email_backend.MailgunEmailBackend
+          SIMAP_PUBLIC_URL: https://simap.onrender.com
+          DEBUG: 'False'
+          ALLOWED_HOSTS: simap.onrender.com
+          CSRF_TRUSTED_ORIGINS: https://simap.onrender.com
+          SECURE_SSL_REDIRECT: 'True'
+          PGSSLMODE: require
+          PGCONNECT_TIMEOUT: '30'
+          PYTHONUNBUFFERED: '1'
+        run: python .github/scripts/executar_rf33.py
