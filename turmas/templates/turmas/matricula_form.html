@@ -16,6 +16,26 @@
             </div>
         </header>
 
+        <section class="simap-cartao" aria-labelledby="titulo-busca-discente">
+            <div class="simap-cartao-cabecalho">
+                <h2 id="titulo-busca-discente">Encontrar o aluno</h2>
+                <span class="simap-contagem">
+                    {% if total_encontrado > mostrados %}Mostrando {{ mostrados }} de {{ total_encontrado }} encontrados. Refine a busca.{% else %}{{ total_encontrado }} encontrado{{ total_encontrado|pluralize }}{% endif %}
+                </span>
+            </div>
+
+            <form method="get" class="simap-formulario" role="search">
+                {% include 'turmas/_campo_formulario.html' with campo=busca.q %}
+                {% include 'turmas/_campo_formulario.html' with campo=busca.turma %}
+                {% include 'turmas/_campo_formulario.html' with campo=busca.filtro %}
+
+                <div class="simap-formulario-acoes">
+                    <button type="submit" class="simap-botao simap-botao-secundario">Buscar</button>
+                    <a href="{% url 'criar_matricula' %}" class="simap-botao simap-botao-secundario">Limpar</a>
+                </div>
+            </form>
+        </section>
+
         <section class="simap-cartao" aria-labelledby="titulo-dados-matricula">
             <div class="simap-cartao-cabecalho">
                 <h2 id="titulo-dados-matricula">Dados da matrícula</h2>

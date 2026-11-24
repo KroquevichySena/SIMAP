@@ -2,9 +2,13 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
+from usuarios.mascaras import mascarar_rgm
+
 from .coordenadas import CoordenadaInvalida, ler_coordenadas
 from .models import Instituicao, Matricula, Turma
 from .periodos import opcoes_de_periodo, periodo_atual
+
+LIMITE_DA_BUSCA = 50
 
 
 class TurmaForm(forms.ModelForm):
@@ -67,8 +71,58 @@ class LimiteAtencaoForm(forms.ModelForm):
         }
 
 
-class MatriculaForm(forms.ModelForm):
+class BuscaDeDiscenteForm(forms.Form):
+    """Busca e filtro da tela de matrícula: com milhares de alunos, a lista mostra só os encontrados."""
+
+    TODOS, SEM_TURMA, FORA_DA_TURMA = "todos", "sem_turma", "fora_da_turma"
+
+    turma = forms.ModelChoiceField(
+        queryset=Turma.objects.none(), required=False, empty_label="Selecione uma turma", label="Turma",
+        help_text="Usada pelo filtro e já preenchida na matrícula abaixo.",
+        widget=forms.Select(attrs={"class": "simap-input"}),
+    )
+    q = forms.CharField(
+        required=False, max_length=100, label="Buscar aluno",
+        widget=forms.TextInput(attrs={"class": "simap-input", "placeholder": "Nome, usuário, RGM ou e-mail",
+                                      "type": "search"}),
+    )
+    filtro = forms.ChoiceField(
+        required=False, label="Mostrar", initial=TODOS,
+        choices=[(TODOS, "Todos os discentes"), (SEM_TURMA, "Sem matrícula ativa em nenhuma turma"),
+                 (FORA_DA_TURMA, "Ainda não matriculados nesta turma")],
+        widget=forms.Select(attrs={"class": "simap-input"}),
+    )
+
     def __init__(self, *args, docente=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["turma"].queryset = Turma.objects.filter(docente=docente, ativa=True)
+
+    def discentes(self):
+        """Devolve (até 50 discentes encontrados, total encontrado)."""
+        encontrados = get_user_model().objects.filter(perfil="DISCENTE", is_active=True)
+        dados = self.cleaned_data if self.is_valid() else {}
+        for termo in (dados.get("q") or "").split():
+            encontrados = encontrados.filter(
+                Q(first_name__icontains=termo) | Q(last_name__icontains=termo) | Q(username__icontains=termo)
+                | Q(rgm__icontains=termo) | Q(email__icontains=termo)
+            )
+        filtro, turma = dados.get("filtro"), dados.get("turma")
+        if filtro == self.SEM_TURMA:
+            encontrados = encontrados.exclude(matricula__status="ATIVA")
+        elif filtro == self.FORA_DA_TURMA and turma:
+            encontrados = encontrados.exclude(matricula__turma=turma)
+        ordenados = encontrados.order_by("first_name", "last_name", "username")
+        return list(ordenados[:LIMITE_DA_BUSCA]), ordenados.count()
+
+
+def nome_do_discente(usuario):
+    rgm = mascarar_rgm(usuario.rgm)
+    nome = usuario.get_full_name() or usuario.username
+    return f"{nome} · {usuario.username}" + (f" · RGM {rgm}" if rgm else "")
+
+
+class MatriculaForm(forms.ModelForm):
+    def __init__(self, *args, docente=None, discentes=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["turma"].queryset = Turma.objects.filter(
             docente=docente,
@@ -76,10 +130,12 @@ class MatriculaForm(forms.ModelForm):
         )
         self.fields["turma"].empty_label = "Selecione uma turma"
         self.fields["discente"].empty_label = "Selecione um discente"
-        self.fields["discente"].queryset = get_user_model().objects.filter(
-            perfil="DISCENTE",
-            is_active=True,
-        )
+        # Para validar, vale qualquer discente ativo; para mostrar, só os encontrados na busca.
+        ativos = get_user_model().objects.filter(perfil="DISCENTE", is_active=True)
+        if discentes is not None:
+            ativos = ativos.filter(pk__in=[d.pk for d in discentes])
+        self.fields["discente"].queryset = ativos.order_by("first_name", "last_name", "username")
+        self.fields["discente"].label_from_instance = nome_do_discente
 
     class Meta:
         model = Matricula
@@ -87,7 +143,7 @@ class MatriculaForm(forms.ModelForm):
         labels = {"turma": "Turma", "discente": "Discente", "status": "Situação da matrícula"}
         help_texts = {
             "turma": "Somente as turmas ativas sob sua responsabilidade.",
-            "discente": "Somente discentes com conta ativa no sistema.",
+            "discente": "Os discentes encontrados na busca acima.",
             "status": "A matrícula ativa permite ao aluno acessar os conteúdos da turma.",
         }
         widgets = {
