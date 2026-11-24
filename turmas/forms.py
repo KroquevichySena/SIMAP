@@ -77,12 +77,13 @@ class BuscaDeDiscenteForm(forms.Form):
     TODOS, SEM_TURMA, FORA_DA_TURMA = "todos", "sem_turma", "fora_da_turma"
 
     turma = forms.ModelChoiceField(
-        queryset=Turma.objects.none(), required=False, empty_label="Selecione uma turma", label="Turma",
-        help_text="Usada pelo filtro e já preenchida na matrícula abaixo.",
+        queryset=Turma.objects.none(), required=False, empty_label="Todas as suas turmas", label="Turma para filtrar",
+        help_text="Opcional. Ao filtrar por turma, ela também será selecionada na matrícula.",
         widget=forms.Select(attrs={"class": "simap-input"}),
     )
     q = forms.CharField(
-        required=False, max_length=100, label="Buscar aluno",
+        required=False, max_length=100, label="Pesquisar na lista",
+        help_text="Não precisa saber os dados do aluno: deixe em branco para ver as opções disponíveis.",
         widget=forms.TextInput(attrs={"class": "simap-input", "placeholder": "Nome, usuário, RGM ou e-mail",
                                       "type": "search"}),
     )
@@ -129,7 +130,7 @@ class MatriculaForm(forms.ModelForm):
             ativa=True,
         )
         self.fields["turma"].empty_label = "Selecione uma turma"
-        self.fields["discente"].empty_label = "Selecione um discente"
+        self.fields["discente"].empty_label = "Selecione um aluno da lista"
         # Para validar, vale qualquer discente ativo; para mostrar, só os encontrados na busca.
         ativos = get_user_model().objects.filter(perfil="DISCENTE", is_active=True)
         if discentes is not None:
@@ -140,15 +141,15 @@ class MatriculaForm(forms.ModelForm):
     class Meta:
         model = Matricula
         fields = ["turma", "discente", "status"]
-        labels = {"turma": "Turma", "discente": "Discente", "status": "Situação da matrícula"}
+        labels = {"turma": "Turma da matrícula", "discente": "Aluno", "status": "Situação da matrícula"}
         help_texts = {
             "turma": "Somente as turmas ativas sob sua responsabilidade.",
-            "discente": "Os discentes encontrados na busca acima.",
+            "discente": "Selecione um aluno na lista. Se precisar, use a pesquisa opcional para reduzir as opções.",
             "status": "A matrícula ativa permite ao aluno acessar os conteúdos da turma.",
         }
         widgets = {
             "turma": forms.Select(attrs={"class": "simap-input"}),
-            "discente": forms.Select(attrs={"class": "simap-input"}),
+            "discente": forms.Select(attrs={"class": "simap-input", "size": 7}),
             "status": forms.Select(attrs={"class": "simap-input"}),
         }
 

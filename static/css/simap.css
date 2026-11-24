@@ -621,6 +621,21 @@ body.simap-app {
     min-width: 0;
 }
 
+.simap-busca-matricula {
+    margin: 0 24px 24px;
+}
+
+.simap-busca-matricula > summary {
+    padding: 12px 0;
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.simap-busca-matricula > .simap-formulario {
+    padding: 12px 0 0;
+}
+
 .simap-campo label {
     color: #334155;
     font-size: 13px;
