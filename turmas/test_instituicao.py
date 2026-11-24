@@ -8,6 +8,7 @@ from auditoria.models import Acao, RegistroAuditoria
 from usuarios.models import AceiteTermos
 
 from .models import Instituicao, Turma
+from .periodos import periodo_atual
 
 
 def criar_usuario(username, perfil="COORDENACAO"):
@@ -81,7 +82,7 @@ class InstituicaoTest(TestCase):
     def test_coordenacao_cria_turma_dentro_da_instituicao(self):
         instituicao = Instituicao.objects.create(nome="Campus")
         url = reverse("criar_turma_instituicao", args=[instituicao.pk])
-        dados = {"nome": "Estrutura de Dados", "periodo": "2026/2", "docente": self.docente.pk,
+        dados = {"nome": "Estrutura de Dados", "periodo": periodo_atual(), "docente": self.docente.pk,
                  "ativa": "on", "limite_atencao": "60"}
 
         resposta = self.client.post(url, dados)

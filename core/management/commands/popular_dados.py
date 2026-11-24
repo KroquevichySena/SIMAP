@@ -25,7 +25,7 @@ Usuario = get_user_model()
 SENHA_PADRAO = "DemonstracaoLocal2026!"
 GRUPO_DEMO = "SIMAP - demonstracao ficticia"
 TURMA_DEMO = "DEMO - Algoritmos e Programação I"
-PERIODO_DEMO = "2026.2"
+PERIODO_DEMO = "2026/2"
 COORDENACAO = ("demo.coordenacao", "Marina", "Albuquerque")
 
 DOCENTES = [

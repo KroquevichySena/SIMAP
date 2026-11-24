@@ -4,6 +4,7 @@ from django.db.models import Q
 
 from .coordenadas import CoordenadaInvalida, ler_coordenadas
 from .models import Instituicao, Matricula, Turma
+from .periodos import opcoes_de_periodo, periodo_atual
 
 
 class TurmaForm(forms.ModelForm):
@@ -18,7 +19,7 @@ class TurmaForm(forms.ModelForm):
         }
         help_texts = {
             "nome": "Máximo de 100 caracteres.",
-            "periodo": "Informe o período letivo. Exemplo: 2026/2.",
+            "periodo": "Semestre letivo da turma.",
             "ativa": "Turmas inativas não aparecem na seleção de novas matrículas.",
             "limite_atencao": (
                 "O aluno é sinalizado se frequência, entregas ou progresso calculável "
@@ -27,7 +28,6 @@ class TurmaForm(forms.ModelForm):
         }
         widgets = {
             "nome": forms.TextInput(attrs={"class": "simap-input", "placeholder": "Ex.: Algoritmos e Programação I"}),
-            "periodo": forms.TextInput(attrs={"class": "simap-input", "placeholder": "Ex.: 2026/2"}),
             "ativa": forms.CheckboxInput(attrs={"class": "simap-checkbox"}),
             "limite_atencao": forms.NumberInput(attrs={"class": "simap-input", "min": 0, "max": 100, "step": "0.1"}),
         }
@@ -35,6 +35,16 @@ class TurmaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["limite_atencao"].required = False
+        # O período vem de uma lista; um valor antigo fora dela continua disponível na edição.
+        opcoes = opcoes_de_periodo()
+        if self.instance.pk and self.instance.periodo and self.instance.periodo not in opcoes:
+            opcoes.insert(0, self.instance.periodo)
+        campo = self.fields["periodo"]
+        self.fields["periodo"] = forms.ChoiceField(
+            label=campo.label, help_text=campo.help_text, choices=[(p, p) for p in opcoes],
+            initial=self.instance.periodo or periodo_atual(),
+            widget=forms.Select(attrs={"class": "simap-input"}),
+        )
 
     def clean_limite_atencao(self):
         limite = self.cleaned_data.get("limite_atencao")
