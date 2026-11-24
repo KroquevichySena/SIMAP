@@ -1,4 +1,4 @@
-"""Na tela de matrícula, o docente busca o aluno por nome e filtra, em vez de rolar uma lista com todos."""
+"""Busca de alunos sem revelar vínculos com outras turmas."""
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -38,16 +38,21 @@ class BuscaNaMatriculaTest(TestCase):
         self.assertEqual(resposta.context["form"].initial["discente"], self.ana)
         self.assertNotContains(resposta, "11230001234")
 
-    def test_filtro_sem_matricula_ativa(self):
+    def test_parametro_antigo_nao_revela_matricula_em_turma_de_outro_docente(self):
+        outro_docente = get_user_model().objects.create_user("prof.outro", perfil="DOCENTE")
+        self.outra.docente = outro_docente
+        self.outra.save(update_fields=["docente"])
+        antes = self.client.get(self.url, {"filtro": "sem_turma"})
         Matricula.objects.create(turma=self.outra, discente=self.bruno, status="ATIVA")
         resposta = self.client.get(self.url, {"filtro": "sem_turma"})
-        self.assertEqual(self.opcoes(resposta), [self.ana, self.carla])
+        self.assertEqual(self.opcoes(resposta), self.opcoes(antes))
+        self.assertEqual(resposta.context["total_encontrado"], antes.context["total_encontrado"])
 
-    def test_filtro_fora_da_turma_escolhida_e_turma_ja_vem_selecionada(self):
+    def test_parametros_antigos_nao_filtram_nem_selecionam_turma(self):
         Matricula.objects.create(turma=self.turma, discente=self.carla, status="ATIVA")
         resposta = self.client.get(self.url, {"filtro": "fora_da_turma", "turma": self.turma.pk})
-        self.assertEqual(self.opcoes(resposta), [self.ana, self.bruno])
-        self.assertEqual(resposta.context["form"].initial["turma"], self.turma)
+        self.assertEqual(self.opcoes(resposta), [self.ana, self.bruno, self.carla])
+        self.assertNotIn("turma", resposta.context["form"].initial)
 
     def test_lista_limitada_com_aviso(self):
         get_user_model().objects.bulk_create(
@@ -67,5 +72,6 @@ class BuscaNaMatriculaTest(TestCase):
     def test_tela_tem_campo_de_busca(self):
         resposta = self.client.get(self.url)
         self.assertContains(resposta, 'name="q"')
-        self.assertContains(resposta, 'id="busca_turma"')
+        self.assertNotContains(resposta, 'id="busca_turma"')
+        self.assertNotContains(resposta, 'name="filtro"')
         self.assertContains(resposta, 'id="id_turma"')

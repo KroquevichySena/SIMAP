@@ -50,7 +50,7 @@ def criar_turma(request):
 @login_required
 @docente_required
 def criar_matricula(request):
-    busca = BuscaDeDiscenteForm(request.GET or None, docente=request.user, auto_id='busca_%s')
+    busca = BuscaDeDiscenteForm(request.GET or None, auto_id='busca_%s')
     discentes, total = busca.discentes()
     if request.method == 'POST':
         form = MatriculaForm(request.POST, docente=request.user)
@@ -66,7 +66,6 @@ def criar_matricula(request):
         form = MatriculaForm(
             docente=request.user, discentes=discentes,
             initial={
-                'turma': busca.cleaned_data.get('turma') if busca.is_bound and busca.is_valid() else None,
                 'discente': discentes[0] if len(discentes) == 1 else None,
             },
         )

@@ -72,32 +72,13 @@ class LimiteAtencaoForm(forms.ModelForm):
 
 
 class BuscaDeDiscenteForm(forms.Form):
-    """Busca e filtro da tela de matrícula: com milhares de alunos, a lista mostra só os encontrados."""
-
-    TODOS, SEM_TURMA, FORA_DA_TURMA = "todos", "sem_turma", "fora_da_turma"
-
-    turma = forms.ModelChoiceField(
-        queryset=Turma.objects.none(), required=False, empty_label="Todas as suas turmas", label="Turma para filtrar",
-        help_text="Opcional. Ao filtrar por turma, ela também será selecionada na matrícula.",
-        widget=forms.Select(attrs={"class": "simap-input"}),
-    )
+    """Pesquisa discentes ativos sem consultar seus vínculos com outras turmas."""
     q = forms.CharField(
         required=False, max_length=100, label="Pesquisar na lista",
         help_text="Não precisa saber os dados do aluno: deixe em branco para ver as opções disponíveis.",
         widget=forms.TextInput(attrs={"class": "simap-input", "placeholder": "Nome, usuário, RGM ou e-mail",
                                       "type": "search"}),
     )
-    filtro = forms.ChoiceField(
-        required=False, label="Mostrar", initial=TODOS,
-        choices=[(TODOS, "Todos os discentes"), (SEM_TURMA, "Sem matrícula ativa em nenhuma turma"),
-                 (FORA_DA_TURMA, "Ainda não matriculados nesta turma")],
-        widget=forms.Select(attrs={"class": "simap-input"}),
-    )
-
-    def __init__(self, *args, docente=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["turma"].queryset = Turma.objects.filter(docente=docente, ativa=True)
-
     def discentes(self):
         """Devolve (até 50 discentes encontrados, total encontrado)."""
         encontrados = get_user_model().objects.filter(perfil="DISCENTE", is_active=True)
@@ -107,11 +88,6 @@ class BuscaDeDiscenteForm(forms.Form):
                 Q(first_name__icontains=termo) | Q(last_name__icontains=termo) | Q(username__icontains=termo)
                 | Q(rgm__icontains=termo) | Q(email__icontains=termo)
             )
-        filtro, turma = dados.get("filtro"), dados.get("turma")
-        if filtro == self.SEM_TURMA:
-            encontrados = encontrados.exclude(matricula__status="ATIVA")
-        elif filtro == self.FORA_DA_TURMA and turma:
-            encontrados = encontrados.exclude(matricula__turma=turma)
         ordenados = encontrados.order_by("first_name", "last_name", "username")
         return list(ordenados[:LIMITE_DA_BUSCA]), ordenados.count()
 

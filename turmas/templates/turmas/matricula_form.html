@@ -25,15 +25,13 @@
             </div>
 
             <details{% if request.GET %} open{% endif %} class="simap-busca-matricula">
-                <summary>Pesquisar ou filtrar alunos (opcional)</summary>
+                <summary>Pesquisar aluno (opcional)</summary>
                 <form method="get" class="simap-formulario" role="search">
                     {% include 'turmas/_campo_formulario.html' with campo=busca.q %}
-                    {% include 'turmas/_campo_formulario.html' with campo=busca.turma %}
-                    {% include 'turmas/_campo_formulario.html' with campo=busca.filtro %}
 
                     <div class="simap-formulario-acoes">
                         <button type="submit" class="simap-botao simap-botao-secundario">Aplicar pesquisa</button>
-                        <a href="{% url 'criar_matricula' %}" class="simap-botao simap-botao-secundario">Limpar pesquisa e filtros</a>
+                        <a href="{% url 'criar_matricula' %}" class="simap-botao simap-botao-secundario">Limpar pesquisa</a>
                     </div>
                 </form>
             </details>
@@ -45,7 +43,7 @@
                 {% include 'turmas/_campo_formulario.html' with campo=form.turma %}
                 {% include 'turmas/_campo_formulario.html' with campo=form.discente %}
                 {% if not total_encontrado %}
-                    <p class="simap-ajuda-campo">Nenhum aluno disponível com os critérios atuais. Limpe a pesquisa e os filtros para conferir as outras opções.</p>
+                    <p class="simap-ajuda-campo">Nenhum aluno encontrado. Limpe a pesquisa para conferir as outras opções.</p>
                 {% endif %}
                 {% include 'turmas/_campo_formulario.html' with campo=form.status %}
 
