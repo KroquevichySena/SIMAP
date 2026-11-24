@@ -55,8 +55,9 @@ Na entrega de 16/11: verificação ponta a ponta dos três perfis em 15/11 (35 f
 | #47 | Versões dos termos de uso publicadas pela Coordenação, com reaceite imediato |
 | #48 | Manual do usuário atualizado com instituições, versões dos termos e máscara de dados |
 | #49, #50 | Agendamento dos e-mails do RF33 pelo GitHub Actions |
+| #53 e commit `1c1ff8d` | Lista de alunos visível na matrícula, com pesquisa opcional e sem filtros baseados em vínculos com turmas |
 
-Situação atual: 608 testes automatizados passando (11 deles só rodam no PostgreSQL) e análise estática sem alertas. O sistema está publicado no Render, com o banco no Neon (PostgreSQL 16).
+Situação atual: 622 testes automatizados identificados (205 unitários e 417 de integração). Na execução com SQLite, 611 passaram e 11 foram ignorados por exigirem PostgreSQL; a regressão específica no PostgreSQL 16 também passou na CI. A análise estática está sem alertas. O sistema está publicado no Render, com o banco no Neon (PostgreSQL 16).
 
 ### Pendências
 
