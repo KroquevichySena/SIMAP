@@ -13,10 +13,9 @@ from .periodos import opcoes_de_periodo, periodo_atual
 
 
 class OpcoesDePeriodoTest(SimpleTestCase):
-    def test_vai_do_ano_anterior_ao_proximo(self):
-        self.assertEqual(
-            opcoes_de_periodo(date(2026, 11, 23)), ["2025/1", "2025/2", "2026/1", "2026/2", "2027/1", "2027/2"]
-        )
+    def test_comeca_no_semestre_atual_e_vai_ate_o_fim_do_proximo_ano(self):
+        self.assertEqual(opcoes_de_periodo(date(2026, 11, 23)), ["2026/2", "2027/1", "2027/2"])
+        self.assertEqual(opcoes_de_periodo(date(2026, 3, 10)), ["2026/1", "2026/2", "2027/1", "2027/2"])
 
     def test_semestre_atual_pelo_mes(self):
         self.assertEqual(periodo_atual(date(2026, 6, 30)), "2026/1")
@@ -43,7 +42,8 @@ class CampoDePeriodoTest(TestCase):
 
     def test_recusa_texto_numero_ou_formato_fora_da_lista(self):
         ano = int(periodo_atual()[:4])
-        for invalido in ("turma agora", "2026", str(ano) + ".2", f"{ano + 5}/1", f"{ano}/3", ""):
+        passado = f"{ano - 1}/2"
+        for invalido in ("turma agora", "2026", str(ano) + ".2", f"{ano + 5}/1", f"{ano}/3", passado, ""):
             with self.subTest(periodo=invalido):
                 resposta = self.client.post(reverse("criar_turma"), self.dados(invalido))
                 self.assertEqual(resposta.status_code, 200)
