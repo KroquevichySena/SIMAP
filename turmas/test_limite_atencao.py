@@ -11,6 +11,7 @@ from painel.servicos import indicadores_da_turma
 from usuarios.models import AceiteTermos
 
 from .models import Matricula, Turma
+from .periodos import periodo_atual
 
 
 class ConfiguracaoTurmaTest(TestCase):
@@ -74,7 +75,7 @@ class ConfiguracaoTurmaTest(TestCase):
 
     def test_cadastro_da_turma_aceita_limite_e_preserva_padrao_quando_omitido(self):
         for nome, valor in (("Nova", "75"), ("Sem alerta abaixo de zero", "0"), ("Padrao", None)):
-            dados = {"nome": nome, "periodo": "2026/2", "ativa": "on"}
+            dados = {"nome": nome, "periodo": periodo_atual(), "ativa": "on"}
             if valor is not None:
                 dados["limite_atencao"] = valor
             resposta = self.client.post(reverse("criar_turma"), dados)

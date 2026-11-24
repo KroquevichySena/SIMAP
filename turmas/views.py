@@ -10,7 +10,14 @@ from django.views.generic import CreateView, ListView, UpdateView
 
 from usuarios.mixins import CoordenacaoRequiredMixin
 
-from .forms import InstituicaoForm, LimiteAtencaoForm, MatriculaForm, TurmaDaInstituicaoForm, TurmaForm
+from .forms import (
+    BuscaDeDiscenteForm,
+    InstituicaoForm,
+    LimiteAtencaoForm,
+    MatriculaForm,
+    TurmaDaInstituicaoForm,
+    TurmaForm,
+)
 from .models import Instituicao, Matricula, Turma
 from .permissoes import docente_required
 
@@ -43,14 +50,29 @@ def criar_turma(request):
 @login_required
 @docente_required
 def criar_matricula(request):
+    busca = BuscaDeDiscenteForm(request.GET or None, docente=request.user, auto_id='busca_%s')
+    discentes, total = busca.discentes()
     if request.method == 'POST':
         form = MatriculaForm(request.POST, docente=request.user)
         if form.is_valid():
             form.save()
             return redirect('lista_turmas')
+        # Ao reexibir, a lista volta a mostrar só os encontrados, mais o aluno já escolhido.
+        escolhido = form.cleaned_data.get('discente')
+        form.fields['discente'].queryset = form.fields['discente'].queryset.filter(
+            pk__in=[d.pk for d in discentes] + ([escolhido.pk] if escolhido else [])
+        )
     else:
-        form = MatriculaForm(docente=request.user)
-    return render(request, 'turmas/matricula_form.html', {'form': form})
+        form = MatriculaForm(
+            docente=request.user, discentes=discentes,
+            initial={
+                'turma': busca.cleaned_data.get('turma') if busca.is_bound and busca.is_valid() else None,
+                'discente': discentes[0] if len(discentes) == 1 else None,
+            },
+        )
+    return render(request, 'turmas/matricula_form.html', {
+        'form': form, 'busca': busca, 'total_encontrado': total, 'mostrados': len(discentes),
+    })
 @login_required
 @docente_required
 def matriculas_turma(request, pk):
