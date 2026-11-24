@@ -16,31 +16,27 @@
             </div>
         </header>
 
-        <section class="simap-cartao" aria-labelledby="titulo-busca-discente">
+        <section class="simap-cartao" aria-labelledby="titulo-dados-matricula">
             <div class="simap-cartao-cabecalho">
-                <h2 id="titulo-busca-discente">Encontrar o aluno</h2>
+                <h2 id="titulo-dados-matricula">Escolher aluno e matricular</h2>
                 <span class="simap-contagem">
                     {% if total_encontrado > mostrados %}Mostrando {{ mostrados }} de {{ total_encontrado }} encontrados. Refine a busca.{% else %}{{ total_encontrado }} encontrado{{ total_encontrado|pluralize }}{% endif %}
                 </span>
             </div>
 
-            <form method="get" class="simap-formulario" role="search">
-                {% include 'turmas/_campo_formulario.html' with campo=busca.q %}
-                {% include 'turmas/_campo_formulario.html' with campo=busca.turma %}
-                {% include 'turmas/_campo_formulario.html' with campo=busca.filtro %}
+            <details{% if request.GET %} open{% endif %} class="simap-busca-matricula">
+                <summary>Pesquisar ou filtrar alunos (opcional)</summary>
+                <form method="get" class="simap-formulario" role="search">
+                    {% include 'turmas/_campo_formulario.html' with campo=busca.q %}
+                    {% include 'turmas/_campo_formulario.html' with campo=busca.turma %}
+                    {% include 'turmas/_campo_formulario.html' with campo=busca.filtro %}
 
-                <div class="simap-formulario-acoes">
-                    <button type="submit" class="simap-botao simap-botao-secundario">Buscar</button>
-                    <a href="{% url 'criar_matricula' %}" class="simap-botao simap-botao-secundario">Limpar</a>
-                </div>
-            </form>
-        </section>
-
-        <section class="simap-cartao" aria-labelledby="titulo-dados-matricula">
-            <div class="simap-cartao-cabecalho">
-                <h2 id="titulo-dados-matricula">Dados da matrícula</h2>
-                <span class="simap-contagem">* Campos obrigatórios</span>
-            </div>
+                    <div class="simap-formulario-acoes">
+                        <button type="submit" class="simap-botao simap-botao-secundario">Aplicar pesquisa</button>
+                        <a href="{% url 'criar_matricula' %}" class="simap-botao simap-botao-secundario">Limpar pesquisa e filtros</a>
+                    </div>
+                </form>
+            </details>
 
             <form method="post" class="simap-formulario">
                 {% csrf_token %}
@@ -48,6 +44,9 @@
 
                 {% include 'turmas/_campo_formulario.html' with campo=form.turma %}
                 {% include 'turmas/_campo_formulario.html' with campo=form.discente %}
+                {% if not total_encontrado %}
+                    <p class="simap-ajuda-campo">Nenhum aluno disponível com os critérios atuais. Limpe a pesquisa e os filtros para conferir as outras opções.</p>
+                {% endif %}
                 {% include 'turmas/_campo_formulario.html' with campo=form.status %}
 
                 <div class="simap-formulario-acoes">
